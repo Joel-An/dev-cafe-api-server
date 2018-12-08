@@ -21,3 +21,23 @@ exports.getPostById = (req, res) => {
       throw err;
     });
 };
+
+exports.upvote = (req, res) => {
+  Post.findByIdAndUpdate(req.params.id, { $inc: { upVotes: 1 } })
+    .then(() => {
+      res.status(204).end();
+    })
+    .catch(err => {
+      throw err;
+    });
+};
+
+exports.downvote = (req, res) => {
+  Post.findByIdAndUpdate(req.params.id, { $inc: { upVotes: -1 } })
+    .then(() => {
+      res.status(204).end();
+    })
+    .catch(err => {
+      throw err;
+    });
+};
