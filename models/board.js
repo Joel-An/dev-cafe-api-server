@@ -1,4 +1,4 @@
-var mongoose = require("mongoose");
+var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var boardSchema = new Schema({
@@ -6,9 +6,9 @@ var boardSchema = new Schema({
   nameEng: { type: String, required: true },
   boardType: {
     type: String,
-    enum: ["Normal", "Best", "Admin"],
-    default: "Normal"
-  }
+    enum: ['Normal', 'Best', 'Admin'],
+    default: 'Normal',
+  },
 });
 
-module.exports = mongoose.model("Board", boardSchema);
+module.exports = mongoose.model('Board', boardSchema);
