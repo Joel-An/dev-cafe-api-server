@@ -51,7 +51,8 @@ exports.searchTitle = (req, res) => {
     .limit(perPage)
     .lean()
     .then(posts => {
-      res.json(posts);
+      const result = { hits: posts, page: page, total: posts.length };
+      res.json(result);
     })
     .catch(err => {
       throw err;
