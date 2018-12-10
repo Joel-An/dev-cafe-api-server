@@ -12,4 +12,6 @@ router.get('/search/posts', postController.searchTitle);
 router.post('/upvote/posts/:id', postController.upvote);
 router.post('/downvote/posts/:id', postController.downvote);
 
+router.post('/auth/login', userController.login);
+
 module.exports = router;
