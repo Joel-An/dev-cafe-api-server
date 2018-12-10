@@ -9,6 +9,7 @@ const config = require('./config/config');
 const indexRouter = require('./routes/index');
 const apiRouterV1 = require('./routes/api/v1/index');
 
+const clientApp = path.join(__dirname, './public/App');
 const app = express();
 
 app.use(logger('dev'));
@@ -37,8 +38,8 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use('/', indexRouter);
 app.use('/api/v1', apiRouterV1);
+app.use('*', express.static(clientApp));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
