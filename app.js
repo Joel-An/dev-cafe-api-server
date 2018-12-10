@@ -30,6 +30,13 @@ const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'mongoDB connection error:'));
 db.once('open', () => console.log('Connected to mongodb Atlas'));
 
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'content-type, x-access-token');
+  next();
+});
+
 app.use('/', indexRouter);
 app.use('/api/v1', apiRouterV1);
 
