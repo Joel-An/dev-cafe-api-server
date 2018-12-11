@@ -12,7 +12,7 @@ const apiRouterV1 = require('./routes/api/v1/index');
 const clientApp = path.join(__dirname, './public/App');
 const app = express();
 
-app.use(logger('dev'));
+if (process.env.NODE_ENV !== 'test') app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -29,7 +29,8 @@ mongoose.connect(
 );
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'mongoDB connection error:'));
-db.once('open', () => console.log('Connected to mongodb Atlas'));
+if (process.env.NODE_ENV !== 'test')
+  db.once('open', () => console.log('Connected to mongodb Atlas'));
 
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
