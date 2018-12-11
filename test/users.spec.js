@@ -2,20 +2,23 @@ const User = require('../models/user');
 
 describe('Users', () => {
   describe('POST /users (회원가입)', () => {
-    beforeEach(done => {
-      clearCollection(User, done);
-    });
+    describe('회원가입에 성공하면', () => {
+      before(done => {
+        clearCollection(User, done);
+      });
+      after(done => {
+        clearCollection(User, done);
+      });
 
-    describe('성공하면', () => {
-      it('profile name을 받아온다.', done => {
-        const testUser = {
-          userName: 'chris P bacon',
-          profileName: 'chris',
-          email: 'cpb@gmail.com',
-          password: '123',
-          confirmPassword: '123',
-        };
+      const testUser = {
+        userName: 'chris.P.bacon',
+        profileName: 'chris',
+        email: 'cpb@gmail.com',
+        password: '123',
+        confirmPassword: '123',
+      };
 
+      it('response로 201 status, profileName, email을 받는다', done => {
         chai
           .request(server)
           .post(API_URI + '/users')
@@ -26,6 +29,17 @@ describe('Users', () => {
             res.body.should.have.property('profileName', testUser.profileName);
             done();
           });
+      });
+
+      it('DB에 회원정보가 저장되어 있어야한다', done => {
+        User.findOne({ userName: testUser.userName }, (err, user) => {
+          should.exist(user);
+          should.not.exist(err);
+          user.should.have.property('userName', user.userName);
+          user.should.have.property('profileName', user.profileName);
+          user.should.have.property('email', user.email);
+          done();
+        });
       });
     });
 
