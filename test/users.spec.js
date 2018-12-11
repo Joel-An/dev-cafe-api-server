@@ -2,20 +2,20 @@ const User = require('../models/user');
 
 describe('Users', () => {
   describe('POST /users (회원가입)', () => {
-    describe('회원가입에 성공하면', () => {
-      before(done => {
-        clearCollection(User, done);
-      });
-      after(done => {
-        clearCollection(User, done);
-      });
+    before(done => {
+      clearCollection(User, done);
+    });
+    after(done => {
+      clearCollection(User, done);
+    });
 
-      const testUser = {
+    describe('회원가입에 성공하면', () => {
+      let testUser = {
         userName: 'chris.P.bacon',
         profileName: 'chris',
         email: 'cpb@gmail.com',
-        password: '123',
-        confirmPassword: '123',
+        password: '1q2w3e4r5t@',
+        confirmPassword: '1q2w3e4r5t@',
       };
 
       it('response로 201 status, profileName, email을 받는다', done => {
@@ -27,6 +27,7 @@ describe('Users', () => {
             res.should.have.status(201);
             res.should.be.json;
             res.body.should.have.property('profileName', testUser.profileName);
+            res.body.should.have.property('email', testUser.email);
             done();
           });
       });
@@ -43,9 +44,33 @@ describe('Users', () => {
       });
     });
 
-    describe.skip('실패하면', () => {
-      it(' message를 받아온다.', done => {
-        done();
+    describe('password와 comfirmPassword가 다르면', () => {
+      let carelessUser = {
+        userName: 'carelessUser',
+        profileName: 'chris',
+        email: 'cpb@gmail.com',
+        password: '1q2w3e4r5t@',
+        confirmPassword: 'DIFFERENT_PASSWORD@',
+      };
+
+      it('response로 403 error와 message를 받는다', done => {
+        chai
+          .request(server)
+          .post(API_URI + '/users')
+          .send(carelessUser)
+          .end((err, res) => {
+            res.should.have.status(403);
+            res.should.be.json;
+            res.body.should.have.property('message');
+            done();
+          });
+      });
+      it('DB에 회원정보가 없어야한다', done => {
+        User.findOne({ userName: carelessUser.userName }, (err, user) => {
+          should.not.exist(user);
+          should.not.exist(err);
+          done();
+        });
       });
     });
   });
