@@ -73,6 +73,15 @@ exports.register = wrapAsync(async (req, res) => {
     return res.json({ message: '비밀번호가 일치하지 않습니다.' });
   }
 
+  const regex = /^.*(?=^.{8,20}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$\*%^&+=]).*$/;
+
+  if (!regex.test(password)) {
+    res.status(403);
+    return res.json({
+      message: '비밀번호는 8~20자리 알파벳,숫자,특수문자를 조합해야합니다.',
+    });
+  }
+
   let user = new User();
 
   user.userName = req.body.userName;
