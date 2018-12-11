@@ -7,6 +7,9 @@ chai.use(chaiHttp);
 
 const server = require('../bin/www');
 
+const API_URI = '/api/v1';
+
 global.chai = chai;
 global.should = should;
 global.server = server;
+global.API_URI = API_URI;

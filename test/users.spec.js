@@ -3,7 +3,7 @@ describe('Users', () => {
     it('it should GET all users', done => {
       chai
         .request(server)
-        .get('/api/v1/users')
+        .get(API_URI + '/users')
         .end((err, res) => {
           res.should.have.status(200);
           res.should.be.json;
