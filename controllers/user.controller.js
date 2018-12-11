@@ -57,6 +57,22 @@ exports.login = (req, res, next) => {
 };
 
 exports.register = wrapAsync(async (req, res) => {
+  let userName = req.body.userName;
+  let profileName = req.body.profileName;
+  let email = req.body.email;
+  let password = req.body.password;
+  let confirmPassword = req.body.confirmPassword;
+
+  if (!userName || !profileName || !email || !password || !confirmPassword) {
+    res.status(403);
+    return res.json({ message: '필수 항목을 입력하지 않았습니다.' });
+  }
+
+  if (password !== confirmPassword) {
+    res.status(403);
+    return res.json({ message: '비밀번호가 일치하지 않습니다.' });
+  }
+
   let user = new User();
 
   user.userName = req.body.userName;
@@ -66,6 +82,6 @@ exports.register = wrapAsync(async (req, res) => {
 
   await User.create(user).then(user => {
     res.status(201);
-    res.json({ profileName: user.profileName });
+    res.json({ profileName: user.profileName, email: user.email });
   });
 });
