@@ -54,3 +54,21 @@ exports.login = (req, res, next) => {
       next(err);
     });
 };
+
+exports.register = (req, res, next) => {
+  let user = new User();
+
+  user.userName = req.body.userName;
+  user.profileName = req.body.profileName;
+  user.email = req.body.email;
+  user.password = user.generateHash(req.body.password);
+
+  User.create(user)
+    .then(user => {
+      res.status(201);
+      res.json({ profileName: user.profileName });
+    })
+    .catch(err => {
+      next(err);
+    });
+};

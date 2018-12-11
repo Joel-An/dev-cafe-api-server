@@ -13,5 +13,6 @@ router.post('/upvote/posts/:id', postController.upvote);
 router.post('/downvote/posts/:id', postController.downvote);
 
 router.post('/auth/login', userController.login);
+router.post('/users', userController.register);
 
 module.exports = router;
