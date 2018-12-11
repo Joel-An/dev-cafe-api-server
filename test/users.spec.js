@@ -81,6 +81,43 @@ describe('Users', () => {
       });
     });
 
+    describe('비밀번호가 8~20자리 숫자,영어,특수문자로 조합되지 않으면', () => {
+      before(done => {
+        clearCollection(User, done);
+      });
+      after(done => {
+        clearCollection(User, done);
+      });
+
+      let carelessUser = {
+        userName: 'carelessUser',
+        profileName: 'chris',
+        email: 'cpb@gmail.com',
+        password: 'PLAINstring',
+        confirmPassword: 'PLAINstring',
+      };
+
+      it('response로 403 error와 message를 받는다', done => {
+        chai
+          .request(server)
+          .post(API_URI + '/users')
+          .send(carelessUser)
+          .end((err, res) => {
+            res.should.have.status(403);
+            res.should.be.json;
+            res.body.should.have.property('message');
+            done();
+          });
+      });
+      it('DB에 회원정보가 없어야한다', done => {
+        User.findOne({ userName: carelessUser.userName }, (err, user) => {
+          should.not.exist(user);
+          should.not.exist(err);
+          done();
+        });
+      });
+    });
+
     describe('입력하지 않은 정보가 있다면', () => {
       before(done => {
         clearCollection(User, done);
