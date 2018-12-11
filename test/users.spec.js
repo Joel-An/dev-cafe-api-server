@@ -1,5 +1,5 @@
 describe('Users', () => {
-  describe('/GET users', () => {
+  describe.skip('GET /users', () => {
     it('it should GET all users', done => {
       chai
         .request(server)
