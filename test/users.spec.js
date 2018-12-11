@@ -8,20 +8,22 @@ describe('Users', () => {
 
     describe('성공하면', () => {
       it('profile name을 받아온다.', done => {
+        const testUser = {
+          userName: 'chris P bacon',
+          profileName: 'chris',
+          email: 'cpb@gmail.com',
+          password: '123',
+          confirmPassword: '123',
+        };
+
         chai
           .request(server)
           .post(API_URI + '/users')
-          .send({
-            userName: 'userName',
-            profileName: 'profileName',
-            email: 'email@gmail.com',
-            password: '123',
-            confirmPassword: '123',
-          })
+          .send(testUser)
           .end((err, res) => {
             res.should.have.status(201);
-            res.shoud.be.json;
-            res.body.should.have.property(profileName, 'profileName');
+            res.should.be.json;
+            res.body.should.have.property('profileName', testUser.profileName);
             done();
           });
       });
