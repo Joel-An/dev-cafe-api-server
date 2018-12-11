@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const JwtSecretKey = require('../config/config').JwtSecretKey;
+const wrapAsync = require('../util/util').wrapAsync;
 
 exports.getUsers = (req, res) => {
   User.find({})
@@ -55,7 +56,7 @@ exports.login = (req, res, next) => {
     });
 };
 
-exports.register = (req, res, next) => {
+exports.register = wrapAsync(async (req, res) => {
   let user = new User();
 
   user.userName = req.body.userName;
@@ -63,12 +64,8 @@ exports.register = (req, res, next) => {
   user.email = req.body.email;
   user.password = user.generateHash(req.body.password);
 
-  User.create(user)
-    .then(user => {
-      res.status(201);
-      res.json({ profileName: user.profileName });
-    })
-    .catch(err => {
-      next(err);
-    });
-};
+  await User.create(user).then(user => {
+    res.status(201);
+    res.json({ profileName: user.profileName });
+  });
+});
