@@ -2,14 +2,14 @@ const User = require('../models/user');
 
 describe('Users', () => {
   describe('POST /users (회원가입)', () => {
-    before(done => {
-      clearCollection(User, done);
-    });
-    after(done => {
-      clearCollection(User, done);
-    });
-
     describe('회원가입에 성공하면', () => {
+      before(done => {
+        clearCollection(User, done);
+      });
+      after(done => {
+        clearCollection(User, done);
+      });
+
       let testUser = {
         userName: 'chris.P.bacon',
         profileName: 'chris',
@@ -45,6 +45,13 @@ describe('Users', () => {
     });
 
     describe('password와 comfirmPassword가 다르면', () => {
+      before(done => {
+        clearCollection(User, done);
+      });
+      after(done => {
+        clearCollection(User, done);
+      });
+
       let carelessUser = {
         userName: 'carelessUser',
         profileName: 'chris',
