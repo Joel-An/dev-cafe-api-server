@@ -91,6 +91,17 @@ exports.register = wrapAsync(async (req, res) => {
     });
   }
 
+  let oldUser = await User.findOne({
+    $or: [{ userName: userName }, { email: email }],
+  });
+
+  if (!!oldUser) {
+    res.status(403);
+    return res.json({
+      message: '동일한 username 또는 이메일이 존재합니다.',
+    });
+  }
+
   let user = new User();
 
   user.userName = req.body.userName;
