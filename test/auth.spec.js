@@ -24,7 +24,7 @@ describe('Auth', () => {
       clearCollection(User, done);
     });
 
-    it('성공하면 response로 200 code와 엑세스 토큰을 받아야한다', done => {
+    it('로그인에 성공하면 response로 200 code와 엑세스 토큰을 받아야한다', done => {
       let loginForm = {
         userName: testUser1.userName,
         password: testUser1.password,
