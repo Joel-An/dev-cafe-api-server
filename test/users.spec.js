@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const USER_MESSAGE = require('../constants/message').USER;
 
 const testUser1 = {
   userName: 'Bacon',
@@ -76,7 +77,7 @@ describe('Users', () => {
         confirmPassword: 'DIFFERENT_PASSWORD@',
       };
 
-      it('response로 403 error와 message를 받는다', done => {
+      it('response로 403 error와 WRONG_COMFIRM_PASSWORD message를 받는다', done => {
         chai
           .request(server)
           .post(API_URI + '/users')
@@ -84,7 +85,10 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message');
+            res.body.should.have.property(
+              'message',
+              USER_MESSAGE.ERROR.WRONG_COMFIRM_PASSWORD
+            );
             done();
           });
       });
@@ -113,7 +117,7 @@ describe('Users', () => {
         confirmPassword: 'PLAINstring',
       };
 
-      it('response로 403 error와 message를 받는다', done => {
+      it('response로 403 error와 NVALID_PASSWORD message를 받는다', done => {
         chai
           .request(server)
           .post(API_URI + '/users')
@@ -121,7 +125,10 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message');
+            res.body.should.have.property(
+              'message',
+              USER_MESSAGE.ERROR.INVALID_PASSWORD
+            );
             done();
           });
       });
@@ -150,7 +157,7 @@ describe('Users', () => {
         confirmPassword: '1q2w3e4r5t@',
       };
 
-      it('response로 403 error와 message를 받는다', done => {
+      it('response로 403 error와 EMPTY_USERINFO message를 받는다', done => {
         chai
           .request(server)
           .post(API_URI + '/users')
@@ -158,7 +165,10 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message');
+            res.body.should.have.property(
+              'message',
+              USER_MESSAGE.ERROR.EMPTY_USERINFO
+            );
             done();
           });
       });
@@ -187,7 +197,7 @@ describe('Users', () => {
         confirmPassword: '1q2w3e4r5t@',
       };
 
-      it('response로 403 error와 message를 받는다', done => {
+      it('response로 403 error와 INVALID_EMAIL message를 받는다', done => {
         chai
           .request(server)
           .post(API_URI + '/users')
@@ -195,7 +205,10 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message');
+            res.body.should.have.property(
+              'message',
+              USER_MESSAGE.ERROR.INVALID_EMAIL
+            );
             done();
           });
       });
@@ -237,7 +250,7 @@ describe('Users', () => {
         clearCollection(User, done);
       });
 
-      it('response로 403 error와 message를 받는다', done => {
+      it('response로 403 error와 DUPLICATED_USERINFO message를 받는다', done => {
         chai
           .request(server)
           .post(API_URI + '/users')
@@ -245,7 +258,10 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message');
+            res.body.should.have.property(
+              'message',
+              USER_MESSAGE.ERROR.DUPLICATED_USERINFO
+            );
             done();
           });
       });
