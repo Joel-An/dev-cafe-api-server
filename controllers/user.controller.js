@@ -1,6 +1,4 @@
 const User = require('../models/user');
-const jwt = require('jsonwebtoken');
-const JwtSecretKey = require('../config/config').JwtSecretKey;
 const wrapAsync = require('../util/util').wrapAsync;
 const USER_MESSAGE = require('../constants/message').USER;
 
