@@ -74,6 +74,14 @@ exports.register = wrapAsync(async (req, res) => {
     return res.json({ message: USER_MESSAGE.ERROR.WRONG_COMFIRM_PASSWORD });
   }
 
+  const userNameRule = /^[a-zA-Z0-9-]{2,20}$/;
+  if (!userNameRule.test(userName)) {
+    res.status(403);
+    return res.json({
+      message: USER_MESSAGE.ERROR.INVALID_USERNAME,
+    });
+  }
+
   const regex = /^.*(?=^.{8,20}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$\*%^&+=]).*$/;
 
   if (!regex.test(password)) {
