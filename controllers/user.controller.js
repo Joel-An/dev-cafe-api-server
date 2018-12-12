@@ -105,10 +105,10 @@ exports.register = wrapAsync(async (req, res) => {
 
   let user = new User();
 
-  user.userName = req.body.userName;
-  user.profileName = req.body.profileName;
-  user.email = req.body.email;
-  user.password = user.generateHash(req.body.password);
+  user.userName = userName;
+  user.profileName = profileName;
+  user.email = email;
+  user.password = user.generateHash(password);
 
   await User.create(user).then(user => {
     res.status(201);
