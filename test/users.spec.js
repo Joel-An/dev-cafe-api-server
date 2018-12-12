@@ -207,6 +207,56 @@ describe('Users', () => {
         });
       });
     });
+
+    describe('동일한 userName 또는 email이 이미 존재한다면', () => {
+      let oldUser = { ...testUser1 };
+      let newUser = { ...testUser2 };
+
+      oldUser.username = 'SAME';
+      oldUser.email = 'same@same.com';
+
+      newUser.username = 'SAME';
+      newUser.email = 'same@same.com';
+
+      before(done => {
+        clearCollection(User, done);
+      });
+
+      before(done => {
+        User.create(oldUser)
+          .then(user => {
+            done();
+          })
+          .catch(err => {
+            console.err(err);
+            done();
+          });
+      });
+
+      after(done => {
+        clearCollection(User, done);
+      });
+
+      it('response로 403 error와 message를 받는다', done => {
+        chai
+          .request(server)
+          .post(API_URI + '/users')
+          .send(newUser)
+          .end((err, res) => {
+            res.should.have.status(403);
+            res.should.be.json;
+            res.body.should.have.property('message');
+            done();
+          });
+      });
+      it('DB에 회원정보가 없어야한다', done => {
+        User.findOne({ profileName: newUser.profileName }, (err, user) => {
+          should.not.exist(user);
+          should.not.exist(err);
+          done();
+        });
+      });
+    });
   });
 
   describe.skip('GET /users', () => {
