@@ -154,6 +154,43 @@ describe('Users', () => {
         });
       });
     });
+
+    describe('E-mail 형식이 틀렸다면', () => {
+      before(done => {
+        clearCollection(User, done);
+      });
+      after(done => {
+        clearCollection(User, done);
+      });
+
+      let carelessUser = {
+        userName: 'wronEmail',
+        profileName: 'mailMan',
+        email: 'THISisWRONGemail',
+        password: '1q2w3e4r5t@',
+        confirmPassword: '1q2w3e4r5t@',
+      };
+
+      it('response로 403 error와 message를 받는다', done => {
+        chai
+          .request(server)
+          .post(API_URI + '/users')
+          .send(carelessUser)
+          .end((err, res) => {
+            res.should.have.status(403);
+            res.should.be.json;
+            res.body.should.have.property('message');
+            done();
+          });
+      });
+      it('DB에 회원정보가 없어야한다', done => {
+        User.findOne({ userName: carelessUser.userName }, (err, user) => {
+          should.not.exist(user);
+          should.not.exist(err);
+          done();
+        });
+      });
+    });
   });
 
   describe.skip('GET /users', () => {
