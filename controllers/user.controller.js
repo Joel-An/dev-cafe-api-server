@@ -82,6 +82,15 @@ exports.register = wrapAsync(async (req, res) => {
     });
   }
 
+  const emailRule = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
+
+  if (!emailRule.test(email)) {
+    res.status(403);
+    return res.json({
+      message: '이메일 형식이 틀렸습니다.',
+    });
+  }
+
   let user = new User();
 
   user.userName = req.body.userName;
