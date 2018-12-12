@@ -1,3 +1,5 @@
+'use strict';
+
 const User = require('../models/user');
 const USER_MESSAGE = require('../constants/message').USER;
 
@@ -222,8 +224,8 @@ describe('Users', () => {
     });
 
     describe('동일한 userName 또는 email이 이미 존재한다면', () => {
-      let oldUser = { ...testUser1 };
-      let newUser = { ...testUser2 };
+      let oldUser = copyAndFreeze(testUser1);
+      let newUser = copyAndFreeze(testUser2);
 
       oldUser.username = 'SAME';
       oldUser.email = 'same@same.com';
