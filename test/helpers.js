@@ -16,8 +16,13 @@ const clearCollection = (Model, done) => {
   });
 };
 
+const copyAndFreeze = obj => {
+  return Object.preventExtensions({ ...obj });
+};
+
 global.chai = chai;
 global.should = should;
 global.server = server;
 global.API_URI = API_URI;
 global.clearCollection = clearCollection;
+global.copyAndFreeze = copyAndFreeze;
