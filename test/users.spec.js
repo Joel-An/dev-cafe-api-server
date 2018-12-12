@@ -1,5 +1,21 @@
 const User = require('../models/user');
 
+const testUser1 = {
+  userName: 'Bacon',
+  profileName: 'BaconPname',
+  email: 'bacon@gmail.com',
+  password: '1q2w3e4r5t@',
+  confirmPassword: '1q2w3e4r5t@',
+};
+
+const testUser2 = {
+  userName: 'tUser2',
+  profileName: 'user2pname',
+  email: 'user2@gmail.com',
+  password: '1q2w3e4r5t@',
+  confirmPassword: '1q2w3e4r5t@',
+};
+
 describe('Users', () => {
   describe('POST /users (회원가입)', () => {
     describe('회원가입에 성공하면', () => {
