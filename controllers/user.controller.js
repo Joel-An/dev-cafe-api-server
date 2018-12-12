@@ -2,6 +2,7 @@ const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const JwtSecretKey = require('../config/config').JwtSecretKey;
 const wrapAsync = require('../util/util').wrapAsync;
+const USER_MESSAGE = require('../constants/message').USER;
 
 exports.getUsers = (req, res) => {
   User.find({})
@@ -65,12 +66,12 @@ exports.register = wrapAsync(async (req, res) => {
 
   if (!userName || !profileName || !email || !password || !confirmPassword) {
     res.status(403);
-    return res.json({ message: '필수 항목을 입력하지 않았습니다.' });
+    return res.json({ message: USER_MESSAGE.ERROR.EMPTY_USERINFO });
   }
 
   if (password !== confirmPassword) {
     res.status(403);
-    return res.json({ message: '비밀번호가 일치하지 않습니다.' });
+    return res.json({ message: USER_MESSAGE.ERROR.WRONG_COMFIRM_PASSWORD });
   }
 
   const regex = /^.*(?=^.{8,20}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$\*%^&+=]).*$/;
@@ -78,7 +79,7 @@ exports.register = wrapAsync(async (req, res) => {
   if (!regex.test(password)) {
     res.status(403);
     return res.json({
-      message: '비밀번호는 8~20자리 알파벳,숫자,특수문자를 조합해야합니다.',
+      message: USER_MESSAGE.ERROR.INVALID_PASSWORD,
     });
   }
 
@@ -87,7 +88,7 @@ exports.register = wrapAsync(async (req, res) => {
   if (!emailRule.test(email)) {
     res.status(403);
     return res.json({
-      message: '이메일 형식이 틀렸습니다.',
+      message: USER_MESSAGE.ERROR.INVALID_EMAIL,
     });
   }
 
@@ -98,7 +99,7 @@ exports.register = wrapAsync(async (req, res) => {
   if (!!oldUser) {
     res.status(403);
     return res.json({
-      message: '동일한 username 또는 이메일이 존재합니다.',
+      message: USER_MESSAGE.ERROR.DUPLICATED_USERINFO,
     });
   }
 
