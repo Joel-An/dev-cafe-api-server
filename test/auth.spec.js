@@ -1,4 +1,6 @@
 'use strict';
+const AUTH_ERROR = require('../constants/message').AUTH.ERROR;
+
 describe('Auth', () => {
   const User = require('../models/user');
   let testUser1 = {
@@ -38,6 +40,87 @@ describe('Auth', () => {
           res.should.have.status(200);
           res.should.be.json;
           res.body.should.have.property('accessToken');
+          done();
+        });
+    });
+
+    it('존재하지 않는 유저라면 response로 403 error와 WRONG_USERNAME message를 받아야한다', done => {
+      let loginForm = {
+        userName: 'ImGuest',
+        password: testUser1.password,
+      };
+
+      chai
+        .request(server)
+        .post(API_URI + '/auth')
+        .send(loginForm)
+        .end((err, res) => {
+          res.should.have.status(403);
+          res.should.be.json;
+          res.body.should.have.property('message', AUTH_ERROR.WRONG_USERNAME);
+          done();
+        });
+    });
+
+    it('비밀번호가 잘못되었다면 response로 403 error와 WRONG_PASSWORD message를 받아야한다', done => {
+      let loginForm = {
+        userName: testUser1.userName,
+        password: 'wrongPassword',
+      };
+
+      chai
+        .request(server)
+        .post(API_URI + '/auth')
+        .send(loginForm)
+        .end((err, res) => {
+          res.should.have.status(403);
+          res.should.be.json;
+          res.body.should.have.property('message', AUTH_ERROR.WRONG_PASSWORD);
+          done();
+        });
+    });
+
+    it('사용자이름/비밀번호를 입력하지 않았다면 403 error와 EMPTY_LOGINFORM message를 받아야한다', done => {
+      let loginForm1 = {
+        userName: 'emptyPassword',
+        password: '',
+      };
+
+      let loginForm2 = {
+        userName: '',
+        password: 'emptyUsername',
+      };
+
+      let emptyPassword = chai
+        .request(server)
+        .post(API_URI + '/auth')
+        .send(loginForm1);
+
+      let emptyUsername = chai
+        .request(server)
+        .post(API_URI + '/auth')
+        .send(loginForm2);
+
+      Promise.all([emptyPassword, emptyUsername])
+        .then(results => {
+          let emptyPasswordResponse = results[0];
+          let emptyUsernameResponse = results[0];
+
+          emptyPasswordResponse.should.have.status(403);
+          emptyPasswordResponse.body.should.have.property(
+            'message',
+            AUTH_ERROR.EMPTY_LOGINFORM
+          );
+
+          emptyUsernameResponse.should.have.status(403);
+          emptyUsernameResponse.body.should.have.property(
+            'message',
+            AUTH_ERROR.EMPTY_LOGINFORM
+          );
+          done();
+        })
+        .catch(err => {
+          console.log(err);
           done();
         });
     });
