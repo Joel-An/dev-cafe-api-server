@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const userController = require('../../../controllers/user.controller');
 const postController = require('../../../controllers/post.controller');
+const authController = require('../../../controllers/auth.controller');
 
 router.get('/users', userController.getUsers);
 router.get('/users/:id', userController.getUserById);
@@ -12,7 +13,7 @@ router.get('/search/posts', postController.searchTitle);
 router.post('/upvote/posts/:id', postController.upvote);
 router.post('/downvote/posts/:id', postController.downvote);
 
-router.post('/auth/login', userController.login);
+router.post('/auth', authController.login);
 router.post('/users', userController.register);
 
 module.exports = router;

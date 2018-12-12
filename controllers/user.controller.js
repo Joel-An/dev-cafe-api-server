@@ -28,35 +28,6 @@ exports.getUserById = (req, res) => {
     });
 };
 
-exports.login = (req, res, next) => {
-  User.findOne({ email: req.body.email })
-    .then(user => {
-      if (!user.validPassword(req.body.password)) {
-        throw new Error('Password is not valid');
-      }
-
-      const payload = {
-        _id: user._id,
-        email: user.email,
-      };
-      const secretOrPrivateKey = JwtSecretKey;
-      const options = { expiresIn: 60 * 60 * 24 };
-
-      jwt.sign(payload, secretOrPrivateKey, options, (err, token) => {
-        if (err) {
-          throw err;
-        }
-
-        const result = { success: true, token: token };
-
-        res.json(result);
-      });
-    })
-    .catch(err => {
-      next(err);
-    });
-};
-
 exports.register = wrapAsync(async (req, res) => {
   let userName = req.body.userName;
   let profileName = req.body.profileName;
