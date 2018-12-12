@@ -29,13 +29,7 @@ describe('Users', () => {
         clearCollection(User, done);
       });
 
-      let testUser = {
-        userName: 'chris.P.bacon',
-        profileName: 'chris',
-        email: 'cpb@gmail.com',
-        password: '1q2w3e4r5t@',
-        confirmPassword: '1q2w3e4r5t@',
-      };
+      let testUser = copyAndFreeze(testUser1);
 
       it('response로 201 status, profileName, email을 받는다', done => {
         chai
@@ -276,9 +270,9 @@ describe('Users', () => {
       });
     });
 
-    describe('username에 하이픈(-) 을 제외한 특수문자가 있다면 ', () => {
-      let newUser = { ...testUser1 };
-      newUser.username = '!@#$%^&';
+    describe('username에 영어,숫자,하이픈(-) 을 제외한 특수문자가 있다면 ', () => {
+      let newUser = copyAndFreeze(testUser1);
+      newUser.userName = '!@#$%^&';
 
       before(done => {
         clearCollection(User, done);
