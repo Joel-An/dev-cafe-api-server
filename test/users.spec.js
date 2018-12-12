@@ -227,10 +227,10 @@ describe('Users', () => {
       let oldUser = copyAndFreeze(testUser1);
       let newUser = copyAndFreeze(testUser2);
 
-      oldUser.username = 'SAME';
+      oldUser.userName = 'SAME';
       oldUser.email = 'same@same.com';
 
-      newUser.username = 'SAME';
+      newUser.userName = 'SAME';
       newUser.email = 'same@same.com';
 
       before(done => {
@@ -269,6 +269,42 @@ describe('Users', () => {
       });
       it('DB에 회원정보가 없어야한다', done => {
         User.findOne({ profileName: newUser.profileName }, (err, user) => {
+          should.not.exist(user);
+          should.not.exist(err);
+          done();
+        });
+      });
+    });
+
+    describe('username에 하이픈(-) 을 제외한 특수문자가 있다면 ', () => {
+      let newUser = { ...testUser1 };
+      newUser.username = '!@#$%^&';
+
+      before(done => {
+        clearCollection(User, done);
+      });
+
+      after(done => {
+        clearCollection(User, done);
+      });
+
+      it('response로 403 error와 INVALID_USERNAME message를 받는다', done => {
+        chai
+          .request(server)
+          .post(API_URI + '/users')
+          .send(newUser)
+          .end((err, res) => {
+            res.should.have.status(403);
+            res.should.be.json;
+            res.body.should.have.property(
+              'message',
+              USER_MESSAGE.ERROR.INVALID_USERNAME
+            );
+            done();
+          });
+      });
+      it('DB에 회원정보가 없어야한다', done => {
+        User.findOne({ userName: newUser.userName }, (err, user) => {
           should.not.exist(user);
           should.not.exist(err);
           done();
