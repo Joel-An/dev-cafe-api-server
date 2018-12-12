@@ -305,6 +305,42 @@ describe('Users', () => {
         });
       });
     });
+
+    describe('profileName이 20자를 초과한다면', () => {
+      let newUser = copyAndFreeze(testUser1);
+      newUser.profileName = '123456789012345678901';
+
+      before(done => {
+        clearCollection(User, done);
+      });
+
+      after(done => {
+        clearCollection(User, done);
+      });
+
+      it('response로 403 error와 INVALID_PROFILENAME message를 받는다', done => {
+        chai
+          .request(server)
+          .post(API_URI + '/users')
+          .send(newUser)
+          .end((err, res) => {
+            res.should.have.status(403);
+            res.should.be.json;
+            res.body.should.have.property(
+              'message',
+              USER_MESSAGE.ERROR.INVALID_PROFILENAME
+            );
+            done();
+          });
+      });
+      it('DB에 회원정보가 없어야한다', done => {
+        User.findOne({ userName: newUser.userName }, (err, user) => {
+          should.not.exist(user);
+          should.not.exist(err);
+          done();
+        });
+      });
+    });
   });
 
   describe.skip('GET /users', () => {
