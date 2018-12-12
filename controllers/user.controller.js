@@ -74,6 +74,13 @@ exports.register = wrapAsync(async (req, res) => {
     return res.json({ message: USER_MESSAGE.ERROR.WRONG_COMFIRM_PASSWORD });
   }
 
+  if (profileName.length > 20) {
+    res.status(403);
+    return res.json({
+      message: USER_MESSAGE.ERROR.INVALID_PROFILENAME,
+    });
+  }
+
   const userNameRule = /^[a-zA-Z0-9-]{2,20}$/;
   if (!userNameRule.test(userName)) {
     res.status(403);
