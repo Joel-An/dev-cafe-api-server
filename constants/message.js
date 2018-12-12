@@ -16,6 +16,7 @@ const AUTH = {
   ERROR: {
     WRONG_USERNAME: '존재하지 않는 사용자이름/이메일입니다.',
     WRONG_PASSWORD: '비밀번호가 일치하지 않습니다.',
+    EMPTY_LOGINFORM: '사용자이름/비밀번호를 입력해주세요.',
   },
 };
 
