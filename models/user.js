@@ -13,7 +13,7 @@ const userSchema = new Schema({
 });
 
 // password를 암호화
-userSchema.method.generateHash = function (password) {
+userSchema.methods.generateHash = function (password) {
   return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
 };
 
