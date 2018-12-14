@@ -25,14 +25,13 @@ mongoose.connect(
   config.mongoDbUri,
   {
     useNewUrlParser: true,
-  }
+  },
 );
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'mongoDB connection error:'));
-if (process.env.NODE_ENV !== 'test')
-  db.once('open', () => console.log('Connected to mongodb Atlas'));
+if (process.env.NODE_ENV !== 'test') db.once('open', () => console.log('Connected to mongodb Atlas'));
 
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'content-type, x-access-token');
@@ -43,12 +42,12 @@ app.use('/api/v1', apiRouterV1);
 app.use('*', express.static(clientApp));
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use((err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
