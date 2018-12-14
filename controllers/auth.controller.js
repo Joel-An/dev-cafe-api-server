@@ -29,13 +29,17 @@ exports.login = wrapAsync(async (req, res) => {
   const secretOrPrivateKey = JwtSecretKey;
   const options = { expiresIn: 60 * 60 * 24 };
 
-  jwt.sign(payload, secretOrPrivateKey, options, (err, token) => {
-    if (err) {
-      throw err;
-    }
+  const getToken = new Promise((resolve, reject) => {
+    jwt.sign(payload, secretOrPrivateKey, options, (err, token) => {
+      if (err) {
+        reject(err);
+      }
 
-    const result = { accessToken: token };
-
-    res.json(result);
+      resolve(token);
+    });
   });
+
+  const accessToken = await getToken;
+
+  return res.json({ accessToken });
 });
