@@ -3,5 +3,6 @@ module.exports = {
   rules: {
     'linebreak-style': 0,
     'no-underscore-dangle': ['error', { allow: ['_id'] }],
+    'no-console': ['error', { allow: ['error'] }],
   },
 };

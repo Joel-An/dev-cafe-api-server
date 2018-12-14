@@ -113,7 +113,7 @@ describe('Auth', () => {
           done();
         })
         .catch((err) => {
-          console.log(err);
+          console.error(err);
           done();
         });
     });

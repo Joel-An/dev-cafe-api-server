@@ -218,11 +218,11 @@ describe('Users', () => {
 
       before((done) => {
         User.create(oldUser)
-          .then((user) => {
+          .then(() => {
             done();
           })
           .catch((err) => {
-            console.err(err);
+            console.error(err);
             done();
           });
       });
