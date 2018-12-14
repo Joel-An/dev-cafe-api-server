@@ -6,7 +6,6 @@ const logger = require('morgan');
 const mongoose = require('mongoose');
 const config = require('./config/config');
 
-const indexRouter = require('./routes/index');
 const apiRouterV1 = require('./routes/api/v1/index');
 
 const clientApp = path.join(__dirname, './public/App');
