@@ -1,6 +1,3 @@
-
-
-const User = require('../models/user');
 const USER_MESSAGE = require('../constants/message').USER;
 
 const testUser1 = {

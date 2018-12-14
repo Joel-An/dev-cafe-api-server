@@ -1,7 +1,6 @@
 const AUTH_ERROR = require('../constants/message').AUTH_MESSAGE.ERROR;
 
 describe('Auth', () => {
-  const User = require('../models/user');
   const testUser1 = {
     userName: 'Bacon',
     profileName: 'BaconPname',
