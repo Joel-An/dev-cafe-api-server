@@ -5,11 +5,11 @@ const USER_MESSAGE = require('../constants/message').USER;
 exports.getUsers = (req, res) => {
   User.find({})
     .lean()
-    .then(users => {
+    .then((users) => {
       res.setHeader('Content-Type', 'application/json');
       return res.json(users);
     })
-    .catch(err => {
+    .catch((err) => {
       throw err;
     });
 };
@@ -17,21 +17,21 @@ exports.getUsers = (req, res) => {
 exports.getUserById = (req, res) => {
   User.findById(req.params.id)
     .lean()
-    .then(user => {
+    .then((user) => {
       res.setHeader('Content-Type', 'application/json');
       return res.json(user);
     })
-    .catch(err => {
+    .catch((err) => {
       throw err;
     });
 };
 
 exports.register = wrapAsync(async (req, res) => {
-  let userName = req.body.userName;
-  let profileName = req.body.profileName;
-  let email = req.body.email;
-  let password = req.body.password;
-  let confirmPassword = req.body.confirmPassword;
+  const userName = req.body.userName;
+  const profileName = req.body.profileName;
+  const email = req.body.email;
+  const password = req.body.password;
+  const confirmPassword = req.body.confirmPassword;
 
   if (!userName || !profileName || !email || !password || !confirmPassword) {
     res.status(403);
@@ -76,25 +76,25 @@ exports.register = wrapAsync(async (req, res) => {
     });
   }
 
-  let oldUser = await User.findOne({
-    $or: [{ userName: userName }, { email: email }],
+  const oldUser = await User.findOne({
+    $or: [{ userName }, { email }],
   });
 
-  if (!!oldUser) {
+  if (oldUser) {
     res.status(403);
     return res.json({
       message: USER_MESSAGE.ERROR.DUPLICATED_USERINFO,
     });
   }
 
-  let user = new User();
+  const user = new User();
 
   user.userName = userName;
   user.profileName = profileName;
   user.email = email;
   user.password = user.generateHash(password);
 
-  await User.create(user).then(user => {
+  await User.create(user).then((user) => {
     res.status(201);
     res.json({ profileName: user.profileName, email: user.email });
   });

@@ -1,7 +1,8 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const mongoose = require('mongoose');
 
-var boardSchema = new Schema({
+const Schema = mongoose.Schema;
+
+const boardSchema = new Schema({
   nameKor: { type: String, required: true },
   nameEng: { type: String, required: true },
   boardType: {

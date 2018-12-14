@@ -2,6 +2,7 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+
 const should = chai.should();
 chai.use(chaiHttp);
 
@@ -10,15 +11,13 @@ const server = require('../bin/www');
 const API_URI = '/api/v1';
 
 const clearCollection = (Model, done) => {
-  Model.deleteMany({}, err => {
+  Model.deleteMany({}, (err) => {
     if (err) console.log(err);
     done();
   });
 };
 
-const copyAndFreeze = obj => {
-  return Object.preventExtensions({ ...obj });
-};
+const copyAndFreeze = obj => Object.preventExtensions({ ...obj });
 
 global.chai = chai;
 global.should = should;

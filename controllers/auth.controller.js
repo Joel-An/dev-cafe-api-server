@@ -1,5 +1,5 @@
-const User = require('../models/user');
 const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 const JwtSecretKey = require('../config/config').JwtSecretKey;
 const AUTH_MESSAGE = require('../constants/message').AUTH;
 
@@ -11,7 +11,7 @@ exports.login = wrapAsync(async (req, res) => {
     return res.json({ message: AUTH_MESSAGE.ERROR.EMPTY_LOGINFORM });
   }
 
-  let user = await User.findOne({ userName: req.body.userName });
+  const user = await User.findOne({ userName: req.body.userName });
   if (!user) {
     res.status(403);
     return res.json({ message: AUTH_MESSAGE.ERROR.WRONG_USERNAME });

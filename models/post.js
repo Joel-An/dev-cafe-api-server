@@ -1,8 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = mongoose.Schema.Types.ObjectId;
+const mongoose = require('mongoose');
 
-var postSchema = new Schema({
+const Schema = mongoose.Schema;
+const ObjectId = mongoose.Schema.Types.ObjectId;
+
+const postSchema = new Schema({
   boardInfo: {
     _id: { type: ObjectId, ref: 'Board' },
     nameEng: { type: String },
@@ -25,7 +26,7 @@ var postSchema = new Schema({
   downVotes: { type: Number, default: 0 },
 });
 
-postSchema.methods.isValidAuthor = function(id) {
+postSchema.methods.isValidAuthor = function (id) {
   return this.authorInfo._id.equals(id);
 };
 

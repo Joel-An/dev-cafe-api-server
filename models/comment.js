@@ -1,8 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = mongoose.Schema.Types.ObjectId;
+const mongoose = require('mongoose');
 
-var commentSchema = new Schema({
+const Schema = mongoose.Schema;
+const ObjectId = mongoose.Schema.Types.ObjectId;
+
+const commentSchema = new Schema({
   postInfo: { type: ObjectId, ref: 'Post' },
 
   contents: { type: String, required: true },
@@ -22,7 +23,7 @@ var commentSchema = new Schema({
   isDeleted: { type: Boolean, default: false },
 });
 
-commentSchema.methods.isValidAuthor = function(id) {
+commentSchema.methods.isValidAuthor = function (id) {
   return this.authorInfo._id.equals(id);
 };
 
