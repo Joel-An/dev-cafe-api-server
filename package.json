@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www",
+    "start": "cross-env NODE_ENV=development nodemon ./bin/www",
     "test": "mocha --require ./test/helpers.js ./test/*.spec.js --timeout 10000 --exit"
   },
   "dependencies": {
@@ -20,6 +20,7 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-http": "^4.2.0",
+    "cross-env": "^5.2.0",
     "eslint": "^5.10.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
