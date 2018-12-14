@@ -1,6 +1,7 @@
+/* eslint-disable func-names */
 const mongoose = require('mongoose');
 
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
 const bcrypt = require('bcrypt-nodejs');
 
 const userSchema = new Schema({
@@ -12,7 +13,7 @@ const userSchema = new Schema({
 });
 
 // password를 암호화
-userSchema.methods.generateHash = function (password) {
+userSchema.method.generateHash = function (password) {
   return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
 };
 
