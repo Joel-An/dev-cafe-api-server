@@ -1,5 +1,5 @@
 const User = require('../models/user');
-const wrapAsync = require('../util/util').wrapAsync;
+const { wrapAsync } = require('../util/util');
 const USER_MESSAGE = require('../constants/message').USER;
 
 exports.getUsers = (req, res) => {
@@ -27,11 +27,9 @@ exports.getUserById = (req, res) => {
 };
 
 exports.register = wrapAsync(async (req, res) => {
-  const userName = req.body.userName;
-  const profileName = req.body.profileName;
-  const email = req.body.email;
-  const password = req.body.password;
-  const confirmPassword = req.body.confirmPassword;
+  const {
+    userName, profileName, email, password, confirmPassword,
+  } = { ...req.body };
 
   if (!userName || !profileName || !email || !password || !confirmPassword) {
     res.status(403);
@@ -58,7 +56,7 @@ exports.register = wrapAsync(async (req, res) => {
     });
   }
 
-  const regex = /^.*(?=^.{8,20}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$\*%^&+=]).*$/;
+  const regex = /^.*(?=^.{8,20}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$*%^&+=]).*$/;
 
   if (!regex.test(password)) {
     res.status(403);
@@ -94,8 +92,8 @@ exports.register = wrapAsync(async (req, res) => {
   user.email = email;
   user.password = user.generateHash(password);
 
-  await User.create(user).then((user) => {
-    res.status(201);
-    res.json({ profileName: user.profileName, email: user.email });
-  });
+  await user.save();
+
+  res.status(201);
+  return res.json({ profileName: user.profileName, email: user.email });
 });
