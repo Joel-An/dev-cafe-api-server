@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const JwtSecretKey = require('../config/config').JwtSecretKey;
-const AUTH_MESSAGE = require('../constants/message').AUTH;
+const { JwtSecretKey } = require('../config/config');
+const { AUTH_MESSAGE } = require('../constants/message');
 
-const wrapAsync = require('../util/util').wrapAsync;
+const { wrapAsync } = require('../util/util');
 
 exports.login = wrapAsync(async (req, res) => {
   if (!req.body.userName || !req.body.password) {

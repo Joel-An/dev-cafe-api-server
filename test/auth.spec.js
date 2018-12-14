@@ -1,5 +1,4 @@
-
-const AUTH_ERROR = require('../constants/message').AUTH.ERROR;
+const AUTH_ERROR = require('../constants/message').AUTH_MESSAGE.ERROR;
 
 describe('Auth', () => {
   const User = require('../models/user');
