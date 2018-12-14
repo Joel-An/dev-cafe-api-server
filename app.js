@@ -1,3 +1,4 @@
+/* eslint-disable*/
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
@@ -28,7 +29,8 @@ mongoose.connect(
 );
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'mongoDB connection error:'));
-if (process.env.NODE_ENV !== 'test') db.once('open', () => console.log('Connected to mongodb Atlas'));
+if (process.env.NODE_ENV !== 'test')
+  db.once('open', () => console.log('Connected to mongodb Atlas'));
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -48,7 +50,7 @@ app.use((req, res, next) => {
 // error handler
 app.use((err, req, res, next) => {
   // print error in development
-  if (process.env.NODE_ENV === 'development') console.log(err);
+  if (process.env.NODE_ENV === 'development') console.error(err);
 
   // set locals, only providing error in development
   res.locals.message = err.message;
