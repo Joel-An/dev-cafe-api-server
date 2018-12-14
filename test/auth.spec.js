@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-expressions */
+/* eslint-disable no-undef */
 const AUTH_ERROR = require('../constants/message').AUTH_MESSAGE.ERROR;
 
 describe('Auth', () => {

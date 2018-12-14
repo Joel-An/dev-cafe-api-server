@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-expressions */
+/* eslint-disable no-undef */
 const USER_MESSAGE = require('../constants/message').USER;
 
 const testUser1 = {
