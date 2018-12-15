@@ -321,6 +321,84 @@ describe('Users', () => {
     });
   });
 
+  describe('DELETE /users/me (회원탈퇴)', () => {
+    const testUser = copyAndFreeze(USER_ARRAY[0]);
+    let token;
+
+    beforeEach((done) => {
+      // 회원가입
+      chai
+        .request(server)
+        .post(`${API_URI}/users`)
+        .send(testUser)
+        .end((err, res) => {
+          res.should.have.status(201);
+          done();
+        });
+    });
+
+    beforeEach((done) => {
+      // 로그인
+      chai
+        .request(server)
+        .post(`${API_URI}/auth`)
+        .send({ userName: testUser.userName, password: testUser.password })
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.have.property('accessToken');
+          token = res.body.accessToken;
+          done();
+        });
+    });
+    afterEach((done) => {
+      clearCollection(User, done);
+    });
+    context('성공하면', () => {
+      it('204코드를 받고 DB에 회원정보가 없어야한다', async () => {
+        const res = await chai
+          .request(server)
+          .delete(`${API_URI}/users/me`)
+          .set('x-access-token', token)
+          .send({ password: testUser.password });
+
+        res.should.have.status(204);
+
+        const user = await User.findOne({ userName: testUser.userName });
+        should.not.exist(user);
+      });
+    });
+
+    context('토큰이 불량이라면', () => {
+      it('403 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
+        token = 'WRONG_TOKEN';
+        const res = await chai
+          .request(server)
+          .delete(`${API_URI}/users/me`)
+          .set('x-access-token', token)
+          .send({ password: testUser.password });
+
+        res.should.have.status(403);
+
+        const user = await User.findOne({ userName: testUser.userName });
+        should.exist(user);
+      });
+    });
+    context('비밀번호가 다르면', () => {
+      it('403 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
+        const res = await chai
+          .request(server)
+          .delete(`${API_URI}/users/me`)
+          .set('x-access-token', token)
+          .send({ password: 'WRONG_PASSWORD' });
+
+        res.should.have.status(403);
+
+        const user = await User.findOne({ userName: testUser.userName });
+        should.exist(user);
+      });
+    });
+  });
+
   describe.skip('GET /users', () => {
     it('it should GET all users', (done) => {
       chai
