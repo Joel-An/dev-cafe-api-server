@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+const { JwtSecretKey } = require('../config/config');
 const User = require('../models/user');
 const { wrapAsync } = require('../util/util');
 const USER_MESSAGE = require('../constants/message').USER;
@@ -96,4 +98,42 @@ exports.register = wrapAsync(async (req, res) => {
 
   res.status(201);
   return res.json({ profileName: user.profileName, email: user.email });
+});
+
+exports.unregister = wrapAsync(async (req, res) => {
+  const accessToken = req.get('x-access-token');
+  const { password } = req.body;
+
+  if (!accessToken || !password) {
+    res.status(403);
+    return res.json({ message: '인증에 실패했습니다.' });
+  }
+
+  const getDecoded = new Promise((resolve, reject) => {
+    jwt.verify(accessToken, JwtSecretKey, (err, token) => {
+      if (err) {
+        reject(err);
+      }
+
+      resolve(token);
+    });
+  });
+  const decoded = await getDecoded.catch((err) => {
+    // eslint-disable-next-line no-param-reassign
+    err.message = '토큰이 유효하지 않습니다.';
+    // eslint-disable-next-line no-param-reassign
+    err.status = 403;
+    throw err;
+  });
+
+  const user = await User.findById(decoded._id);
+
+  if (!user.validPassword(password)) {
+    res.status(403);
+    return res.json({ message: '비밀번호가 다릅니다.' });
+  }
+
+  await User.findByIdAndDelete(decoded._id);
+  res.status(204);
+  return res.end();
 });

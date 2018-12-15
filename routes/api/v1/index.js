@@ -16,4 +16,6 @@ router.post('/downvote/posts/:id', postController.downvote);
 router.post('/auth', authController.login);
 router.post('/users', userController.register);
 
+router.delete('/users/me', userController.unregister);
+
 module.exports = router;
