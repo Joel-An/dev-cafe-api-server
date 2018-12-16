@@ -391,6 +391,38 @@ describe('Users', () => {
       });
     });
 
+    context('토큰이 없으면', () => {
+      it('401 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
+        const emptyToken = '';
+        const res = await chai
+          .request(server)
+          .delete(`${API_URI}/users/me`)
+          .set('x-access-token', emptyToken)
+          .send({ password: testUser.password });
+
+        res.should.have.status(401);
+
+        const user = await User.findOne({ userName: testUser.userName });
+        should.exist(user);
+      });
+    });
+
+    context('비밀번호가 없으면', () => {
+      it('400 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
+        const emptyPassword = '';
+        const res = await chai
+          .request(server)
+          .delete(`${API_URI}/users/me`)
+          .set('x-access-token', token)
+          .send({ password: emptyPassword });
+
+        res.should.have.status(400);
+
+        const user = await User.findOne({ userName: testUser.userName });
+        should.exist(user);
+      });
+    });
+
     context('토큰이 불량이라면', () => {
       it('403 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
         token = 'WRONG_TOKEN';
