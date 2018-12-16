@@ -20,16 +20,12 @@ class TokenManager {
     instance = this;
   }
 
-  setPayload(id, email) {
-    this.payload._id = id;
-    this.payload.email = email;
-  }
-
-  signToken(_id, email) {
+  signToken(_id, email, options) {
     const payload = { ...this.payload, _id, email };
+    const signOptions = options || this.signOptions;
 
     return new Promise((resolve, reject) => {
-      this.jwt.sign(payload, this.JwtSecretKey, this.signOptions, (err, token) => {
+      this.jwt.sign(payload, this.JwtSecretKey, signOptions, (err, token) => {
         if (err) {
           reject(err);
         }
