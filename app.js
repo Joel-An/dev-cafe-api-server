@@ -9,7 +9,7 @@ const config = require('./config/config');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerSpec');
 
-const apiRouterV1 = require('./routes/api/v1/index');
+const apiRouterV1 = require('./routes/api/v1');
 
 const clientApp = path.join(__dirname, './public/App');
 const app = express();
