@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
 const { USER_ERR } = require('../constants/message');
+const TokenManager = require('../util/token');
 
 const testUser1 = {
   userName: 'Bacon',
@@ -438,6 +439,28 @@ describe('Users', () => {
         should.exist(user);
       });
     });
+
+    context('토큰이 만료되었다면', () => {
+      it('401 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
+        const tokenManager = new TokenManager();
+        const decoded = await tokenManager.decodeToken(token);
+        const expiredToken = await tokenManager.signImmediatelyExpiredToken(
+          decoded._id,
+          decoded.email,
+        );
+        const res = await chai
+          .request(server)
+          .delete(`${API_URI}/users/me`)
+          .set('x-access-token', expiredToken)
+          .send({ password: testUser.password });
+
+        res.should.have.status(401);
+
+        const user = await User.findOne({ userName: testUser.userName });
+        should.exist(user);
+      });
+    });
+
     context('비밀번호가 다르면', () => {
       it('403 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
         const res = await chai

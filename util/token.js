@@ -46,6 +46,12 @@ class TokenManager {
       });
     });
   }
+
+  signImmediatelyExpiredToken(_id, email) {
+    const options = { ...this.signOptions, expiresIn: '300' };
+
+    return this.signToken(_id, email, options);
+  }
 }
 
 module.exports = TokenManager;
