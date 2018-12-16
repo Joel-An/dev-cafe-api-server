@@ -4,7 +4,7 @@ const User = require('../models/user');
 const { wrapAsync, isEmptyInput, regex } = require('../util/util');
 
 const { userNameRule, passwordRule, emailRule } = regex;
-const USER_MESSAGE = require('../constants/message').USER;
+const { USER_ERR } = require('../constants/message');
 
 exports.getUsers = (req, res) => {
   User.find({})
@@ -37,39 +37,39 @@ exports.register = wrapAsync(async (req, res) => {
 
   if (isEmptyInput(userName, profileName, email, password, confirmPassword)) {
     res.status(403);
-    return res.json({ message: USER_MESSAGE.ERROR.EMPTY_USERINFO });
+    return res.json({ message: USER_ERR.EMPTY_USERINFO });
   }
 
   if (password !== confirmPassword) {
     res.status(403);
-    return res.json({ message: USER_MESSAGE.ERROR.WRONG_COMFIRM_PASSWORD });
+    return res.json({ message: USER_ERR.WRONG_COMFIRM_PASSWORD });
   }
 
   if (profileName.length > 20) {
     res.status(403);
     return res.json({
-      message: USER_MESSAGE.ERROR.INVALID_PROFILENAME,
+      message: USER_ERR.INVALID_PROFILENAME,
     });
   }
 
   if (!userNameRule.test(userName)) {
     res.status(403);
     return res.json({
-      message: USER_MESSAGE.ERROR.INVALID_USERNAME,
+      message: USER_ERR.INVALID_USERNAME,
     });
   }
 
   if (!passwordRule.test(password)) {
     res.status(403);
     return res.json({
-      message: USER_MESSAGE.ERROR.INVALID_PASSWORD,
+      message: USER_ERR.INVALID_PASSWORD,
     });
   }
 
   if (!emailRule.test(email)) {
     res.status(403);
     return res.json({
-      message: USER_MESSAGE.ERROR.INVALID_EMAIL,
+      message: USER_ERR.INVALID_EMAIL,
     });
   }
 
@@ -80,7 +80,7 @@ exports.register = wrapAsync(async (req, res) => {
   if (oldUser) {
     res.status(403);
     return res.json({
-      message: USER_MESSAGE.ERROR.DUPLICATED_USERINFO,
+      message: USER_ERR.DUPLICATED_USERINFO,
     });
   }
 

@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { JwtSecretKey } = require('../config/config');
-const { AUTH_MESSAGE } = require('../constants/message');
+const { AUTH_ERR } = require('../constants/message');
 
 const { wrapAsync, isEmptyInput } = require('../util/util');
 
@@ -10,18 +10,18 @@ exports.login = wrapAsync(async (req, res) => {
 
   if (isEmptyInput(userName, password)) {
     res.status(403);
-    return res.json({ message: AUTH_MESSAGE.ERROR.EMPTY_LOGINFORM });
+    return res.json({ message: AUTH_ERR.EMPTY_LOGINFORM });
   }
 
   const user = await User.findOne({ userName });
   if (!user) {
     res.status(403);
-    return res.json({ message: AUTH_MESSAGE.ERROR.WRONG_USERNAME });
+    return res.json({ message: AUTH_ERR.WRONG_USERNAME });
   }
 
   if (!user.validPassword(password)) {
     res.status(403);
-    return res.json({ message: AUTH_MESSAGE.ERROR.WRONG_PASSWORD });
+    return res.json({ message: AUTH_ERR.WRONG_PASSWORD });
   }
 
   const payload = {

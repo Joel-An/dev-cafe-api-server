@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
-const AUTH_ERROR = require('../constants/message').AUTH_MESSAGE.ERROR;
+const { AUTH_ERR } = require('../constants/message');
 
 describe('Auth', () => {
   const testUser1 = {
@@ -58,7 +58,7 @@ describe('Auth', () => {
         .end((err, res) => {
           res.should.have.status(403);
           res.should.be.json;
-          res.body.should.have.property('message', AUTH_ERROR.WRONG_USERNAME);
+          res.body.should.have.property('message', AUTH_ERR.WRONG_USERNAME);
           done();
         });
     });
@@ -76,7 +76,7 @@ describe('Auth', () => {
         .end((err, res) => {
           res.should.have.status(403);
           res.should.be.json;
-          res.body.should.have.property('message', AUTH_ERROR.WRONG_PASSWORD);
+          res.body.should.have.property('message', AUTH_ERR.WRONG_PASSWORD);
           done();
         });
     });
@@ -108,10 +108,10 @@ describe('Auth', () => {
           const emptyUsernameResponse = results[0];
 
           emptyPasswordResponse.should.have.status(403);
-          emptyPasswordResponse.body.should.have.property('message', AUTH_ERROR.EMPTY_LOGINFORM);
+          emptyPasswordResponse.body.should.have.property('message', AUTH_ERR.EMPTY_LOGINFORM);
 
           emptyUsernameResponse.should.have.status(403);
-          emptyUsernameResponse.body.should.have.property('message', AUTH_ERROR.EMPTY_LOGINFORM);
+          emptyUsernameResponse.body.should.have.property('message', AUTH_ERR.EMPTY_LOGINFORM);
           done();
         })
         .catch((err) => {

@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
-const USER_MESSAGE = require('../constants/message').USER;
+const { USER_ERR } = require('../constants/message');
 
 const testUser1 = {
   userName: 'Bacon',
@@ -80,7 +80,7 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message', USER_MESSAGE.ERROR.WRONG_COMFIRM_PASSWORD);
+            res.body.should.have.property('message', USER_ERR.WRONG_COMFIRM_PASSWORD);
             done();
           });
       });
@@ -117,7 +117,7 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message', USER_MESSAGE.ERROR.INVALID_PASSWORD);
+            res.body.should.have.property('message', USER_ERR.INVALID_PASSWORD);
             done();
           });
       });
@@ -154,7 +154,7 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message', USER_MESSAGE.ERROR.EMPTY_USERINFO);
+            res.body.should.have.property('message', USER_ERR.EMPTY_USERINFO);
             done();
           });
       });
@@ -191,7 +191,7 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message', USER_MESSAGE.ERROR.INVALID_EMAIL);
+            res.body.should.have.property('message', USER_ERR.INVALID_EMAIL);
             done();
           });
       });
@@ -241,7 +241,7 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message', USER_MESSAGE.ERROR.DUPLICATED_USERINFO);
+            res.body.should.have.property('message', USER_ERR.DUPLICATED_USERINFO);
             done();
           });
       });
@@ -274,7 +274,7 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message', USER_MESSAGE.ERROR.INVALID_USERNAME);
+            res.body.should.have.property('message', USER_ERR.INVALID_USERNAME);
             done();
           });
       });
@@ -307,7 +307,7 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message', USER_MESSAGE.ERROR.INVALID_PROFILENAME);
+            res.body.should.have.property('message', USER_ERR.INVALID_PROFILENAME);
             done();
           });
       });
