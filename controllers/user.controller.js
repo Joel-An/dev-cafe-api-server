@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
 const { JwtSecretKey } = require('../config/config');
 const User = require('../models/user');
-const { wrapAsync, isEmptyInput } = require('../util/util');
+const { wrapAsync, isEmptyInput, regex } = require('../util/util');
+
+const { userNameRule, passwordRule, emailRule } = regex;
 const USER_MESSAGE = require('../constants/message').USER;
 
 exports.getUsers = (req, res) => {
@@ -50,7 +52,6 @@ exports.register = wrapAsync(async (req, res) => {
     });
   }
 
-  const userNameRule = /^[a-zA-Z0-9-]{2,20}$/;
   if (!userNameRule.test(userName)) {
     res.status(403);
     return res.json({
@@ -58,16 +59,12 @@ exports.register = wrapAsync(async (req, res) => {
     });
   }
 
-  const regex = /^.*(?=^.{8,20}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$*%^&+=]).*$/;
-
-  if (!regex.test(password)) {
+  if (!passwordRule.test(password)) {
     res.status(403);
     return res.json({
       message: USER_MESSAGE.ERROR.INVALID_PASSWORD,
     });
   }
-
-  const emailRule = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
 
   if (!emailRule.test(email)) {
     res.status(403);
