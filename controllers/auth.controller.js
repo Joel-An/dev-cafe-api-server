@@ -3,12 +3,12 @@ const User = require('../models/user');
 const { JwtSecretKey } = require('../config/config');
 const { AUTH_MESSAGE } = require('../constants/message');
 
-const { wrapAsync } = require('../util/util');
+const { wrapAsync, isEmptyInput } = require('../util/util');
 
 exports.login = wrapAsync(async (req, res) => {
   const { userName, password } = req.body;
 
-  if (!userName || !password) {
+  if (isEmptyInput(userName, password)) {
     res.status(403);
     return res.json({ message: AUTH_MESSAGE.ERROR.EMPTY_LOGINFORM });
   }

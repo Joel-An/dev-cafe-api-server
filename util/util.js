@@ -6,3 +6,12 @@ exports.wrapAsync = function (fn) {
     fn(req, res, next).catch(next);
   };
 };
+
+exports.isEmptyInput = (...args) => {
+  for (let i = 0; i < args.length; i += 1) {
+    if (typeof args[i] !== 'string') throw new Error('문자열만 입력해주세요.');
+    if (!args[i].length || !args[i].trim()) return true;
+  }
+
+  return false;
+};

@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { JwtSecretKey } = require('../config/config');
 const User = require('../models/user');
-const { wrapAsync } = require('../util/util');
+const { wrapAsync, isEmptyInput } = require('../util/util');
 const USER_MESSAGE = require('../constants/message').USER;
 
 exports.getUsers = (req, res) => {
@@ -33,7 +33,7 @@ exports.register = wrapAsync(async (req, res) => {
     userName, profileName, email, password, confirmPassword,
   } = { ...req.body };
 
-  if (!userName || !profileName || !email || !password || !confirmPassword) {
+  if (isEmptyInput(userName, profileName, email, password, confirmPassword)) {
     res.status(403);
     return res.json({ message: USER_MESSAGE.ERROR.EMPTY_USERINFO });
   }
