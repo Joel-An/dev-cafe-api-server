@@ -368,6 +368,29 @@ describe('Users', () => {
       });
     });
 
+    context('탈퇴성공후 재요청하면', () => {
+      it('404코드를 받고 DB에 회원정보가 없어야한다', async () => {
+        const firstResponse = await chai
+          .request(server)
+          .delete(`${API_URI}/users/me`)
+          .set('x-access-token', token)
+          .send({ password: testUser.password });
+
+        firstResponse.should.have.status(204);
+
+        const SecondResponse = await chai
+          .request(server)
+          .delete(`${API_URI}/users/me`)
+          .set('x-access-token', token)
+          .send({ password: testUser.password });
+
+        SecondResponse.should.have.status(404);
+
+        const user = await User.findOne({ userName: testUser.userName });
+        should.not.exist(user);
+      });
+    });
+
     context('토큰이 불량이라면', () => {
       it('403 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
         token = 'WRONG_TOKEN';
