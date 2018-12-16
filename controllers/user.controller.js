@@ -124,7 +124,7 @@ exports.unregister = wrapAsync(async (req, res) => {
     // eslint-disable-next-line no-param-reassign
     err.message = '토큰이 유효하지 않습니다.';
     // eslint-disable-next-line no-param-reassign
-    err.status = 403;
+    err.status = 401;
     throw err;
   });
 
