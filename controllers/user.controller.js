@@ -1,5 +1,4 @@
-const jwt = require('jsonwebtoken');
-const { JwtSecretKey } = require('../config/config');
+const TokenManager = require('../util/token');
 const User = require('../models/user');
 const { wrapAsync, isEmptyInput, regex } = require('../util/util');
 
@@ -111,15 +110,9 @@ exports.unregister = wrapAsync(async (req, res) => {
     return res.json({ message: '회원탈퇴에는 비밀번호가 필요합니다.' });
   }
 
-  const getDecoded = new Promise((resolve, reject) => {
-    jwt.verify(accessToken, JwtSecretKey, (err, token) => {
-      if (err) {
-        reject(err);
-      }
+  const tokenManager = new TokenManager();
+  const getDecoded = tokenManager.decodeToken(accessToken);
 
-      resolve(token);
-    });
-  });
   const decoded = await getDecoded.catch((err) => {
     // eslint-disable-next-line no-param-reassign
     err.message = '토큰이 유효하지 않습니다.';

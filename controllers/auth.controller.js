@@ -1,6 +1,5 @@
-const jwt = require('jsonwebtoken');
+const TokenManager = require('../util/token');
 const User = require('../models/user');
-const { JwtSecretKey } = require('../config/config');
 const { AUTH_ERR } = require('../constants/message');
 
 const { wrapAsync, isEmptyInput } = require('../util/util');
@@ -24,22 +23,8 @@ exports.login = wrapAsync(async (req, res) => {
     return res.json({ message: AUTH_ERR.WRONG_PASSWORD });
   }
 
-  const payload = {
-    _id: user._id,
-    email: user.email,
-  };
-  const secretOrPrivateKey = JwtSecretKey;
-  const options = { expiresIn: 60 * 60 * 24 };
-
-  const getToken = new Promise((resolve, reject) => {
-    jwt.sign(payload, secretOrPrivateKey, options, (err, token) => {
-      if (err) {
-        reject(err);
-      }
-
-      resolve(token);
-    });
-  });
+  const tokenManager = new TokenManager();
+  const getToken = tokenManager.signToken(user._id, user.email);
 
   const accessToken = await getToken;
 
