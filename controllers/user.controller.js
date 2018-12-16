@@ -125,6 +125,11 @@ exports.unregister = wrapAsync(async (req, res) => {
 
   const user = await User.findById(decoded._id);
 
+  if (!user) {
+    res.status(404);
+    return res.json({ message: '존재하지 않는 사용자입니다.' });
+  }
+
   if (!user.validPassword(password)) {
     res.status(403);
     return res.json({ message: '비밀번호가 다릅니다.' });
