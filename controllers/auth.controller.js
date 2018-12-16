@@ -6,18 +6,20 @@ const { AUTH_MESSAGE } = require('../constants/message');
 const { wrapAsync } = require('../util/util');
 
 exports.login = wrapAsync(async (req, res) => {
-  if (!req.body.userName || !req.body.password) {
+  const { userName, password } = req.body;
+
+  if (!userName || !password) {
     res.status(403);
     return res.json({ message: AUTH_MESSAGE.ERROR.EMPTY_LOGINFORM });
   }
 
-  const user = await User.findOne({ userName: req.body.userName });
+  const user = await User.findOne({ userName });
   if (!user) {
     res.status(403);
     return res.json({ message: AUTH_MESSAGE.ERROR.WRONG_USERNAME });
   }
 
-  if (!user.validPassword(req.body.password)) {
+  if (!user.validPassword(password)) {
     res.status(403);
     return res.json({ message: AUTH_MESSAGE.ERROR.WRONG_PASSWORD });
   }
