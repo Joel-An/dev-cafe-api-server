@@ -1,3 +1,29 @@
+/**
+ * @swagger
+ *
+ * /auth:
+ *   post:
+ *     summary: Login
+ *     tags:
+ *       - AUTH
+ *     description: Login to the application
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userName
+ *         description: Username to use for login.
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: password
+ *         description: User's password.
+ *         in: formData
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: login
+ */
 const router = require('express').Router();
 const userController = require('../../../controllers/user.controller');
 const postController = require('../../../controllers/post.controller');

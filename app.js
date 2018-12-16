@@ -6,6 +6,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
 const config = require('./config/config');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swaggerSpec');
 
 const apiRouterV1 = require('./routes/api/v1/index');
 
@@ -39,6 +41,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/v1', apiRouterV1);
 app.use('*', express.static(clientApp));
 
