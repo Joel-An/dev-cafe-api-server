@@ -6,7 +6,12 @@ module.exports = {
     'no-console': ['error', { allow: ['error'] }],
     'max-len': [
       'error',
-      { code: 80, ignoreUrls: true, ignoreRegExpLiterals: true },
+      {
+        code: 80,
+        ignoreUrls: true,
+        ignoreRegExpLiterals: true,
+        ignoreStrings: true,
+      },
     ],
     'comma-dangle': [
       'error',
