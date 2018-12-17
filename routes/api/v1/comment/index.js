@@ -1,9 +1,9 @@
 const commentRouter = require('express').Router();
-const commentController = require('../../../../controllers/comment.controller');
+const comments = require('../../../../controllers/comments');
 /*
  *      /api/v1/comments'
  */
 
-commentRouter.get('/', commentController.getComments);
+commentRouter.get('/', comments.getComments);
 
 module.exports = commentRouter;
