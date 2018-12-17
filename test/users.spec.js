@@ -333,7 +333,7 @@ describe('Users', () => {
 
   describe('DELETE /users/me (회원탈퇴)', () => {
     const testUser = copyAndFreeze(USER_ARRAY[0]);
-    let token;
+    let validToken;
 
     // 회원 탈퇴 요청 (토큰, 비밀번호)
     const requestUnregister = (userToken, password) => chai
@@ -365,7 +365,7 @@ describe('Users', () => {
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.have.property('accessToken');
-          token = res.body.accessToken;
+          validToken = res.body.accessToken;
           done();
         });
     });
@@ -374,7 +374,7 @@ describe('Users', () => {
     });
     context('성공하면', () => {
       it('204코드를 받고 DB에 회원정보가 없어야한다', async () => {
-        const res = await requestUnregister(token, testUser.password);
+        const res = await requestUnregister(validToken, testUser.password);
 
         res.should.have.status(204);
 
@@ -385,11 +385,14 @@ describe('Users', () => {
 
     context('탈퇴성공후 재요청하면', () => {
       it('404코드를 받고 DB에 회원정보가 없어야한다', async () => {
-        const firstResponse = await requestUnregister(token, testUser.password);
+        const firstResponse = await requestUnregister(
+          validToken,
+          testUser.password
+        );
         firstResponse.should.have.status(204);
 
         const SecondResponse = await requestUnregister(
-          token,
+          validToken,
           testUser.password
         );
         SecondResponse.should.have.status(404);
@@ -414,7 +417,7 @@ describe('Users', () => {
     context('비밀번호가 없으면', () => {
       it('400 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
         const emptyPassword = '';
-        const res = await requestUnregister(token, emptyPassword);
+        const res = await requestUnregister(validToken, emptyPassword);
 
         res.should.have.status(400);
 
@@ -438,7 +441,7 @@ describe('Users', () => {
     context('토큰이 만료되었다면', () => {
       it('401 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
         const tokenManager = new TokenManager();
-        const decoded = await tokenManager.decodeToken(token);
+        const decoded = await tokenManager.decodeToken(validToken);
         const expiredToken = await tokenManager.signImmediatelyExpiredToken(
           decoded._id,
           decoded.email
@@ -454,7 +457,7 @@ describe('Users', () => {
 
     context('비밀번호가 다르면', () => {
       it('403 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
-        const res = await requestUnregister(token, 'WRONG_PASSWORD');
+        const res = await requestUnregister(validToken, 'WRONG_PASSWORD');
 
         res.should.have.status(403);
 
