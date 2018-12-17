@@ -333,6 +333,8 @@ describe('Users', () => {
       .set('x-access-token', userToken)
       .send({ password });
 
+    const findUserByUsername = userName => User.findOne({ userName }).catch(err => shoud.not.exist(err));
+
     beforeEach((done) => {
       // 회원가입
       chai
@@ -367,7 +369,7 @@ describe('Users', () => {
 
         res.should.have.status(204);
 
-        const user = await User.findOne({ userName: testUser.userName });
+        const user = await findUserByUsername(testUser.userName);
         should.not.exist(user);
       });
     });
@@ -380,7 +382,7 @@ describe('Users', () => {
         const SecondResponse = await requestUnregister(token, testUser.password);
         SecondResponse.should.have.status(404);
 
-        const user = await User.findOne({ userName: testUser.userName });
+        const user = await findUserByUsername(testUser.userName);
         should.not.exist(user);
       });
     });
@@ -392,7 +394,7 @@ describe('Users', () => {
 
         res.should.have.status(401);
 
-        const user = await User.findOne({ userName: testUser.userName });
+        const user = await findUserByUsername(testUser.userName);
         should.exist(user);
       });
     });
@@ -404,7 +406,7 @@ describe('Users', () => {
 
         res.should.have.status(400);
 
-        const user = await User.findOne({ userName: testUser.userName });
+        const user = await findUserByUsername(testUser.userName);
         should.exist(user);
       });
     });
@@ -416,7 +418,7 @@ describe('Users', () => {
 
         res.should.have.status(401);
 
-        const user = await User.findOne({ userName: testUser.userName });
+        const user = await findUserByUsername(testUser.userName);
         should.exist(user);
       });
     });
@@ -433,7 +435,7 @@ describe('Users', () => {
 
         res.should.have.status(401);
 
-        const user = await User.findOne({ userName: testUser.userName });
+        const user = await findUserByUsername(testUser.userName);
         should.exist(user);
       });
     });
@@ -444,7 +446,7 @@ describe('Users', () => {
 
         res.should.have.status(403);
 
-        const user = await User.findOne({ userName: testUser.userName });
+        const user = await findUserByUsername(testUser.userName);
         should.exist(user);
       });
     });
