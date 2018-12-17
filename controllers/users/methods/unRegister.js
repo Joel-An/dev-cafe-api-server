@@ -1,3 +1,39 @@
+/**
+ * @swagger
+ *
+ * paths:
+ *   /users:
+ *     delete:
+ *       summary: 회원탈퇴
+ *       tags:
+ *         - users
+ *       description: 회원탈퇴하며 작성한 모든 게시물과 댓글이 삭제됩니다.
+ *       produces:
+ *         - application/json
+ *       parameters:
+ *       - in: "body"
+ *         name: "body"
+ *         description: 비밀번호
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/UnregisterForm'
+ *       responses:
+ *         204:
+ *           description: 회원 탈퇴 성공
+ *         400:
+ *           description: 비밀번호 누락
+ *         401:
+ *           description: 인증되지 않은 사용자, 로그인 필요
+ *         403:
+ *           description: 비밀번호가 틀려 탈퇴가 거부됨
+ * definitions:
+ *   UnregisterForm:
+ *     type: "object"
+ *     properties:
+ *       password:
+ *         type: "string"
+ */
+
 const { wrapAsync, isEmptyInput } = require('../../../util/util');
 const TokenManager = require('../../../util/token');
 const User = require('../../../models/user');
