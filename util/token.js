@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { JwtSecretKey } = require('../config/config');
+const TokenError = require('./TokenError');
 
 let instance;
 
@@ -27,7 +28,7 @@ class TokenManager {
     return new Promise((resolve, reject) => {
       this.jwt.sign(payload, this.JwtSecretKey, signOptions, (err, token) => {
         if (err) {
-          reject(err);
+          reject(new TokenError(err));
         }
 
         resolve(token);
@@ -39,7 +40,7 @@ class TokenManager {
     return new Promise((resolve, reject) => {
       this.jwt.verify(accessToken, this.JwtSecretKey, (err, token) => {
         if (err) {
-          reject(err);
+          reject(new TokenError(err));
         }
 
         resolve(token);
