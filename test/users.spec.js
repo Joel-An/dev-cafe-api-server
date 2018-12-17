@@ -3,21 +3,11 @@
 const { USER_ERR } = require('../constants/message');
 const TokenManager = require('../util/token');
 
-const testUser1 = {
-  userName: 'Bacon',
-  profileName: 'BaconPname',
-  email: 'bacon@gmail.com',
-  password: '1q2w3e4r5t@',
-  confirmPassword: '1q2w3e4r5t@',
-};
-
-const testUser2 = {
-  userName: 'tUser2',
-  profileName: 'user2pname',
-  email: 'user2@gmail.com',
-  password: '1q2w3e4r5t@',
-  confirmPassword: '1q2w3e4r5t@',
-};
+// 회원가입 요청
+const reqRegister = registerForm => chai
+  .request(server)
+  .post(`${API_URI}/users`)
+  .send(registerForm);
 
 describe('Users', () => {
   describe('POST /users (회원가입)', () => {
@@ -28,21 +18,15 @@ describe('Users', () => {
       after((done) => {
         clearCollection(User, done);
       });
+      const testUser = copyAndFreeze(USER_ARRAY[0]);
 
-      const testUser = copyAndFreeze(testUser1);
+      it('response로 201 status, profileName, email을 받는다', async () => {
+        const res = await reqRegister(testUser);
 
-      it('response로 201 status, profileName, email을 받는다', (done) => {
-        chai
-          .request(server)
-          .post(`${API_URI}/users`)
-          .send(testUser)
-          .end((err, res) => {
-            res.should.have.status(201);
-            res.should.be.json;
-            res.body.should.have.property('profileName', testUser.profileName);
-            res.body.should.have.property('email', testUser.email);
-            done();
-          });
+        res.should.have.status(201);
+        res.should.be.json;
+        res.body.should.have.property('profileName', testUser.profileName);
+        res.body.should.have.property('email', testUser.email);
       });
 
       it('DB에 회원정보가 저장되어 있어야한다', (done) => {
@@ -65,28 +49,19 @@ describe('Users', () => {
         clearCollection(User, done);
       });
 
-      const carelessUser = {
-        userName: 'carelessUser',
-        profileName: 'chris',
-        email: 'cpb@gmail.com',
-        password: '1q2w3e4r5t@',
-        confirmPassword: 'DIFFERENT_PASSWORD@',
-      };
+      const carelessUser = copyAndFreeze(USER_ARRAY[0]);
 
-      it('response로 403 error와 WRONG_COMFIRM_PASSWORD message를 받는다', (done) => {
-        chai
-          .request(server)
-          .post(`${API_URI}/users`)
-          .send(carelessUser)
-          .end((err, res) => {
-            res.should.have.status(403);
-            res.should.be.json;
-            res.body.should.have.property(
-              'message',
-              USER_ERR.WRONG_COMFIRM_PASSWORD
-            );
-            done();
-          });
+      it('response로 403 error와 WRONG_COMFIRM_PASSWORD message를 받는다', async () => {
+        carelessUser.confirmPassword = 'DIFFERENT_PASSWORD@';
+
+        const res = await reqRegister(carelessUser);
+
+        res.should.have.status(403);
+        res.should.be.json;
+        res.body.should.have.property(
+          'message',
+          USER_ERR.WRONG_COMFIRM_PASSWORD
+        );
       });
       it('DB에 회원정보가 없어야한다', (done) => {
         User.findOne({ userName: carelessUser.userName }, (err, user) => {
@@ -104,26 +79,17 @@ describe('Users', () => {
       after((done) => {
         clearCollection(User, done);
       });
+      const carelessUser = copyAndFreeze(USER_ARRAY[0]);
 
-      const carelessUser = {
-        userName: 'carelessUser',
-        profileName: 'chris',
-        email: 'cpb@gmail.com',
-        password: 'PLAINstring',
-        confirmPassword: 'PLAINstring',
-      };
+      it('response로 403 error와 NVALID_PASSWORD message를 받는다', async () => {
+        carelessUser.password = 'plainText';
+        carelessUser.confirmPassword = 'plainText';
 
-      it('response로 403 error와 NVALID_PASSWORD message를 받는다', (done) => {
-        chai
-          .request(server)
-          .post(`${API_URI}/users`)
-          .send(carelessUser)
-          .end((err, res) => {
-            res.should.have.status(403);
-            res.should.be.json;
-            res.body.should.have.property('message', USER_ERR.INVALID_PASSWORD);
-            done();
-          });
+        const res = await reqRegister(carelessUser);
+
+        res.should.have.status(403);
+        res.should.be.json;
+        res.body.should.have.property('message', USER_ERR.INVALID_PASSWORD);
       });
       it('DB에 회원정보가 없어야한다', (done) => {
         User.findOne({ userName: carelessUser.userName }, (err, user) => {
@@ -142,25 +108,15 @@ describe('Users', () => {
         clearCollection(User, done);
       });
 
-      const carelessUser = {
-        userName: 'Idonthaveemail',
-        profileName: '',
-        email: null,
-        password: '1q2w3e4r5t@',
-        confirmPassword: '1q2w3e4r5t@',
-      };
+      const carelessUser = copyAndFreeze(USER_ARRAY[0]);
 
-      it('response로 403 error와 EMPTY_USERINFO message를 받는다', (done) => {
-        chai
-          .request(server)
-          .post(`${API_URI}/users`)
-          .send(carelessUser)
-          .end((err, res) => {
-            res.should.have.status(403);
-            res.should.be.json;
-            res.body.should.have.property('message', USER_ERR.EMPTY_USERINFO);
-            done();
-          });
+      it('response로 403 error와 EMPTY_USERINFO message를 받는다', async () => {
+        carelessUser.email = '';
+        const res = await reqRegister(carelessUser);
+
+        res.should.have.status(403);
+        res.should.be.json;
+        res.body.should.have.property('message', USER_ERR.EMPTY_USERINFO);
       });
       it('DB에 회원정보가 없어야한다', (done) => {
         User.findOne({ userName: carelessUser.userName }, (err, user) => {
@@ -179,25 +135,15 @@ describe('Users', () => {
         clearCollection(User, done);
       });
 
-      const carelessUser = {
-        userName: 'wronEmail',
-        profileName: 'mailMan',
-        email: 'THISisWRONGemail',
-        password: '1q2w3e4r5t@',
-        confirmPassword: '1q2w3e4r5t@',
-      };
+      const carelessUser = copyAndFreeze(USER_ARRAY[0]);
 
-      it('response로 403 error와 INVALID_EMAIL message를 받는다', (done) => {
-        chai
-          .request(server)
-          .post(`${API_URI}/users`)
-          .send(carelessUser)
-          .end((err, res) => {
-            res.should.have.status(403);
-            res.should.be.json;
-            res.body.should.have.property('message', USER_ERR.INVALID_EMAIL);
-            done();
-          });
+      it('response로 403 error와 INVALID_EMAIL message를 받는다', async () => {
+        carelessUser.email = 'wrong#gmail.com';
+        const res = await reqRegister(carelessUser);
+
+        res.should.have.status(403);
+        res.should.be.json;
+        res.body.should.have.property('message', USER_ERR.INVALID_EMAIL);
       });
       it('DB에 회원정보가 없어야한다', (done) => {
         User.findOne({ userName: carelessUser.userName }, (err, user) => {
@@ -209,8 +155,8 @@ describe('Users', () => {
     });
 
     describe('동일한 userName 또는 email이 이미 존재한다면', () => {
-      const oldUser = copyAndFreeze(testUser1);
-      const newUser = copyAndFreeze(testUser2);
+      const oldUser = copyAndFreeze(USER_ARRAY[0]);
+      const newUser = copyAndFreeze(USER_ARRAY[1]);
 
       oldUser.userName = 'SAME';
       oldUser.email = 'same@same.com';
@@ -222,35 +168,21 @@ describe('Users', () => {
         clearCollection(User, done);
       });
 
-      before((done) => {
-        User.create(oldUser)
-          .then(() => {
-            done();
-          })
-          .catch((err) => {
-            console.error(err);
-            done();
-          });
+      before(async () => {
+        const res = await reqRegister(oldUser);
+        res.should.have.status(201);
       });
 
       after((done) => {
         clearCollection(User, done);
       });
 
-      it('response로 403 error와 DUPLICATED_USERINFO message를 받는다', (done) => {
-        chai
-          .request(server)
-          .post(`${API_URI}/users`)
-          .send(newUser)
-          .end((err, res) => {
-            res.should.have.status(403);
-            res.should.be.json;
-            res.body.should.have.property(
-              'message',
-              USER_ERR.DUPLICATED_USERINFO
-            );
-            done();
-          });
+      it('response로 403 error와 DUPLICATED_USERINFO message를 받는다', async () => {
+        const res = await reqRegister(newUser);
+
+        res.should.have.status(403);
+        res.should.be.json;
+        res.body.should.have.property('message', USER_ERR.DUPLICATED_USERINFO);
       });
       it('DB에 회원정보가 없어야한다', (done) => {
         User.findOne({ profileName: newUser.profileName }, (err, user) => {
@@ -262,9 +194,6 @@ describe('Users', () => {
     });
 
     describe('username에 영어,숫자,하이픈(-) 을 제외한 특수문자가 있다면 ', () => {
-      const newUser = copyAndFreeze(testUser1);
-      newUser.userName = '!@#$%^&';
-
       before((done) => {
         clearCollection(User, done);
       });
@@ -273,20 +202,18 @@ describe('Users', () => {
         clearCollection(User, done);
       });
 
-      it('response로 403 error와 INVALID_USERNAME message를 받는다', (done) => {
-        chai
-          .request(server)
-          .post(`${API_URI}/users`)
-          .send(newUser)
-          .end((err, res) => {
-            res.should.have.status(403);
-            res.should.be.json;
-            res.body.should.have.property('message', USER_ERR.INVALID_USERNAME);
-            done();
-          });
+      const carelessUser = copyAndFreeze(USER_ARRAY[0]);
+
+      it('response로 403 error와 INVALID_USERNAME message를 받는다', async () => {
+        carelessUser.userName = '!@#$%^&';
+        const res = await reqRegister(carelessUser);
+
+        res.should.have.status(403);
+        res.should.be.json;
+        res.body.should.have.property('message', USER_ERR.INVALID_USERNAME);
       });
       it('DB에 회원정보가 없어야한다', (done) => {
-        User.findOne({ userName: newUser.userName }, (err, user) => {
+        User.findOne({ userName: carelessUser.userName }, (err, user) => {
           should.not.exist(user);
           should.not.exist(err);
           done();
@@ -295,7 +222,7 @@ describe('Users', () => {
     });
 
     describe('profileName이 20자를 초과한다면', () => {
-      const newUser = copyAndFreeze(testUser1);
+      const newUser = copyAndFreeze(USER_ARRAY[0]);
       newUser.profileName = '123456789012345678901';
 
       before((done) => {
@@ -306,23 +233,18 @@ describe('Users', () => {
         clearCollection(User, done);
       });
 
-      it('response로 403 error와 INVALID_PROFILENAME message를 받는다', (done) => {
-        chai
-          .request(server)
-          .post(`${API_URI}/users`)
-          .send(newUser)
-          .end((err, res) => {
-            res.should.have.status(403);
-            res.should.be.json;
-            res.body.should.have.property(
-              'message',
-              USER_ERR.INVALID_PROFILENAME
-            );
-            done();
-          });
+      const carelessUser = copyAndFreeze(USER_ARRAY[0]);
+
+      it('response로 403 error와 INVALID_PROFILENAME message를 받는다', async () => {
+        carelessUser.profileName = '123456789012345678901';
+        const res = await reqRegister(carelessUser);
+
+        res.should.have.status(403);
+        res.should.be.json;
+        res.body.should.have.property('message', USER_ERR.INVALID_PROFILENAME);
       });
       it('DB에 회원정보가 없어야한다', (done) => {
-        User.findOne({ userName: newUser.userName }, (err, user) => {
+        User.findOne({ userName: carelessUser.userName }, (err, user) => {
           should.not.exist(user);
           should.not.exist(err);
           done();
