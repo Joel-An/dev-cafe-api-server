@@ -12,7 +12,7 @@ const swaggerDefinition = {
 
 const options = {
   swaggerDefinition,
-  apis: ['./routes/api/v1/index.js'],
+  apis: ['./controllers/**/*js'],
 };
 
 const swwagerSpec = swaggerJSDoc(options);
