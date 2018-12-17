@@ -2,11 +2,6 @@
 /* eslint-disable no-undef */
 const { AUTH_ERR } = require('../constants/message');
 
-const reqLogin = (userName, password) => chai
-  .request(server)
-  .post(`${API_URI}/auth`)
-  .send({ userName, password });
-
 describe('Auth', () => {
   const testUser = copyAndFreeze(USER_ARRAY[0]);
 
@@ -74,5 +69,3 @@ describe('Auth', () => {
     });
   });
 });
-
-module.exports = { reqLogin };

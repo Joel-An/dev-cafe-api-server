@@ -37,6 +37,11 @@ const clearCollection = (Model, done) => {
 
 const copyAndFreeze = obj => Object.preventExtensions({ ...obj });
 
+const reqLogin = (userName, password) => chai
+  .request(server)
+  .post(`${API_URI}/auth`)
+  .send({ userName, password });
+
 global.chai = chai;
 global.should = should;
 global.server = server;
@@ -45,3 +50,4 @@ global.clearCollection = clearCollection;
 global.copyAndFreeze = copyAndFreeze;
 global.User = User;
 global.USER_ARRAY = USER_ARRAY;
+global.reqLogin = reqLogin;
