@@ -100,11 +100,6 @@ exports.unregister = wrapAsync(async (req, res) => {
   const accessToken = req.get('x-access-token');
   const { password } = req.body;
 
-  if (isEmptyInput(accessToken)) {
-    res.status(401);
-    return res.json({ message: '인증에 실패했습니다.' });
-  }
-
   if (isEmptyInput(password)) {
     res.status(400);
     return res.json({ message: '회원탈퇴에는 비밀번호가 필요합니다.' });
