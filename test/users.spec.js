@@ -81,7 +81,10 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message', USER_ERR.WRONG_COMFIRM_PASSWORD);
+            res.body.should.have.property(
+              'message',
+              USER_ERR.WRONG_COMFIRM_PASSWORD,
+            );
             done();
           });
       });
@@ -242,7 +245,10 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message', USER_ERR.DUPLICATED_USERINFO);
+            res.body.should.have.property(
+              'message',
+              USER_ERR.DUPLICATED_USERINFO,
+            );
             done();
           });
       });
@@ -308,7 +314,10 @@ describe('Users', () => {
           .end((err, res) => {
             res.should.have.status(403);
             res.should.be.json;
-            res.body.should.have.property('message', USER_ERR.INVALID_PROFILENAME);
+            res.body.should.have.property(
+              'message',
+              USER_ERR.INVALID_PROFILENAME,
+            );
             done();
           });
       });
@@ -333,7 +342,9 @@ describe('Users', () => {
       .set('x-access-token', userToken)
       .send({ password });
 
-    const findUserByUsername = userName => User.findOne({ userName }).catch(err => shoud.not.exist(err));
+    const findUserByUsername = (userName) => {
+      User.findOne({ userName }).catch(err => shoud.not.exist(err));
+    };
 
     beforeEach((done) => {
       // 회원가입
@@ -379,7 +390,10 @@ describe('Users', () => {
         const firstResponse = await requestUnregister(token, testUser.password);
         firstResponse.should.have.status(204);
 
-        const SecondResponse = await requestUnregister(token, testUser.password);
+        const SecondResponse = await requestUnregister(
+          token,
+          testUser.password,
+        );
         SecondResponse.should.have.status(404);
 
         const user = await findUserByUsername(testUser.userName);

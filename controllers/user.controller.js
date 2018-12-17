@@ -32,7 +32,9 @@ exports.getUserById = (req, res) => {
 exports.register = wrapAsync(async (req, res) => {
   const {
     userName, profileName, email, password, confirmPassword,
-  } = { ...req.body };
+  } = {
+    ...req.body,
+  };
 
   if (isEmptyInput(userName, profileName, email, password, confirmPassword)) {
     res.status(403);

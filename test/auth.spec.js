@@ -108,10 +108,16 @@ describe('Auth', () => {
           const emptyUsernameResponse = results[0];
 
           emptyPasswordResponse.should.have.status(403);
-          emptyPasswordResponse.body.should.have.property('message', AUTH_ERR.EMPTY_LOGINFORM);
+          emptyPasswordResponse.body.should.have.property(
+            'message',
+            AUTH_ERR.EMPTY_LOGINFORM,
+          );
 
           emptyUsernameResponse.should.have.status(403);
-          emptyUsernameResponse.body.should.have.property('message', AUTH_ERR.EMPTY_LOGINFORM);
+          emptyUsernameResponse.body.should.have.property(
+            'message',
+            AUTH_ERR.EMPTY_LOGINFORM,
+          );
           done();
         })
         .catch((err) => {
