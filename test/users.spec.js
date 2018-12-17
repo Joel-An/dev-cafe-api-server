@@ -326,6 +326,13 @@ describe('Users', () => {
     const testUser = copyAndFreeze(USER_ARRAY[0]);
     let token;
 
+    // 회원 탈퇴 요청 (토큰, 비밀번호)
+    const requestUnregister = (userToken, password) => chai
+      .request(server)
+      .delete(`${API_URI}/users/me`)
+      .set('x-access-token', userToken)
+      .send({ password });
+
     beforeEach((done) => {
       // 회원가입
       chai
@@ -356,11 +363,7 @@ describe('Users', () => {
     });
     context('성공하면', () => {
       it('204코드를 받고 DB에 회원정보가 없어야한다', async () => {
-        const res = await chai
-          .request(server)
-          .delete(`${API_URI}/users/me`)
-          .set('x-access-token', token)
-          .send({ password: testUser.password });
+        const res = await requestUnregister(token, testUser.password);
 
         res.should.have.status(204);
 
@@ -371,20 +374,10 @@ describe('Users', () => {
 
     context('탈퇴성공후 재요청하면', () => {
       it('404코드를 받고 DB에 회원정보가 없어야한다', async () => {
-        const firstResponse = await chai
-          .request(server)
-          .delete(`${API_URI}/users/me`)
-          .set('x-access-token', token)
-          .send({ password: testUser.password });
-
+        const firstResponse = await requestUnregister(token, testUser.password);
         firstResponse.should.have.status(204);
 
-        const SecondResponse = await chai
-          .request(server)
-          .delete(`${API_URI}/users/me`)
-          .set('x-access-token', token)
-          .send({ password: testUser.password });
-
+        const SecondResponse = await requestUnregister(token, testUser.password);
         SecondResponse.should.have.status(404);
 
         const user = await User.findOne({ userName: testUser.userName });
@@ -395,11 +388,7 @@ describe('Users', () => {
     context('토큰이 없으면', () => {
       it('401 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
         const emptyToken = '';
-        const res = await chai
-          .request(server)
-          .delete(`${API_URI}/users/me`)
-          .set('x-access-token', emptyToken)
-          .send({ password: testUser.password });
+        const res = await requestUnregister(emptyToken, testUser.password);
 
         res.should.have.status(401);
 
@@ -411,11 +400,7 @@ describe('Users', () => {
     context('비밀번호가 없으면', () => {
       it('400 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
         const emptyPassword = '';
-        const res = await chai
-          .request(server)
-          .delete(`${API_URI}/users/me`)
-          .set('x-access-token', token)
-          .send({ password: emptyPassword });
+        const res = await requestUnregister(token, emptyPassword);
 
         res.should.have.status(400);
 
@@ -427,11 +412,7 @@ describe('Users', () => {
     context('토큰이 불량이라면', () => {
       it('401 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
         const wrongToken = 'WRONG_TOKEN';
-        const res = await chai
-          .request(server)
-          .delete(`${API_URI}/users/me`)
-          .set('x-access-token', wrongToken)
-          .send({ password: testUser.password });
+        const res = await requestUnregister(wrongToken, testUser.password);
 
         res.should.have.status(401);
 
@@ -448,11 +429,7 @@ describe('Users', () => {
           decoded._id,
           decoded.email,
         );
-        const res = await chai
-          .request(server)
-          .delete(`${API_URI}/users/me`)
-          .set('x-access-token', expiredToken)
-          .send({ password: testUser.password });
+        const res = await requestUnregister(expiredToken, testUser.password);
 
         res.should.have.status(401);
 
@@ -463,11 +440,7 @@ describe('Users', () => {
 
     context('비밀번호가 다르면', () => {
       it('403 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
-        const res = await chai
-          .request(server)
-          .delete(`${API_URI}/users/me`)
-          .set('x-access-token', token)
-          .send({ password: 'WRONG_PASSWORD' });
+        const res = await requestUnregister(token, 'WRONG_PASSWORD');
 
         res.should.have.status(403);
 
