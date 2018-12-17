@@ -14,6 +14,9 @@ describe('Auth', () => {
 
   describe('POST /auth', () => {
     before((done) => {
+      clearCollection(User, done);
+    });
+    before((done) => {
       chai
         .request(server)
         .post(`${API_URI}/users`)
