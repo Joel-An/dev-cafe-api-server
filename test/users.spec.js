@@ -11,7 +11,7 @@ const reqRegister = registerForm => chai
 
 describe('Users', () => {
   describe('POST /users (회원가입)', () => {
-    describe('회원가입에 성공하면', () => {
+    context('회원가입에 성공하면', () => {
       before((done) => {
         clearCollection(User, done);
       });
@@ -41,7 +41,7 @@ describe('Users', () => {
       });
     });
 
-    describe('password와 comfirmPassword가 다르면', () => {
+    context('password와 comfirmPassword가 다르면', () => {
       before((done) => {
         clearCollection(User, done);
       });
@@ -72,7 +72,7 @@ describe('Users', () => {
       });
     });
 
-    describe('비밀번호가 8~20자리 숫자,영어,특수문자로 조합되지 않으면', () => {
+    context('비밀번호가 8~20자리 숫자,영어,특수문자로 조합되지 않으면', () => {
       before((done) => {
         clearCollection(User, done);
       });
@@ -100,7 +100,7 @@ describe('Users', () => {
       });
     });
 
-    describe('입력하지 않은 정보가 있다면', () => {
+    context('입력하지 않은 정보가 있다면', () => {
       before((done) => {
         clearCollection(User, done);
       });
@@ -127,7 +127,7 @@ describe('Users', () => {
       });
     });
 
-    describe('E-mail 형식이 틀렸다면', () => {
+    context('E-mail 형식이 틀렸다면', () => {
       before((done) => {
         clearCollection(User, done);
       });
@@ -154,7 +154,7 @@ describe('Users', () => {
       });
     });
 
-    describe('동일한 userName 또는 email이 이미 존재한다면', () => {
+    context('동일한 userName 또는 email이 이미 존재한다면', () => {
       const oldUser = copyAndFreeze(USER_ARRAY[0]);
       const newUser = copyAndFreeze(USER_ARRAY[1]);
 
@@ -193,7 +193,7 @@ describe('Users', () => {
       });
     });
 
-    describe('username에 영어,숫자,하이픈(-) 을 제외한 특수문자가 있다면 ', () => {
+    context('username에 영어,숫자,하이픈(-) 을 제외한 특수문자가 있다면 ', () => {
       before((done) => {
         clearCollection(User, done);
       });
@@ -221,7 +221,7 @@ describe('Users', () => {
       });
     });
 
-    describe('profileName이 20자를 초과한다면', () => {
+    context('profileName이 20자를 초과한다면', () => {
       const newUser = copyAndFreeze(USER_ARRAY[0]);
       newUser.profileName = '123456789012345678901';
 
