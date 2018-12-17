@@ -108,9 +108,8 @@ exports.unregister = wrapAsync(async (req, res) => {
   }
 
   const tokenManager = new TokenManager();
-  const getDecoded = tokenManager.decodeToken(accessToken);
 
-  const decoded = await getDecoded.catch((err) => {
+  const decoded = await tokenManager.decodeToken(accessToken).catch((err) => {
     // eslint-disable-next-line no-param-reassign
     err.message = '토큰이 유효하지 않습니다.';
     // eslint-disable-next-line no-param-reassign

@@ -24,9 +24,7 @@ exports.login = wrapAsync(async (req, res) => {
   }
 
   const tokenManager = new TokenManager();
-  const getToken = tokenManager.signToken(user._id, user.email);
-
-  const accessToken = await getToken;
+  const accessToken = await tokenManager.signToken(user._id, user.email);
 
   return res.json({ accessToken });
 });
