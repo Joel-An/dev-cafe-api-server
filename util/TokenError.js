@@ -1,5 +1,5 @@
 class TokenError extends Error {
-  constructor(message, name, ...rest) {
+  constructor({ message, name, ...rest }) {
     super();
     this.message = message;
     this.name = name;

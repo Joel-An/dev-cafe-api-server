@@ -28,7 +28,7 @@ class TokenManager {
     return new Promise((resolve, reject) => {
       this.jwt.sign(payload, this.JwtSecretKey, signOptions, (err, token) => {
         if (err) {
-          reject(new TokenError(err));
+          reject(new TokenError({ ...err }));
         }
 
         resolve(token);
@@ -40,7 +40,7 @@ class TokenManager {
     return new Promise((resolve, reject) => {
       this.jwt.verify(accessToken, this.JwtSecretKey, (err, token) => {
         if (err) {
-          reject(new TokenError(err));
+          reject(new TokenError({ ...err }));
         }
 
         resolve(token);
