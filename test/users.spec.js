@@ -266,16 +266,10 @@ describe('Users', () => {
 
     const findUserByUsername = userName => User.findOne({ userName });
 
-    beforeEach((done) => {
+    beforeEach(async () => {
       // 회원가입
-      chai
-        .request(server)
-        .post(`${API_URI}/users`)
-        .send(testUser)
-        .end((err, res) => {
-          res.should.have.status(201);
-          done();
-        });
+      const res = await reqRegister(testUser);
+      res.should.have.status(201);
     });
 
     beforeEach((done) => {
