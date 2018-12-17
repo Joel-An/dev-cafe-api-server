@@ -25,10 +25,10 @@ describe('Users', () => {
       });
 
       it('DB에 회원정보가 저장되어 있어야한다', (done) => {
-        User.findOne({ userName: testUser.userName }, (err, user) => {
+        User.findOne({ username: testUser.username }, (err, user) => {
           should.exist(user);
           should.not.exist(err);
-          user.should.have.property('userName', user.userName);
+          user.should.have.property('username', user.username);
           user.should.have.property('profileName', user.profileName);
           user.should.have.property('email', user.email);
           done();
@@ -59,7 +59,7 @@ describe('Users', () => {
         );
       });
       it('DB에 회원정보가 없어야한다', (done) => {
-        User.findOne({ userName: carelessUser.userName }, (err, user) => {
+        User.findOne({ username: carelessUser.username }, (err, user) => {
           should.not.exist(user);
           should.not.exist(err);
           done();
@@ -87,7 +87,7 @@ describe('Users', () => {
         res.body.should.have.property('message', USER_ERR.INVALID_PASSWORD);
       });
       it('DB에 회원정보가 없어야한다', (done) => {
-        User.findOne({ userName: carelessUser.userName }, (err, user) => {
+        User.findOne({ username: carelessUser.username }, (err, user) => {
           should.not.exist(user);
           should.not.exist(err);
           done();
@@ -114,7 +114,7 @@ describe('Users', () => {
         res.body.should.have.property('message', USER_ERR.EMPTY_USERINFO);
       });
       it('DB에 회원정보가 없어야한다', (done) => {
-        User.findOne({ userName: carelessUser.userName }, (err, user) => {
+        User.findOne({ username: carelessUser.username }, (err, user) => {
           should.not.exist(user);
           should.not.exist(err);
           done();
@@ -141,7 +141,7 @@ describe('Users', () => {
         res.body.should.have.property('message', USER_ERR.INVALID_EMAIL);
       });
       it('DB에 회원정보가 없어야한다', (done) => {
-        User.findOne({ userName: carelessUser.userName }, (err, user) => {
+        User.findOne({ username: carelessUser.username }, (err, user) => {
           should.not.exist(user);
           should.not.exist(err);
           done();
@@ -149,14 +149,14 @@ describe('Users', () => {
       });
     });
 
-    context('동일한 userName 또는 email이 이미 존재한다면', () => {
+    context('동일한 username 또는 email이 이미 존재한다면', () => {
       const oldUser = copyAndFreeze(USER_ARRAY[0]);
       const newUser = copyAndFreeze(USER_ARRAY[1]);
 
-      oldUser.userName = 'SAME';
+      oldUser.username = 'SAME';
       oldUser.email = 'same@same.com';
 
-      newUser.userName = 'SAME';
+      newUser.username = 'SAME';
       newUser.email = 'same@same.com';
 
       before((done) => {
@@ -200,7 +200,7 @@ describe('Users', () => {
       const carelessUser = copyAndFreeze(USER_ARRAY[0]);
 
       it('response로 403 error와 INVALID_USERNAME message를 받는다', async () => {
-        carelessUser.userName = '!@#$%^&';
+        carelessUser.username = '!@#$%^&';
         const res = await reqRegister(carelessUser);
 
         res.should.have.status(403);
@@ -208,7 +208,7 @@ describe('Users', () => {
         res.body.should.have.property('message', USER_ERR.INVALID_USERNAME);
       });
       it('DB에 회원정보가 없어야한다', (done) => {
-        User.findOne({ userName: carelessUser.userName }, (err, user) => {
+        User.findOne({ username: carelessUser.username }, (err, user) => {
           should.not.exist(user);
           should.not.exist(err);
           done();
@@ -239,7 +239,7 @@ describe('Users', () => {
         res.body.should.have.property('message', USER_ERR.INVALID_PROFILENAME);
       });
       it('DB에 회원정보가 없어야한다', (done) => {
-        User.findOne({ userName: carelessUser.userName }, (err, user) => {
+        User.findOne({ username: carelessUser.username }, (err, user) => {
           should.not.exist(user);
           should.not.exist(err);
           done();
@@ -259,7 +259,7 @@ describe('Users', () => {
       .set('x-access-token', userToken)
       .send({ password });
 
-    const findUserByUsername = userName => User.findOne({ userName });
+    const findUserByUsername = username => User.findOne({ username });
 
     beforeEach(async () => {
       // 회원가입
@@ -269,7 +269,7 @@ describe('Users', () => {
 
     beforeEach(async () => {
       // 로그인
-      const res = await reqLogin(testUser.userName, testUser.password);
+      const res = await reqLogin(testUser.username, testUser.password);
 
       res.should.have.status(201);
       res.body.should.have.property('accessToken');
@@ -284,7 +284,7 @@ describe('Users', () => {
 
         res.should.have.status(204);
 
-        const user = await findUserByUsername(testUser.userName);
+        const user = await findUserByUsername(testUser.username);
         should.not.exist(user);
       });
     });
@@ -303,7 +303,7 @@ describe('Users', () => {
         );
         SecondResponse.should.have.status(404);
 
-        const user = await findUserByUsername(testUser.userName);
+        const user = await findUserByUsername(testUser.username);
         should.not.exist(user);
       });
     });
@@ -315,7 +315,7 @@ describe('Users', () => {
 
         res.should.have.status(401);
 
-        const user = await findUserByUsername(testUser.userName);
+        const user = await findUserByUsername(testUser.username);
         should.exist(user);
       });
     });
@@ -327,7 +327,7 @@ describe('Users', () => {
 
         res.should.have.status(400);
 
-        const user = await findUserByUsername(testUser.userName);
+        const user = await findUserByUsername(testUser.username);
         should.exist(user);
       });
     });
@@ -339,7 +339,7 @@ describe('Users', () => {
 
         res.should.have.status(401);
 
-        const user = await findUserByUsername(testUser.userName);
+        const user = await findUserByUsername(testUser.username);
         should.exist(user);
       });
     });
@@ -356,7 +356,7 @@ describe('Users', () => {
 
         res.should.have.status(401);
 
-        const user = await findUserByUsername(testUser.userName);
+        const user = await findUserByUsername(testUser.username);
         should.exist(user);
       });
     });
@@ -367,7 +367,7 @@ describe('Users', () => {
 
         res.should.have.status(403);
 
-        const user = await findUserByUsername(testUser.userName);
+        const user = await findUserByUsername(testUser.username);
         should.exist(user);
       });
     });

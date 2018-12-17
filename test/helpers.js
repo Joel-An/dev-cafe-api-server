@@ -13,14 +13,14 @@ const User = require('../models/user');
 
 const USER_ARRAY = [
   {
-    userName: 'Bacon',
+    username: 'Bacon',
     profileName: 'BaconPname',
     email: 'bacon@gmail.com',
     password: '1q2w3e4r5t@',
     confirmPassword: '1q2w3e4r5t@',
   },
   {
-    userName: 'tUser2',
+    username: 'tUser2',
     profileName: 'user2pname',
     email: 'user2@gmail.com',
     password: '1q2w3e4r5t@',
@@ -37,10 +37,10 @@ const clearCollection = (Model, done) => {
 
 const copyAndFreeze = obj => Object.preventExtensions({ ...obj });
 
-const reqLogin = (userName, password) => chai
+const reqLogin = (username, password) => chai
   .request(server)
   .post(`${API_URI}/auth`)
-  .send({ userName, password });
+  .send({ username, password });
 
 const reqRegister = registerForm => chai
   .request(server)

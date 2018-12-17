@@ -59,16 +59,16 @@ const { regex, wrapAsync, isEmptyInput } = require('../../../util/util');
 const { USER_ERR } = require('../../../constants/message');
 const User = require('../../../models/user');
 
-const { userNameRule, passwordRule, emailRule } = regex;
+const { usernameRule, passwordRule, emailRule } = regex;
 
 module.exports = wrapAsync(async (req, res) => {
   const {
-    userName, profileName, email, password, confirmPassword,
+    username, profileName, email, password, confirmPassword,
   } = {
     ...req.body,
   };
 
-  if (isEmptyInput(userName, profileName, email, password, confirmPassword)) {
+  if (isEmptyInput(username, profileName, email, password, confirmPassword)) {
     res.status(403);
     return res.json({ message: USER_ERR.EMPTY_USERINFO });
   }
@@ -85,7 +85,7 @@ module.exports = wrapAsync(async (req, res) => {
     });
   }
 
-  if (!userNameRule.test(userName)) {
+  if (!usernameRule.test(username)) {
     res.status(403);
     return res.json({
       message: USER_ERR.INVALID_USERNAME,
@@ -107,7 +107,7 @@ module.exports = wrapAsync(async (req, res) => {
   }
 
   const oldUser = await User.findOne({
-    $or: [{ userName }, { email }],
+    $or: [{ username }, { email }],
   });
 
   if (oldUser) {
@@ -119,7 +119,7 @@ module.exports = wrapAsync(async (req, res) => {
 
   const user = new User();
 
-  user.userName = userName;
+  user.username = username;
   user.profileName = profileName;
   user.email = email;
   user.password = user.generateHash(password);
