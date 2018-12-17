@@ -2,7 +2,7 @@
  * @swagger
  *
  * paths:
- *   /users:
+ *   /users/me:
  *     delete:
  *       summary: 회원탈퇴
  *       tags:
@@ -23,9 +23,11 @@
  *         400:
  *           description: 비밀번호 누락
  *         401:
- *           description: 인증되지 않은 사용자, 로그인 필요
+ *           $ref: "#/responses/UnauthorizedError"
  *         403:
  *           description: 비밀번호가 틀려 탈퇴가 거부됨
+ *       security:
+ *       - AccessToken: []
  * definitions:
  *   UnregisterForm:
  *     type: "object"

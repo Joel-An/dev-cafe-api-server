@@ -41,6 +41,15 @@
  *       accessToken:
  *         type: "string"
  *         description: 로그인이 필요한 서비스 이용시 제출하는 토큰
+ * securityDefinitions:
+ *     AccessToken:
+ *       in: header
+ *       type: apiKey
+ *       name: x-access-token
+ *       description: 회원용 서비스를 이용하려면 로그인하여 받은 토큰을 헤더에 첨부해야 합니다.
+ * responses:
+ *   UnauthorizedError:
+ *     description: 인증되지 않았거나 만료된 사용자, 로그인 필요
  */
 
 const TokenManager = require('../../../util/token');
