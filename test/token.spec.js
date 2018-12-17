@@ -76,14 +76,14 @@ describe('#TokenManager', () => {
     it('프로미스를 반환해야한다.', () => {
       const promise = tm.signImmediatelyExpiredToken(
         payload._id,
-        payload.email,
+        payload.email
       );
       promise.should.be.a('Promise');
     });
     it('발급된 토큰은 즉시 만료되어야한다.', async () => {
       const getToken = tm.signImmediatelyExpiredToken(
         payload._id,
-        payload.email,
+        payload.email
       );
       const token = await getToken;
 

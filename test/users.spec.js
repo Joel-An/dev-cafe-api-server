@@ -83,7 +83,7 @@ describe('Users', () => {
             res.should.be.json;
             res.body.should.have.property(
               'message',
-              USER_ERR.WRONG_COMFIRM_PASSWORD,
+              USER_ERR.WRONG_COMFIRM_PASSWORD
             );
             done();
           });
@@ -247,7 +247,7 @@ describe('Users', () => {
             res.should.be.json;
             res.body.should.have.property(
               'message',
-              USER_ERR.DUPLICATED_USERINFO,
+              USER_ERR.DUPLICATED_USERINFO
             );
             done();
           });
@@ -316,7 +316,7 @@ describe('Users', () => {
             res.should.be.json;
             res.body.should.have.property(
               'message',
-              USER_ERR.INVALID_PROFILENAME,
+              USER_ERR.INVALID_PROFILENAME
             );
             done();
           });
@@ -392,7 +392,7 @@ describe('Users', () => {
 
         const SecondResponse = await requestUnregister(
           token,
-          testUser.password,
+          testUser.password
         );
         SecondResponse.should.have.status(404);
 
@@ -443,7 +443,7 @@ describe('Users', () => {
         const decoded = await tokenManager.decodeToken(token);
         const expiredToken = await tokenManager.signImmediatelyExpiredToken(
           decoded._id,
-          decoded.email,
+          decoded.email
         );
         const res = await requestUnregister(expiredToken, testUser.password);
 
