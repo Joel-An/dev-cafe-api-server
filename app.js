@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const config = require('./config/config');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerSpec');
+const { handleTokenError } = require('./middleware/handleTokenError');
 
 const apiRouterV1 = require('./routes/api/v1');
 
@@ -49,6 +50,8 @@ app.use('*', express.static(clientApp));
 app.use((req, res, next) => {
   next(createError(404));
 });
+
+app.use(handleTokenError);
 
 // error handler
 app.use((err, req, res, next) => {
