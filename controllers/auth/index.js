@@ -1,3 +1,1 @@
-const login = require('./methods/login');
-
-module.exports = { login };
+exports.login = require('./methods/login');
