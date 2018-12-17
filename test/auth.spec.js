@@ -110,13 +110,13 @@ describe('Auth', () => {
           emptyPasswordResponse.should.have.status(403);
           emptyPasswordResponse.body.should.have.property(
             'message',
-            AUTH_ERR.EMPTY_LOGINFORM,
+            AUTH_ERR.EMPTY_LOGINFORM
           );
 
           emptyUsernameResponse.should.have.status(403);
           emptyUsernameResponse.body.should.have.property(
             'message',
-            AUTH_ERR.EMPTY_LOGINFORM,
+            AUTH_ERR.EMPTY_LOGINFORM
           );
           done();
         })
