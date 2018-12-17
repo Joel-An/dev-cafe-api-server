@@ -2,6 +2,7 @@
 /* eslint-disable no-undef */
 const { USER_ERR } = require('../constants/message');
 const TokenManager = require('../util/token');
+const { reqLogin } = require('./auth.spec');
 
 // 회원가입 요청
 const reqRegister = registerForm => chai
@@ -272,18 +273,13 @@ describe('Users', () => {
       res.should.have.status(201);
     });
 
-    beforeEach((done) => {
+    beforeEach(async () => {
       // 로그인
-      chai
-        .request(server)
-        .post(`${API_URI}/auth`)
-        .send({ userName: testUser.userName, password: testUser.password })
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.have.property('accessToken');
-          validToken = res.body.accessToken;
-          done();
-        });
+      const res = await reqLogin(testUser.userName, testUser.password);
+
+      res.should.have.status(200);
+      res.body.should.have.property('accessToken');
+      validToken = res.body.accessToken;
     });
     afterEach((done) => {
       clearCollection(User, done);

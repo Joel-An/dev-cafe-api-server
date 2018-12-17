@@ -74,3 +74,5 @@ describe('Auth', () => {
     });
   });
 });
+
+module.exports = { reqLogin };
