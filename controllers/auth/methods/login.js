@@ -1,10 +1,10 @@
-const TokenManager = require('../util/token');
-const User = require('../models/user');
-const { AUTH_ERR } = require('../constants/message');
+const TokenManager = require('../../../util/token');
+const User = require('../../../models/user');
+const { AUTH_ERR } = require('../../../constants/message');
 
-const { wrapAsync, isEmptyInput } = require('../util/util');
+const { wrapAsync, isEmptyInput } = require('../../../util/util');
 
-exports.login = wrapAsync(async (req, res) => {
+module.exports = wrapAsync(async (req, res) => {
   const { userName, password } = req.body;
 
   if (isEmptyInput(userName, password)) {
