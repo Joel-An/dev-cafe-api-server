@@ -8,14 +8,7 @@ const reqLogin = (userName, password) => chai
   .send({ userName, password });
 
 describe('Auth', () => {
-  const testUser1 = {
-    userName: 'Bacon',
-    profileName: 'BaconPname',
-    email: 'bacon@gmail.com',
-    password: '1q2w3e4r5t@',
-
-    confirmPassword: '1q2w3e4r5t@',
-  };
+  const testUser = copyAndFreeze(USER_ARRAY[0]);
 
   describe('POST /auth', () => {
     before((done) => {
@@ -25,7 +18,7 @@ describe('Auth', () => {
       chai
         .request(server)
         .post(`${API_URI}/users`)
-        .send(testUser1)
+        .send(testUser)
         .end((err, res) => {
           res.should.have.status(201);
           done();
@@ -36,7 +29,7 @@ describe('Auth', () => {
     });
 
     it('로그인에 성공하면 response로 200 code와 엑세스 토큰을 받아야한다', async () => {
-      const res = await reqLogin(testUser1.userName, testUser1.password);
+      const res = await reqLogin(testUser.userName, testUser.password);
 
       res.should.have.status(200);
       res.should.be.json;
@@ -44,7 +37,7 @@ describe('Auth', () => {
     });
 
     it('존재하지 않는 유저라면 response로 403 error와 WRONG_USERNAME message를 받아야한다', async () => {
-      const res = await reqLogin('ImNotExist', testUser1.password);
+      const res = await reqLogin('ImNotExist', testUser.password);
 
       res.should.have.status(403);
       res.should.be.json;
@@ -52,7 +45,7 @@ describe('Auth', () => {
     });
 
     it('비밀번호가 잘못되었다면 response로 403 error와 WRONG_PASSWORD message를 받아야한다', async () => {
-      const res = await reqLogin(testUser1.userName, 'WrongPassword');
+      const res = await reqLogin(testUser.userName, 'WrongPassword');
 
       res.should.have.status(403);
       res.should.be.json;
@@ -60,8 +53,8 @@ describe('Auth', () => {
     });
 
     it('사용자이름/비밀번호를 입력하지 않았다면 403 error와 EMPTY_LOGINFORM message를 받아야한다', async () => {
-      const emptyPassword = reqLogin(testUser1.userName, '');
-      const emptyUsername = reqLogin('', testUser1.password);
+      const emptyPassword = reqLogin(testUser.userName, '');
+      const emptyUsername = reqLogin('', testUser.password);
 
       const results = await Promise.all([emptyPassword, emptyUsername]);
       const emptyPasswordResponse = results[0];
