@@ -1,13 +1,13 @@
 const userRouter = require('express').Router();
-const userController = require('../../../../controllers/user.controller');
+const users = require('../../../../controllers/users');
 const { isAuthenticated } = require('../../../../middleware/authenticator');
 /*
  *      /api/v1/users'
  */
-userRouter.get('/', userController.getUsers);
-userRouter.post('/', userController.register);
+userRouter.get('/', users.getUsers);
+userRouter.post('/', users.register);
 
-userRouter.get('/:id', userController.getUserById);
+userRouter.get('/:id', users.getUserById);
 
-userRouter.delete('/me', isAuthenticated, userController.unregister);
+userRouter.delete('/me', isAuthenticated, users.unRegister);
 module.exports = userRouter;
