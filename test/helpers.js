@@ -42,6 +42,12 @@ const reqLogin = (userName, password) => chai
   .post(`${API_URI}/auth`)
   .send({ userName, password });
 
+const reqRegister = registerForm => chai
+  .request(server)
+  .post(`${API_URI}/users`)
+  .send(registerForm);
+
+
 global.chai = chai;
 global.should = should;
 global.server = server;
@@ -51,3 +57,4 @@ global.copyAndFreeze = copyAndFreeze;
 global.User = User;
 global.USER_ARRAY = USER_ARRAY;
 global.reqLogin = reqLogin;
+global.reqRegister = reqRegister;

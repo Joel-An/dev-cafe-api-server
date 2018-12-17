@@ -9,15 +9,10 @@ describe('Auth', () => {
     before((done) => {
       clearCollection(User, done);
     });
-    before((done) => {
-      chai
-        .request(server)
-        .post(`${API_URI}/users`)
-        .send(testUser)
-        .end((err, res) => {
-          res.should.have.status(201);
-          done();
-        });
+    before(async () => {
+      const res = await reqRegister(testUser);
+
+      res.should.have.status(201);
     });
     after((done) => {
       clearCollection(User, done);

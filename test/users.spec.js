@@ -3,11 +3,6 @@
 const { USER_ERR } = require('../constants/message');
 const TokenManager = require('../util/token');
 
-// 회원가입 요청
-const reqRegister = registerForm => chai
-  .request(server)
-  .post(`${API_URI}/users`)
-  .send(registerForm);
 
 describe('Users', () => {
   describe('POST /users (회원가입)', () => {
