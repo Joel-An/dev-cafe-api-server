@@ -342,9 +342,7 @@ describe('Users', () => {
       .set('x-access-token', userToken)
       .send({ password });
 
-    const findUserByUsername = (userName) => {
-      User.findOne({ userName }).catch(err => shoud.not.exist(err));
-    };
+    const findUserByUsername = userName => User.findOne({ userName });
 
     beforeEach((done) => {
       // 회원가입
