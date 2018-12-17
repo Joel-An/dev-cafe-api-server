@@ -18,7 +18,7 @@ describe('Auth', () => {
       clearCollection(User, done);
     });
 
-    it('로그인에 성공하면 response로 200 code와 엑세스 토큰을 받아야한다', async () => {
+    it('로그인에 성공하면 response로 201 code와 엑세스 토큰을 받아야한다', async () => {
       const res = await reqLogin(testUser.userName, testUser.password);
 
       res.should.have.status(201);
