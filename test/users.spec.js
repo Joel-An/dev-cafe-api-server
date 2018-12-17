@@ -271,7 +271,7 @@ describe('Users', () => {
       // 로그인
       const res = await reqLogin(testUser.userName, testUser.password);
 
-      res.should.have.status(200);
+      res.should.have.status(201);
       res.body.should.have.property('accessToken');
       validToken = res.body.accessToken;
     });
