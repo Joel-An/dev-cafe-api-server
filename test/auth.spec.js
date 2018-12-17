@@ -42,7 +42,7 @@ describe('Auth', () => {
       res.body.should.have.property('message', AUTH_ERR.WRONG_PASSWORD);
     });
 
-    it('사용자이름/비밀번호를 입력하지 않았다면 403 error와 EMPTY_LOGINFORM message를 받아야한다', async () => {
+    it('사용자이름/비밀번호를 입력하지 않았다면 400 error와 EMPTY_LOGINFORM message를 받아야한다', async () => {
       const emptyPassword = reqLogin(testUser.userName, '');
       const emptyUsername = reqLogin('', testUser.password);
 
@@ -50,13 +50,13 @@ describe('Auth', () => {
       const emptyPasswordResponse = results[0];
       const emptyUsernameResponse = results[1];
 
-      emptyPasswordResponse.should.have.status(403);
+      emptyPasswordResponse.should.have.status(400);
       emptyPasswordResponse.body.should.have.property(
         'message',
         AUTH_ERR.EMPTY_LOGINFORM
       );
 
-      emptyUsernameResponse.should.have.status(403);
+      emptyUsernameResponse.should.have.status(400);
       emptyUsernameResponse.body.should.have.property(
         'message',
         AUTH_ERR.EMPTY_LOGINFORM

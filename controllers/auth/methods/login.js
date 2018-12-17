@@ -8,7 +8,7 @@ module.exports = wrapAsync(async (req, res) => {
   const { userName, password } = req.body;
 
   if (isEmptyInput(userName, password)) {
-    res.status(403);
+    res.status(400);
     return res.json({ message: AUTH_ERR.EMPTY_LOGINFORM });
   }
 
