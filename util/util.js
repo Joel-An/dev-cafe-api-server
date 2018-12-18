@@ -9,8 +9,11 @@ exports.wrapAsync = function (fn) {
 
 exports.isEmptyInput = (...args) => {
   for (let i = 0; i < args.length; i += 1) {
-    if (typeof args[i] !== 'string') throw new Error('문자열만 입력해주세요.');
-    if (!args[i].length || !args[i].trim()) return true;
+    if (typeof args[i] === 'string' && !args[i].trim()) return true;
+
+    if (typeof args[i] !== 'boolean' && typeof args[i] !== 'number') {
+      if (!args[i] || !args[i].length) return true;
+    }
   }
 
   return false;
