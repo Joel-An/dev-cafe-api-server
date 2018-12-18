@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
-const TokenManager = require('../util/token');
+const TokenManager = require('../../util/token');
 
 const payload = {
   _id: '12345',
