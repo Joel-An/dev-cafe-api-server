@@ -7,7 +7,7 @@ const payload = {
   email: 'abc@gmail.com',
 };
 
-describe('#TokenManager', () => {
+describe('TokenManager', () => {
   describe('.constructor', () => {
     it('항상 같은 객체를 반환해야한다. (singleton)', () => {
       const first = new TokenManager();
