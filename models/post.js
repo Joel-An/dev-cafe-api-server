@@ -5,15 +5,11 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Schema.Types;
 
 const postSchema = new Schema({
-  boardInfo: {
-    _id: { type: ObjectId, ref: 'Board' },
-    nameEng: { type: String },
-    nameKor: { type: String },
-  },
+  category: { type: ObjectId, ref: 'Category' },
 
   title: { type: String, required: true },
   contents: { type: String, required: true },
-  authorInfo: { _id: { type: ObjectId, ref: 'User' }, name: { type: String } },
+  author: { type: ObjectId, ref: 'User' },
 
   date: { type: Date, default: Date.now },
   isThisModified: { type: Boolean, default: false },

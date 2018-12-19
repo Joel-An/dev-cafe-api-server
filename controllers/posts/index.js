@@ -13,3 +13,4 @@ exports.getPosts = require('./methods/getPosts');
 exports.getPostById = require('./methods/getPostById');
 
 exports.searchTitle = require('./methods/searchTitle');
+exports.createPost = require('./methods/createPost');
