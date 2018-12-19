@@ -16,6 +16,14 @@ const reqGetCategories = () => chai
   .request(server)
   .get(`${API_URI}/categories`);
 
+const reqGetCategory = id => chai
+  .request(server)
+  .get(`${API_URI}/categories/${id}`);
+
+const reqDeleteCategory = id => chai
+  .request(server)
+  .delete(`${API_URI}/categories/${id}`);
+
 class TestCategory {
   constructor(name, parentId) {
     this.name = name;
@@ -158,6 +166,102 @@ describe('Categories', () => {
         categories[0].should.have.property('children');
         categories[0].children[0].name.should.be.equal(child1.name);
       });
+    });
+  });
+
+  describe('GET /categories/:id', () => {
+    before((done) => {
+      clearCollection(Category, done);
+    });
+
+    afterEach((done) => {
+      clearCollection(Category, done);
+    });
+
+    it('카테고리가 없으면 404코드를 반환한다', async () => {
+      const res = await reqGetCategory(new ObjectId());
+      res.should.have.status(404);
+    });
+
+    it('id형식이 틀리다면 400코드를 반환한다', async () => {
+      const res = await reqGetCategory('WRONG_ID');
+      res.should.have.status(400);
+    });
+
+    context('성공하면', () => {
+      const testCategory = new TestCategory('test');
+      let id;
+      before(async () => {
+        const res = await reqPostCategories(testCategory);
+        res.should.have.status(201);
+        id = res.body.categoryId;
+      });
+
+      it('200코드와 category를 반환한다', async () => {
+        const res = await reqGetCategory(id);
+
+        res.should.have.status(200);
+        const { category } = res.body;
+        category.name.should.be.equal(testCategory.name);
+      });
+    });
+  });
+
+  describe('DELETE /categories/:id', () => {
+    let testCategory;
+    let id;
+
+    before((done) => {
+      clearCollection(Category, done);
+    });
+
+    beforeEach(async () => {
+      testCategory = new TestCategory('test');
+      const res = await reqPostCategories(testCategory);
+
+      res.should.have.status(201);
+      id = res.body.categoryId;
+    });
+
+    afterEach((done) => {
+      clearCollection(Category, done);
+    });
+
+    it('성공하면 204코드를 반환한다', async () => {
+      const res = await reqDeleteCategory(id);
+      res.should.have.status(204);
+
+      const checkDeleted = await reqGetCategory(id);
+      checkDeleted.should.have.status(404);
+    });
+
+    it('id형식이 틀리다면 400코드를 반환한다', async () => {
+      const res = await reqDeleteCategory('WRONG_ID');
+      res.should.have.status(400);
+    });
+
+    it('카테고리가 없다면 404코드를 반환한다', async () => {
+      const res = await reqDeleteCategory(new ObjectId());
+      res.should.have.status(404);
+    });
+
+    context('하위 카테고리가 존재한다면', async () => {
+      beforeEach(async () => {
+        const parentId = id;
+        const childCategory = new TestCategory('child', parentId);
+        const res = await reqPostCategories(childCategory);
+        res.should.have.status(201);
+      });
+      it('409코드를 반환한다', async () => {
+        const res = await reqDeleteCategory(id);
+        res.should.have.status(409);
+
+        const checkExist = await reqGetCategory(id);
+        checkExist.should.have.status(200);
+      });
+    });
+
+    it.skip('관리자가 아니라면 403코드를 반환한다', async () => {
     });
   });
 });
