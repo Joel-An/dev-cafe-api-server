@@ -45,6 +45,8 @@ const clearCollection = (Model, done) => {
   });
 };
 
+const dropDatabase = () => mongoose.connection.db.dropDatabase();
+
 const copyAndFreeze = obj => Object.preventExtensions({ ...obj });
 
 const reqLogin = (username, password) => chai
@@ -68,6 +70,7 @@ global.should = should;
 global.server = server;
 global.API_URI = API_URI;
 global.clearCollection = clearCollection;
+global.dropDatabase = dropDatabase;
 global.copyAndFreeze = copyAndFreeze;
 global.User = User;
 global.USER_ARRAY = USER_ARRAY;
