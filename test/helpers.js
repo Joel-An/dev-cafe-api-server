@@ -5,6 +5,9 @@ const chaiHttp = require('chai-http');
 const should = chai.should();
 chai.use(chaiHttp);
 
+const mongoose = require('mongoose');
+
+const { ObjectId } = mongoose.Types;
 const server = require('../bin/www');
 
 const API_URI = '/api/v1';
@@ -28,6 +31,13 @@ const USER_ARRAY = [
   },
 ];
 
+class TestCategory {
+  constructor(name, parentId) {
+    this.name = name;
+    this.parentId = parentId || null;
+  }
+}
+
 const clearCollection = (Model, done) => {
   Model.deleteMany({}, (err) => {
     if (err) console.error(err);
@@ -47,6 +57,11 @@ const reqRegister = registerForm => chai
   .post(`${API_URI}/users`)
   .send(registerForm);
 
+const reqPostCategories = category => chai
+  .request(server)
+  .post(`${API_URI}/categories`)
+  .send(category);
+
 
 global.chai = chai;
 global.should = should;
@@ -56,5 +71,8 @@ global.clearCollection = clearCollection;
 global.copyAndFreeze = copyAndFreeze;
 global.User = User;
 global.USER_ARRAY = USER_ARRAY;
+global.TestCategory = TestCategory;
 global.reqLogin = reqLogin;
 global.reqRegister = reqRegister;
+global.reqPostCategories = reqPostCategories;
+global.ObjectId = ObjectId;

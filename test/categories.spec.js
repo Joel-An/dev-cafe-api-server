@@ -2,15 +2,7 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
 
-const mongoose = require('mongoose');
-
-const { ObjectId } = mongoose.Types;
 const Category = require('../models/category');
-
-const reqPostCategories = category => chai
-  .request(server)
-  .post(`${API_URI}/categories`)
-  .send(category);
 
 const reqGetCategories = () => chai
   .request(server)
@@ -23,13 +15,6 @@ const reqGetCategory = id => chai
 const reqDeleteCategory = id => chai
   .request(server)
   .delete(`${API_URI}/categories/${id}`);
-
-class TestCategory {
-  constructor(name, parentId) {
-    this.name = name;
-    this.parentId = parentId || null;
-  }
-}
 
 const parentCategory = new TestCategory('parent');
 
