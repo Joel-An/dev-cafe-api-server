@@ -19,6 +19,30 @@ exports.isEmptyInput = (...args) => {
   return false;
 };
 
+exports.listToTree = (list) => {
+  const map = {};
+  const roots = [];
+
+  let node;
+  let i;
+
+  for (i = 0; i < list.length; i += 1) {
+    map[list[i]._id] = i;
+    // eslint-disable-next-line no-param-reassign
+    list[i].children = [];
+  }
+
+  for (i = 0; i < list.length; i += 1) {
+    node = list[i];
+    if (node.parentId !== null) {
+      list[map[node.parentId]].children.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+  return roots;
+};
+
 exports.regex = {
   emailRule: /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i,
   usernameRule: /^[a-zA-Z0-9-]{2,20}$/,
