@@ -55,8 +55,8 @@ app.use(handleTokenError);
 
 // error handler
 app.use((err, req, res, next) => {
-  // print error in development
-  if (process.env.NODE_ENV === 'development') console.error(err);
+  // print error in development, test
+  if (process.env.NODE_ENV !== 'production') console.error(err);
 
   // set locals, only providing error in development
   res.locals.message = err.message;
