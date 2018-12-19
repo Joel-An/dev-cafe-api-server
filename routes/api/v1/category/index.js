@@ -6,5 +6,7 @@ const category = require('../../../../controllers/categories');
  */
 categoryRouter.post('/', category.createCategory);
 categoryRouter.get('/', category.getCategories);
+categoryRouter.get('/:id', category.getCategory);
+categoryRouter.delete('/:id', category.deleteCategory);
 
 module.exports = categoryRouter;
