@@ -35,7 +35,7 @@ const USER_ARRAY = [
 class TestCategory {
   constructor(name, parentId) {
     this.name = name;
-    this.parentId = parentId || null;
+    this.parent = parentId || null;
   }
 }
 

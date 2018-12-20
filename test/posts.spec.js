@@ -149,7 +149,7 @@ describe('Posts', () => {
       assert.equal(post.title, samplePost.title);
       assert.equal(post.author.profileName, user.profileName);
       assert.equal(post.category.name, childCategory.name);
-      assert.equal(post.category.parentId.name, parentCategory.name);
+      assert.equal(post.category.parent.name, parentCategory.name);
     });
 
     it('post가 없으면 404코드를 반환한다', async () => {

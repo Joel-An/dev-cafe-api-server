@@ -16,7 +16,7 @@ module.exports = wrapAsync(async (req, res) => {
     .populate('author', 'profileName')
     .populate({
       path: 'category',
-      populate: { path: 'parentId' },
+      populate: { path: 'parent' },
     });
 
   if (!post) {

@@ -7,7 +7,7 @@ const options = { versionKey: false };
 
 const categorySchema = new Schema({
   name: { type: String },
-  parentId: { type: ObjectId, ref: 'Category' },
+  parent: { type: ObjectId, ref: 'Category' },
   isChild: { type: Boolean, default: false },
 }, options);
 

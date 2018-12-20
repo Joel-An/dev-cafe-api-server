@@ -21,7 +21,7 @@ module.exports = wrapAsync(async (req, res) => {
   }
 
   if (!category.isChild) {
-    const child = await Category.findOne({ parentId: category._id });
+    const child = await Category.findOne({ parent: category._id });
 
     if (child) { return res.status(409).json({ message: '하위 카테고리가 존재합니다.' }); }
   }

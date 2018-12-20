@@ -34,8 +34,8 @@ exports.listToTree = (list) => {
 
   for (i = 0; i < list.length; i += 1) {
     node = list[i];
-    if (node.parentId !== null) {
-      list[map[node.parentId]].children.push(node);
+    if (node.parent !== null) {
+      list[map[node.parent]].children.push(node);
     } else {
       roots.push(node);
     }
