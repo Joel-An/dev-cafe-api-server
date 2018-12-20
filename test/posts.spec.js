@@ -20,6 +20,8 @@ const reqGetPost = postId => requester
 
 describe('Posts', () => {
   let token;
+  let parentCategory;
+  let childCategory;
   const user = copyAndFreeze(USER_ARRAY[0]);
 
   before((done) => {
@@ -36,11 +38,16 @@ describe('Posts', () => {
     login.should.have.status(201);
     token = login.body.accessToken;
 
-    // 카테고리 생성
-    const testCategory = new TestCategory('test');
-    const category = await reqPostCategories(testCategory);
-    category.should.have.status(201);
-    samplePost.categoryId = category.body.categoryId;
+    // 상위 카테고리 생성
+    parentCategory = new TestCategory('parent');
+    const parentC = await reqPostCategories(parentCategory);
+    parentC.should.have.status(201);
+
+    // 하위 카테고리 생성
+    childCategory = new TestCategory('child', parentC.body.categoryId);
+    const childC = await reqPostCategories(childCategory);
+    childC.should.have.status(201);
+    samplePost.categoryId = childC.body.categoryId;
   });
 
   after((done) => {
@@ -138,7 +145,11 @@ describe('Posts', () => {
       res.should.have.status(200);
       res.body.should.have.property('post');
 
-      assert.equal(res.body.post.title, samplePost.title);
+      const { post } = res.body;
+      assert.equal(post.title, samplePost.title);
+      assert.equal(post.author.profileName, user.profileName);
+      assert.equal(post.category.name, childCategory.name);
+      assert.equal(post.category.parentId.name, parentCategory.name);
     });
 
     it('post가 없으면 404코드를 반환한다', async () => {
