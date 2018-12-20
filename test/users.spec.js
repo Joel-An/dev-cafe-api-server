@@ -262,17 +262,15 @@ describe('Users', () => {
 
     beforeEach(async () => {
       // 회원가입
-      const res = await reqRegister(testUser);
-      res.should.have.status(201);
-    });
+      const register = await reqRegister(testUser);
+      register.should.have.status(201);
 
-    beforeEach(async () => {
       // 로그인
-      const res = await reqLogin(testUser.username, testUser.password);
+      const login = await reqLogin(testUser.username, testUser.password);
 
-      res.should.have.status(201);
-      res.body.should.have.property('accessToken');
-      validToken = res.body.accessToken;
+      login.should.have.status(201);
+      login.body.should.have.property('accessToken');
+      validToken = login.body.accessToken;
     });
     afterEach((done) => {
       clearCollection(User, done);
