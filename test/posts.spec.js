@@ -17,23 +17,22 @@ const samplePost = {
 };
 
 describe('Posts', () => {
+  let token;
+  const user = copyAndFreeze(USER_ARRAY[0]);
+  before(async () => {
+    const register = await reqRegister(user);
+    register.should.have.status(201);
+
+    const login = await reqLogin(user.username, user.password);
+    login.should.have.status(201);
+    token = login.body.accessToken;
+
+    const testCategory = new TestCategory('test');
+    const category = await reqPostCategories(testCategory);
+    category.should.have.status(201);
+    samplePost.categoryId = category.body.categoryId;
+  });
   describe('POST /posts', () => {
-    const user = copyAndFreeze(USER_ARRAY[0]);
-    let token;
-    before(async () => {
-      const register = await reqRegister(user);
-      register.should.have.status(201);
-
-      const login = await reqLogin(user.username, user.password);
-      login.should.have.status(201);
-      token = login.body.accessToken;
-
-      const testCategory = new TestCategory('test');
-      const category = await reqPostCategories(testCategory);
-      category.should.have.status(201);
-      samplePost.categoryId = category.body.categoryId;
-    });
-
     after(async () => {
       await dropDatabase();
     });
@@ -105,5 +104,9 @@ describe('Posts', () => {
       const post = await Post.findOne({ title: wrongPost.title });
       should.not.exist(post);
     });
+  });
+
+  describe('GET /posts/:id', () => {
+
   });
 });
