@@ -1,11 +1,15 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
 const Post = require('../models/post');
+const Comment = require('../models/comment');
 
 const testPost = copyAndFreeze(samplePost);
 
 const reqGetPost = postId => requester
   .get(`${API_URI}/posts/${postId}`);
+
+const reqGetPosts = () => requester
+  .get(`${API_URI}/posts`);
 
 describe('Posts', () => {
   let token;
@@ -151,6 +155,79 @@ describe('Posts', () => {
       const res = await reqGetPost('INVALID_ID');
       res.should.have.status(400);
       should.not.exist(res.body.post);
+    });
+  });
+
+  describe('GET /posts', () => {
+    before((done) => {
+      clearCollection(Post, done);
+    });
+
+    context('글이 없으면', () => {
+      before((done) => {
+        clearCollection(Post, done);
+      });
+
+      it('404코드를 반환한다', async () => {
+        const res = await reqGetPosts();
+        res.should.have.status(404);
+      });
+    });
+
+    context('성공하면', () => {
+      let posts;
+      before(async () => {
+        const post1 = copyAndFreeze(testPost);
+        const post2 = copyAndFreeze(testPost);
+
+        post1.title = 'first post';
+        post1.contents = 'Hello';
+
+        post2.title = '2nd post';
+        post2.contents = 'EEEEEE';
+
+        const reqP1 = reqPostPosts(token, post1);
+        const reqP2 = reqPostPosts(token, post2);
+
+        // 글 2개 작성
+        const responses = await Promise.all([reqP1, reqP2]);
+        responses[0].should.have.status(201);
+        responses[1].should.have.status(201);
+
+        const comment = copyAndFreeze(sampleComment);
+        comment.postId = responses[0].body.postId;
+
+        // 첫 번재 글에 댓글 작성
+        const res = await reqPostComments(token, comment);
+        res.should.have.status(201);
+      });
+
+      it('200코드, posts를 반환한다', async () => {
+        const res = await reqGetPosts();
+        res.should.have.status(200);
+        res.body.should.have.property('posts');
+        ({ posts } = res.body);
+      });
+
+      it('post에는 profileName이 있어야한다.', () => {
+        assert.equal(posts[0].author.profileName, user.profileName);
+      });
+
+      it('post에는 상위,하위 카테고리정보가 있어야한다.', () => {
+        assert.equal(posts[0].category.name, childCategory.name);
+        assert.equal(posts[0].category.parent.name, parentCategory.name);
+      });
+
+      it('post에는 댓글 갯수가 있어야한다.', () => {
+        assert.equal(posts[0].commentsCount, 1);
+      });
+
+      after((done) => {
+        clearCollection(Post, done);
+      });
+      after((done) => {
+        clearCollection(Comment, done);
+      });
     });
   });
 });
