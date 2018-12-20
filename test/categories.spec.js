@@ -33,17 +33,21 @@ describe('Categories', () => {
     });
 
     context('하위 카테코리 생성에 성공하면', () => {
+      let parentId;
       before(async () => {
         const res = await reqPostCategories(parentCategory);
         res.should.have.status(201);
+        parentId = res.body.categoryId;
       });
 
       it('201코드를 반환한다', async () => {
-        const parent = await Category.find({ name: parentCategory.name });
-        const childCategory = new TestCategory('child', parent._id);
+        const childCategory = new TestCategory('child', parentId);
 
         const res = await reqPostCategories(childCategory);
         res.should.have.status(201);
+
+        const child = await Category.findById(res.body.categoryId);
+        assert.equal(child.isChild, true);
       });
     });
 
