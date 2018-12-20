@@ -22,13 +22,16 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // set mongodb
+const mongooseOptions = {
+  useNewUrlParser: true,
+  family: 4,
+};
+
 mongoose.Promise = global.Promise;
 mongoose.set('useFindAndModify', false);
 mongoose.connect(
   config.mongoDbUri,
-  {
-    useNewUrlParser: true,
-  },
+  mongooseOptions,
 );
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'mongoDB connection error:'));
