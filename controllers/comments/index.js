@@ -7,3 +7,4 @@
 */
 
 exports.getComments = require('./methods/getComments');
+exports.createComment = require('./methods/createComment');

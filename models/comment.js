@@ -5,13 +5,12 @@ const { Schema } = mongoose;
 const { ObjectId } = mongoose.Schema.Types;
 
 const commentSchema = new Schema({
-  postInfo: { type: ObjectId, ref: 'Post' },
+  post: { type: ObjectId, ref: 'Post' },
 
   contents: { type: String, required: true },
-  authorInfo: { _id: { type: ObjectId, ref: 'User' }, name: { type: String } },
+  author: { type: ObjectId, ref: 'User' },
 
-  parentComment: { type: ObjectId, ref: 'Comment' },
-  childComments: [{ type: ObjectId, ref: 'Comment' }],
+  parent: { type: ObjectId, ref: 'Comment' },
   isChild: { type: Boolean, default: false },
 
   date: { type: Date, default: Date.now },
