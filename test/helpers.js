@@ -72,6 +72,7 @@ const reqPostCategories = category => requester
 
 global.chai = chai;
 global.should = should;
+global.assert = chai.assert;
 global.server = server;
 global.API_URI = API_URI;
 global.clearCollection = clearCollection;

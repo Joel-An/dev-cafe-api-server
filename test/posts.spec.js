@@ -2,8 +2,6 @@
 /* eslint-disable no-undef */
 const Post = require('../models/post');
 
-const { assert } = chai;
-
 const reqPostPosts = (userToken, post) => requester
   .post(`${API_URI}/posts`)
   .set('x-access-token', userToken)
