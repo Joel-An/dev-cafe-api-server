@@ -44,65 +44,67 @@ describe('comments', () => {
     dropDatabase(done);
   });
 
-  afterEach((done) => {
-    clearCollection(Comment, done);
-  });
+  describe('POST /comments', () => {
+    afterEach((done) => {
+      clearCollection(Comment, done);
+    });
 
-  it('성공하면 201코드, commentId를 반환한다', async () => {
-    const res = await reqPostComments(token, testComment);
-    res.should.have.status(201);
-    res.body.should.have.property('commentId');
+    it('성공하면 201코드, commentId를 반환한다', async () => {
+      const res = await reqPostComments(token, testComment);
+      res.should.have.status(201);
+      res.body.should.have.property('commentId');
 
-    const comment = await Comment.findById(res.body.commentId);
-    should.exist(comment);
-    assert.equal(comment.contents, testComment.contents);
-    assert.equal(comment.post, testComment.postId);
-  });
+      const comment = await Comment.findById(res.body.commentId);
+      should.exist(comment);
+      assert.equal(comment.contents, testComment.contents);
+      assert.equal(comment.post, testComment.postId);
+    });
 
-  it('내용 or postId가 누락되면 400코드를 반환한다', async () => {
-    const emptyContents = copyAndFreeze(testComment);
-    emptyContents.contents = '';
+    it('내용 or postId가 누락되면 400코드를 반환한다', async () => {
+      const emptyContents = copyAndFreeze(testComment);
+      emptyContents.contents = '';
 
-    const emptyPostId = copyAndFreeze(testComment);
-    emptyPostId.postId = '';
+      const emptyPostId = copyAndFreeze(testComment);
+      emptyPostId.postId = '';
 
-    const req1 = reqPostComments(token, emptyContents);
-    const req2 = reqPostComments(token, emptyPostId);
+      const req1 = reqPostComments(token, emptyContents);
+      const req2 = reqPostComments(token, emptyPostId);
 
-    const responses = await Promise.all([req1, req2]);
+      const responses = await Promise.all([req1, req2]);
 
-    responses[0].should.have.status(400);
-    responses[1].should.have.status(400);
+      responses[0].should.have.status(400);
+      responses[1].should.have.status(400);
 
-    const comments = await Comment.find({});
-    comments.length.should.be.equal(0);
-  });
+      const comments = await Comment.find({});
+      comments.length.should.be.equal(0);
+    });
 
-  it('postId가 invalid하면 400코드를 반환한다', async () => {
-    const invalidPostId = copyAndFreeze(testComment);
-    invalidPostId.postId = 'invalid_postId';
-    const res = await reqPostComments(token, invalidPostId);
-    res.should.have.status(400);
+    it('postId가 invalid하면 400코드를 반환한다', async () => {
+      const invalidPostId = copyAndFreeze(testComment);
+      invalidPostId.postId = 'invalid_postId';
+      const res = await reqPostComments(token, invalidPostId);
+      res.should.have.status(400);
 
-    const comments = await Comment.find({});
-    comments.length.should.be.equal(0);
-  });
+      const comments = await Comment.find({});
+      comments.length.should.be.equal(0);
+    });
 
-  it('토큰이 누락되면 401코드를 반환한다', async () => {
-    const res = await reqPostComments(null, testComment);
-    res.should.have.status(401);
+    it('토큰이 누락되면 401코드를 반환한다', async () => {
+      const res = await reqPostComments(null, testComment);
+      res.should.have.status(401);
 
-    const comments = await Comment.find({});
-    comments.length.should.be.equal(0);
-  });
+      const comments = await Comment.find({});
+      comments.length.should.be.equal(0);
+    });
 
-  it('post가 존재하지않으면 404코드를 반환한다', async () => {
-    const notExistPostId = copyAndFreeze(testComment);
-    notExistPostId.postId = new ObjectId();
-    const res = await reqPostComments(token, notExistPostId);
-    res.should.have.status(404);
+    it('post가 존재하지않으면 404코드를 반환한다', async () => {
+      const notExistPostId = copyAndFreeze(testComment);
+      notExistPostId.postId = new ObjectId();
+      const res = await reqPostComments(token, notExistPostId);
+      res.should.have.status(404);
 
-    const comments = await Comment.find({});
-    comments.length.should.be.equal(0);
+      const comments = await Comment.find({});
+      comments.length.should.be.equal(0);
+    });
   });
 });
