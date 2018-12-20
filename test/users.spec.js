@@ -253,8 +253,7 @@ describe('Users', () => {
     let validToken;
 
     // 회원 탈퇴 요청 (토큰, 비밀번호)
-    const requestUnregister = (userToken, password) => chai
-      .request(server)
+    const requestUnregister = (userToken, password) => requester
       .delete(`${API_URI}/users/me`)
       .set('x-access-token', userToken)
       .send({ password });

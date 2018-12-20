@@ -4,8 +4,7 @@ const Post = require('../models/post');
 
 const { assert } = chai;
 
-const reqPostPosts = (userToken, post) => chai
-  .request(server)
+const reqPostPosts = (userToken, post) => requester
   .post(`${API_URI}/posts`)
   .set('x-access-token', userToken)
   .send({ ...post });
@@ -16,8 +15,7 @@ const samplePost = {
   categoryId: null,
 };
 
-const reqGetPost = postId => chai
-  .request(server)
+const reqGetPost = postId => requester
   .get(`${API_URI}/posts/${postId}`);
 
 describe('Posts', () => {

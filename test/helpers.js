@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const chaiHttp = require('chai-http');
@@ -56,18 +57,15 @@ const dropDatabase = (done) => {
 
 const copyAndFreeze = obj => Object.preventExtensions({ ...obj });
 
-const reqLogin = (username, password) => chai
-  .request(server)
+const reqLogin = (username, password) => requester
   .post(`${API_URI}/auth`)
   .send({ username, password });
 
-const reqRegister = registerForm => chai
-  .request(server)
+const reqRegister = registerForm => requester
   .post(`${API_URI}/users`)
   .send(registerForm);
 
-const reqPostCategories = category => chai
-  .request(server)
+const reqPostCategories = category => requester
   .post(`${API_URI}/categories`)
   .send(category);
 
@@ -86,3 +84,15 @@ global.reqLogin = reqLogin;
 global.reqRegister = reqRegister;
 global.reqPostCategories = reqPostCategories;
 global.ObjectId = ObjectId;
+
+
+before(() => {
+  global.requester = chai.request(server).keepOpen();
+  // eslint-disable-next-line no-console
+  console.log('<Server is kept open>');
+});
+after(() => {
+  requester.close();
+  // eslint-disable-next-line no-console
+  console.log('<Server is closed>');
+});

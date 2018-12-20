@@ -4,16 +4,13 @@
 
 const Category = require('../models/category');
 
-const reqGetCategories = () => chai
-  .request(server)
+const reqGetCategories = () => requester
   .get(`${API_URI}/categories`);
 
-const reqGetCategory = id => chai
-  .request(server)
+const reqGetCategory = id => requester
   .get(`${API_URI}/categories/${id}`);
 
-const reqDeleteCategory = id => chai
-  .request(server)
+const reqDeleteCategory = id => requester
   .delete(`${API_URI}/categories/${id}`);
 
 const parentCategory = new TestCategory('parent');
