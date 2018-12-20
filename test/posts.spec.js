@@ -19,6 +19,11 @@ const samplePost = {
 describe('Posts', () => {
   let token;
   const user = copyAndFreeze(USER_ARRAY[0]);
+
+  before(async () => {
+    await dropDatabase();
+  });
+
   before(async () => {
     // 회원가입
     const register = await reqRegister(user);
@@ -35,9 +40,14 @@ describe('Posts', () => {
     category.should.have.status(201);
     samplePost.categoryId = category.body.categoryId;
   });
+
+  after(async () => {
+    await dropDatabase();
+  });
+
   describe('POST /posts', () => {
-    after(async () => {
-      await dropDatabase();
+    before((done) => {
+      clearCollection(Post, done);
     });
 
     afterEach((done) => {
