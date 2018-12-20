@@ -13,7 +13,7 @@ const categorySchema = new Schema({
 
 // eslint-disable-next-line func-names
 categorySchema.pre('save', function (next) {
-  if (this.parentId) { this.isChild = true; }
+  if (this.parent) { this.isChild = true; }
   next();
 });
 
