@@ -20,13 +20,16 @@ describe('Posts', () => {
   let token;
   const user = copyAndFreeze(USER_ARRAY[0]);
   before(async () => {
+    // 회원가입
     const register = await reqRegister(user);
     register.should.have.status(201);
 
+    // 로그인
     const login = await reqLogin(user.username, user.password);
     login.should.have.status(201);
     token = login.body.accessToken;
 
+    // 카테고리 생성
     const testCategory = new TestCategory('test');
     const category = await reqPostCategories(testCategory);
     category.should.have.status(201);
