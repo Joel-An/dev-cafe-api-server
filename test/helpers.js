@@ -45,7 +45,14 @@ const clearCollection = (Model, done) => {
   });
 };
 
-const dropDatabase = () => mongoose.connection.db.dropDatabase();
+const dropDatabase = (done) => {
+  const collections = Object.keys(mongoose.connection.collections);
+
+  collections.forEach((collection) => {
+    mongoose.connection.collections[collection].deleteMany(() => {});
+  });
+  done();
+};
 
 const copyAndFreeze = obj => Object.preventExtensions({ ...obj });
 

@@ -20,8 +20,8 @@ describe('Posts', () => {
   let token;
   const user = copyAndFreeze(USER_ARRAY[0]);
 
-  before(async () => {
-    await dropDatabase();
+  before((done) => {
+    dropDatabase(done);
   });
 
   before(async () => {
@@ -41,8 +41,8 @@ describe('Posts', () => {
     samplePost.categoryId = category.body.categoryId;
   });
 
-  after(async () => {
-    await dropDatabase();
+  after((done) => {
+    dropDatabase(done);
   });
 
   describe('POST /posts', () => {
@@ -120,6 +120,20 @@ describe('Posts', () => {
   });
 
   describe('GET /posts/:id', () => {
+    let postId;
+    before(async () => {
+      const res = await reqPostPosts(token, samplePost);
+      res.should.have.status(201);
+      ({ postId } = res.body);
+    });
 
+    after((done) => {
+      clearCollection(Post, done);
+    });
+
+    it('성공하면 200코드, post를 반환한다', async () => {
+      const res = await reqGetPost(postId);
+      res.should.have.status(200);
+    });
   });
 });
