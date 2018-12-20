@@ -16,6 +16,10 @@ const samplePost = {
   categoryId: null,
 };
 
+const reqGetPost = postId => chai
+  .request(server)
+  .get(`${API_URI}/posts/${postId}`);
+
 describe('Posts', () => {
   let token;
   const user = copyAndFreeze(USER_ARRAY[0]);
@@ -134,6 +138,21 @@ describe('Posts', () => {
     it('성공하면 200코드, post를 반환한다', async () => {
       const res = await reqGetPost(postId);
       res.should.have.status(200);
+      res.body.should.have.property('post');
+
+      assert.equal(res.body.post.title, samplePost.title);
+    });
+
+    it('post가 없으면 404코드를 반환한다', async () => {
+      const res = await reqGetPost(new ObjectId());
+      res.should.have.status(404);
+      should.not.exist(res.body.post);
+    });
+
+    it('postId가 invalid하다면 400코드를 반환한다', async () => {
+      const res = await reqGetPost('INVALID_ID');
+      res.should.have.status(400);
+      should.not.exist(res.body.post);
     });
   });
 });
