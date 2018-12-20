@@ -69,6 +69,17 @@ const reqPostCategories = category => requester
   .post(`${API_URI}/categories`)
   .send(category);
 
+global.reqPostPosts = (userToken, post) => requester
+  .post(`${API_URI}/posts`)
+  .set('x-access-token', userToken)
+  .send({ ...post });
+
+global.samplePost = {
+  title: 'hello world',
+  contents: '#include<stdio.h>',
+  categoryId: null,
+};
+
 
 global.chai = chai;
 global.should = should;

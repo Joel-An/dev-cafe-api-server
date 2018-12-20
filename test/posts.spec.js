@@ -2,16 +2,7 @@
 /* eslint-disable no-undef */
 const Post = require('../models/post');
 
-const reqPostPosts = (userToken, post) => requester
-  .post(`${API_URI}/posts`)
-  .set('x-access-token', userToken)
-  .send({ ...post });
-
-const samplePost = {
-  title: 'hello world',
-  contents: '#include<stdio.h>',
-  categoryId: null,
-};
+const testPost = copyAndFreeze(samplePost);
 
 const reqGetPost = postId => requester
   .get(`${API_URI}/posts/${postId}`);
@@ -45,7 +36,7 @@ describe('Posts', () => {
     childCategory = new TestCategory('child', parentC.body.categoryId);
     const childC = await reqPostCategories(childCategory);
     childC.should.have.status(201);
-    samplePost.categoryId = childC.body.categoryId;
+    testPost.categoryId = childC.body.categoryId;
   });
 
   after((done) => {
@@ -62,27 +53,27 @@ describe('Posts', () => {
     });
 
     it('성공하면 201코드, postId를 반환한다', async () => {
-      const res = await reqPostPosts(token, samplePost);
+      const res = await reqPostPosts(token, testPost);
       res.should.have.status(201);
       res.body.should.have.property('postId');
 
       const post = await Post.findById(res.body.postId);
       should.exist(post);
-      assert.equal(post.title, samplePost.title);
-      assert.equal(post.contents, samplePost.contents);
-      assert.equal(post.category, samplePost.categoryId);
+      assert.equal(post.title, testPost.title);
+      assert.equal(post.contents, testPost.contents);
+      assert.equal(post.category, testPost.categoryId);
     });
 
     it('토큰이 없으면 401코드를 반환한다', async () => {
-      const res = await reqPostPosts(null, samplePost);
+      const res = await reqPostPosts(null, testPost);
       res.should.have.status(401);
 
-      const post = await Post.findOne({ title: samplePost.title });
+      const post = await Post.findOne({ title: testPost.title });
       should.not.exist(post);
     });
 
     it('카테고리 id가 invalid하면 400코드를 반환한다', async () => {
-      const wrongPost = copyAndFreeze(samplePost);
+      const wrongPost = copyAndFreeze(testPost);
       wrongPost.categoryId = 'WRONG_ID';
 
       const res = await reqPostPosts(token, wrongPost);
@@ -93,9 +84,9 @@ describe('Posts', () => {
     });
 
     it('제목, 내용, 카테고리 누락시 400코드를 반환한다', async () => {
-      const titleX = copyAndFreeze(samplePost);
-      const contentsX = copyAndFreeze(samplePost);
-      const categoryX = copyAndFreeze(samplePost);
+      const titleX = copyAndFreeze(testPost);
+      const contentsX = copyAndFreeze(testPost);
+      const categoryX = copyAndFreeze(testPost);
 
       titleX.title = '   ';
       contentsX.contents = '';
@@ -115,7 +106,7 @@ describe('Posts', () => {
     });
 
     it('카테고리가 존재하지 않으면 404코드를 반환한다', async () => {
-      const wrongPost = copyAndFreeze(samplePost);
+      const wrongPost = copyAndFreeze(testPost);
       wrongPost.categoryId = new ObjectId();
 
       const res = await reqPostPosts(token, wrongPost);
@@ -129,7 +120,7 @@ describe('Posts', () => {
   describe('GET /posts/:id', () => {
     let postId;
     before(async () => {
-      const res = await reqPostPosts(token, samplePost);
+      const res = await reqPostPosts(token, testPost);
       res.should.have.status(201);
       ({ postId } = res.body);
     });
@@ -144,7 +135,7 @@ describe('Posts', () => {
       res.body.should.have.property('post');
 
       const { post } = res.body;
-      assert.equal(post.title, samplePost.title);
+      assert.equal(post.title, testPost.title);
       assert.equal(post.author.profileName, user.profileName);
       assert.equal(post.category.name, childCategory.name);
       assert.equal(post.category.parent.name, parentCategory.name);
