@@ -5,12 +5,7 @@ const Comment = require('../models/comment');
 describe('comments', () => {
   let token;
   const user = copyAndFreeze(USER_ARRAY[0]);
-  const sampleComment = { contents: 'coffee coffee', postId: null };
-
-  const reqPostComments = (userToken, comment) => requester
-    .post(`${API_URI}/comments`)
-    .set('x-access-token', userToken)
-    .send({ ...comment });
+  const testComment = copyAndFreeze(sampleComment);
 
   before((done) => {
     dropDatabase(done);
@@ -42,7 +37,7 @@ describe('comments', () => {
     testPost.categoryId = childC.body.categoryId;
     const post = await reqPostPosts(token, testPost);
     post.should.have.status(201);
-    sampleComment.postId = post.body.postId;
+    testComment.postId = post.body.postId;
   });
 
   after((done) => {
@@ -54,21 +49,21 @@ describe('comments', () => {
   });
 
   it('성공하면 201코드, commentId를 반환한다', async () => {
-    const res = await reqPostComments(token, sampleComment);
+    const res = await reqPostComments(token, testComment);
     res.should.have.status(201);
     res.body.should.have.property('commentId');
 
     const comment = await Comment.findById(res.body.commentId);
     should.exist(comment);
-    assert.equal(comment.contents, sampleComment.contents);
-    assert.equal(comment.post, sampleComment.postId);
+    assert.equal(comment.contents, testComment.contents);
+    assert.equal(comment.post, testComment.postId);
   });
 
   it('내용 or postId가 누락되면 400코드를 반환한다', async () => {
-    const emptyContents = copyAndFreeze(sampleComment);
+    const emptyContents = copyAndFreeze(testComment);
     emptyContents.contents = '';
 
-    const emptyPostId = copyAndFreeze(sampleComment);
+    const emptyPostId = copyAndFreeze(testComment);
     emptyPostId.postId = '';
 
     const req1 = reqPostComments(token, emptyContents);
@@ -84,7 +79,7 @@ describe('comments', () => {
   });
 
   it('postId가 invalid하면 400코드를 반환한다', async () => {
-    const invalidPostId = copyAndFreeze(sampleComment);
+    const invalidPostId = copyAndFreeze(testComment);
     invalidPostId.postId = 'invalid_postId';
     const res = await reqPostComments(token, invalidPostId);
     res.should.have.status(400);
@@ -94,7 +89,7 @@ describe('comments', () => {
   });
 
   it('토큰이 누락되면 401코드를 반환한다', async () => {
-    const res = await reqPostComments(null, sampleComment);
+    const res = await reqPostComments(null, testComment);
     res.should.have.status(401);
 
     const comments = await Comment.find({});
@@ -102,7 +97,7 @@ describe('comments', () => {
   });
 
   it('post가 존재하지않으면 404코드를 반환한다', async () => {
-    const notExistPostId = copyAndFreeze(sampleComment);
+    const notExistPostId = copyAndFreeze(testComment);
     notExistPostId.postId = new ObjectId();
     const res = await reqPostComments(token, notExistPostId);
     res.should.have.status(404);

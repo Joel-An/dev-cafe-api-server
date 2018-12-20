@@ -80,6 +80,13 @@ global.samplePost = {
   categoryId: null,
 };
 
+global.sampleComment = { contents: 'coffee coffee', postId: null };
+
+global.reqPostComments = (userToken, comment) => requester
+  .post(`${API_URI}/comments`)
+  .set('x-access-token', userToken)
+  .send({ ...comment });
+
 
 global.chai = chai;
 global.should = should;
