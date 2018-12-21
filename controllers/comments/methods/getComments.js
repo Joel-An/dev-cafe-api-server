@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const { ObjectId } = mongoose.Types;
-const { wrapAsync } = require('../../../util/util');
+const { wrapAsync, listToTree } = require('../../../util/util');
 const Comment = require('../../../models/comment');
 
 const isValidQueryParam = (query, options) => {
@@ -38,12 +38,16 @@ module.exports = wrapAsync(async (req, res) => {
 
   const cleanedOptions = removeEmptyOption(options);
 
-  const comments = await Comment.find(cleanedOptions);
+  const comments = await Comment
+    .find(cleanedOptions, null, { sort: { isChild: 1 } })
+    .lean();
 
   if (comments.length === 0) {
     return res.status(404).end();
   }
 
+  const commemtsTree = query.post ? listToTree(comments) : comments;
+
   res.status(200);
-  return res.json({ comments });
+  return res.json({ comments: commemtsTree });
 });
