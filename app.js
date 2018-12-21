@@ -9,6 +9,7 @@ const config = require('./config/config');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerSpec');
 const { handleTokenError } = require('./middleware/handleTokenError');
+const { handleAuthorizationError } = require('./middleware/handleAuthorizationError')
 
 const apiRouterV1 = require('./routes/api/v1');
 
@@ -54,7 +55,9 @@ app.use((req, res, next) => {
   next(createError(404));
 });
 
+
 app.use(handleTokenError);
+app.use(handleAuthorizationError);
 
 // error handler
 app.use((err, req, res, next) => {
