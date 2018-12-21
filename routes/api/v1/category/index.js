@@ -1,10 +1,12 @@
 const categoryRouter = require('express').Router();
 const category = require('../../../../controllers/categories');
+const isAdmin = require('../../../../middleware/authorizer');
+const { isAuthenticated } = require('../../../../middleware/authenticator');
 
 /*
  *      /api/v1/categories'
  */
-categoryRouter.post('/', category.createCategory);
+categoryRouter.post('/', isAuthenticated, isAdmin, category.createCategory);
 categoryRouter.get('/', category.getCategories);
 categoryRouter.get('/:id', category.getCategory);
 categoryRouter.delete('/:id', category.deleteCategory);
