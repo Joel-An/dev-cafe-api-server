@@ -78,7 +78,7 @@ module.exports = wrapAsync(async (req, res) => {
   }
 
   const tokenManager = new TokenManager();
-  const accessToken = await tokenManager.signToken(user._id, user.email);
+  const accessToken = await tokenManager.signToken(user);
 
   res.status(201);
   return res.json({ accessToken });

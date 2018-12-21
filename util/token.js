@@ -21,8 +21,12 @@ class TokenManager {
     instance = this;
   }
 
-  signToken(_id, email, options) {
-    const payload = { ...this.payload, _id, email };
+  signToken(user, options) {
+    const payload = {
+      ...this.payload,
+      _id: user._id,
+      email: user.email,
+    };
     const signOptions = options || this.signOptions;
 
     return new Promise((resolve, reject) => {
@@ -48,10 +52,10 @@ class TokenManager {
     });
   }
 
-  signImmediatelyExpiredToken(_id, email) {
+  signImmediatelyExpiredToken(user) {
     const options = { ...this.signOptions, expiresIn: '300' };
 
-    return this.signToken(_id, email, options);
+    return this.signToken(user, options);
   }
 }
 

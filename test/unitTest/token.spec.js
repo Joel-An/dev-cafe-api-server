@@ -2,7 +2,7 @@
 /* eslint-disable no-undef */
 const TokenManager = require('../../util/token');
 
-const payload = {
+const user = {
   _id: '12345',
   email: 'abc@gmail.com',
 };
@@ -21,11 +21,11 @@ describe('TokenManager', () => {
   describe('.signToken', () => {
     const tm = new TokenManager();
     it('프로미스를 반환해야한다.', () => {
-      const promise = tm.signToken(payload._id, payload.email);
+      const promise = tm.signToken(user);
       promise.should.be.a('Promise');
     });
     it('토큰이 생성되어야한다.', (done) => {
-      const getToken = tm.signToken(payload._id, payload.email);
+      const getToken = tm.signToken(user);
       getToken
         .then((token) => {
           should.exist(token);
@@ -44,7 +44,7 @@ describe('TokenManager', () => {
     let token;
 
     beforeEach((done) => {
-      const getToken = tm.signToken(payload._id, payload.email);
+      const getToken = tm.signToken(user);
       getToken
         .then((result) => {
           should.exist(result);
@@ -64,8 +64,8 @@ describe('TokenManager', () => {
     it('유저정보를 반환해야한다.', (done) => {
       const decodeToken = tm.decodeToken(token);
       decodeToken.then((decoded) => {
-        decoded._id.should.be.equal(payload._id);
-        decoded.email.should.be.equal(payload.email);
+        decoded._id.should.be.equal(user._id);
+        decoded.email.should.be.equal(user.email);
         done();
       });
     });
@@ -74,17 +74,11 @@ describe('TokenManager', () => {
     const tm = new TokenManager();
 
     it('프로미스를 반환해야한다.', () => {
-      const promise = tm.signImmediatelyExpiredToken(
-        payload._id,
-        payload.email
-      );
+      const promise = tm.signImmediatelyExpiredToken(user);
       promise.should.be.a('Promise');
     });
     it('발급된 토큰은 즉시 만료되어야한다.', async () => {
-      const getToken = tm.signImmediatelyExpiredToken(
-        payload._id,
-        payload.email
-      );
+      const getToken = tm.signImmediatelyExpiredToken(user);
       const token = await getToken;
 
       const decodeToken = tm.decodeToken(token);
