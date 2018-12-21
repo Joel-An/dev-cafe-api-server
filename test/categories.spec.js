@@ -288,7 +288,12 @@ describe('Categories', () => {
       });
     });
 
-    it.skip('관리자가 아니라면 403코드를 반환한다', async () => {
+    it('관리자가 아니라면 403코드를 반환한다', async () => {
+      const res = await reqDeleteCategory(userToken, id);
+      res.should.have.status(403);
+
+      const checkExist = await reqGetCategory(id);
+      checkExist.should.have.status(200);
     });
   });
 });
