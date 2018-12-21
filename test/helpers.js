@@ -81,7 +81,7 @@ global.samplePost = {
   categoryId: null,
 };
 
-global.sampleComment = { contents: 'coffee coffee', postId: null };
+global.sampleComment = { contents: 'coffee coffee', postId: null, parent: null };
 
 global.reqPostComments = (userToken, comment) => requester
   .post(`${API_URI}/comments`)

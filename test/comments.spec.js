@@ -122,6 +122,52 @@ describe('comments', () => {
       const comments = await Comment.find({});
       comments.length.should.be.equal(0);
     });
+
+    context('자식 댓글을 생성할 때', () => {
+      let childComment;
+      before(async () => {
+        const parentComment = copyAndFreeze(testComment);
+        childComment = copyAndFreeze(testComment);
+
+        const resParent = await reqPostComments(token, parentComment);
+        resParent.should.have.status(201);
+
+        childComment.parent = resParent.body.commentId;
+      });
+      it('성공하면 201코드, commentId를 반환한다', async () => {
+        const res = await reqPostComments(token, childComment);
+        res.should.have.status(201);
+        const childCommentId = res.body.commentId;
+
+        const child = await Comment.findById(childCommentId);
+        assert.equal(child.isChild, true);
+        assert.equal(child.parent, childComment.parent);
+      });
+      it('부모댓글이 없으면 404코드를 반환한다', async () => {
+        const orphanComment = copyAndFreeze(childComment);
+        orphanComment.contents = 'no Parent';
+        orphanComment.parent = new ObjectId();
+
+        const res = await reqPostComments(token, orphanComment);
+        res.should.have.status(404);
+
+        const orphanDoc = await Comment
+          .findOne({ contents: orphanComment.contents });
+        should.not.exist(orphanDoc);
+      });
+      it('parentId가 invalid하면 400코드를 반환한다', async () => {
+        const invalidParentId = copyAndFreeze(childComment);
+        invalidParentId.contents = 'invalid parentId';
+        invalidParentId.parent = 'INVALID_PARENTID';
+
+        const res = await reqPostComments(token, invalidParentId);
+        res.should.have.status(400);
+
+        const invalidPidDoc = await Comment
+          .findOne({ contents: invalidParentId.contents });
+        should.not.exist(invalidPidDoc);
+      });
+    });
   });
 
   describe('GET /comments', () => {
