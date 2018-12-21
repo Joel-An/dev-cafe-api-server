@@ -16,6 +16,39 @@ const reqDeleteCategory = id => requester
 const parentCategory = new TestCategory('parent');
 
 describe('Categories', () => {
+  let adminToken;
+  let userToken;
+
+  before((done) => {
+    dropDatabase(done);
+  });
+
+  before(async () => {
+    // 회원가입
+    const admin = copyAndFreeze(USER_ARRAY[0]);
+    const user = copyAndFreeze(USER_ARRAY[1]);
+
+    const registerAdmin = await reqRegister(admin);
+    const registerUser = await reqRegister(user);
+
+    registerAdmin.should.have.status(201);
+    registerUser.should.have.status(201);
+
+    // 로그인
+    const adminLogin = await reqLogin(admin.username, admin.password);
+    const userLogin = await reqLogin(user.username, user.password);
+    adminLogin.should.have.status(201);
+    userLogin.should.have.status(201);
+
+    // 토큰 저장
+    adminToken = adminLogin.body.accessToken;
+    userToken = userLogin.body.accessToken;
+  });
+
+  after((done) => {
+    dropDatabase(done);
+  });
+
   describe('POST /categories', () => {
     before((done) => {
       clearCollection(Category, done);
@@ -26,7 +59,7 @@ describe('Categories', () => {
 
     context('상위 카테코리 생성에 성공하면', () => {
       it('201코드, id를 반환한다', async () => {
-        const res = await reqPostCategories(parentCategory);
+        const res = await reqPostCategories(adminToken, parentCategory);
         res.should.have.status(201);
         res.body.should.have.property('categoryId');
       });
@@ -35,7 +68,7 @@ describe('Categories', () => {
     context('하위 카테코리 생성에 성공하면', () => {
       let parentId;
       before(async () => {
-        const res = await reqPostCategories(parentCategory);
+        const res = await reqPostCategories(adminToken, parentCategory);
         res.should.have.status(201);
         parentId = res.body.categoryId;
       });
@@ -43,7 +76,7 @@ describe('Categories', () => {
       it('201코드를 반환한다', async () => {
         const childCategory = new TestCategory('child', parentId);
 
-        const res = await reqPostCategories(childCategory);
+        const res = await reqPostCategories(adminToken, childCategory);
         res.should.have.status(201);
 
         const child = await Category.findById(res.body.categoryId);
@@ -54,7 +87,7 @@ describe('Categories', () => {
     context('parentId가 존재하지 않는다면', () => {
       it('404코드를 반환한다', async () => {
         const orphanCategory = new TestCategory('orphan', new ObjectId());
-        const res = await reqPostCategories(orphanCategory);
+        const res = await reqPostCategories(adminToken, orphanCategory);
         res.should.have.status(404);
       });
     });
@@ -62,19 +95,19 @@ describe('Categories', () => {
     context('parentId형식이 틀리다면', () => {
       it('400코드를 반환한다', async () => {
         const childCategory = new TestCategory('child', 'wrongIdFormat');
-        const res = await reqPostCategories(childCategory);
+        const res = await reqPostCategories(adminToken, childCategory);
         res.should.have.status(400);
       });
     });
 
     context('같은 카테고리 이름이 존재한다면', () => {
       before(async () => {
-        const res = await reqPostCategories(parentCategory);
+        const res = await reqPostCategories(adminToken, parentCategory);
         res.should.have.status(201);
       });
 
       it('409코드를 반환한다', async () => {
-        const res = await reqPostCategories(parentCategory);
+        const res = await reqPostCategories(adminToken, parentCategory);
         res.should.have.status(409);
       });
     });
@@ -102,8 +135,8 @@ describe('Categories', () => {
       const parent2 = new TestCategory('parent2');
 
       before(async () => {
-        const p1 = await reqPostCategories(parent1);
-        const p2 = await reqPostCategories(parent2);
+        const p1 = await reqPostCategories(adminToken, parent1);
+        const p2 = await reqPostCategories(adminToken, parent2);
 
         p1.should.have.status(201);
         p2.should.have.status(201);
@@ -129,12 +162,12 @@ describe('Categories', () => {
        *  - child2
        */
         parent = new TestCategory('parent');
-        p1 = await reqPostCategories(parent);
+        p1 = await reqPostCategories(adminToken, parent);
 
         child1 = new TestCategory('child2_1', p1.body.categoryId);
         child2 = new TestCategory('child2_2', p1.body.categoryId);
-        const c1 = reqPostCategories(child1);
-        const c2 = reqPostCategories(child2);
+        const c1 = reqPostCategories(adminToken, child1);
+        const c2 = reqPostCategories(adminToken, child2);
 
         const results = await Promise.all([c1, c2]);
         results.length.should.be.equal(2);
@@ -178,7 +211,7 @@ describe('Categories', () => {
       const testCategory = new TestCategory('test');
       let id;
       before(async () => {
-        const res = await reqPostCategories(testCategory);
+        const res = await reqPostCategories(adminToken, testCategory);
         res.should.have.status(201);
         id = res.body.categoryId;
       });
@@ -203,7 +236,7 @@ describe('Categories', () => {
 
     beforeEach(async () => {
       testCategory = new TestCategory('test');
-      const res = await reqPostCategories(testCategory);
+      const res = await reqPostCategories(adminToken, testCategory);
 
       res.should.have.status(201);
       id = res.body.categoryId;
@@ -235,7 +268,7 @@ describe('Categories', () => {
       beforeEach(async () => {
         const parentId = id;
         const childCategory = new TestCategory('child', parentId);
-        const res = await reqPostCategories(childCategory);
+        const res = await reqPostCategories(adminToken, childCategory);
         res.should.have.status(201);
       });
       it('409코드를 반환한다', async () => {

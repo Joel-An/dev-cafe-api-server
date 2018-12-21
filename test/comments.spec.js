@@ -30,12 +30,12 @@ describe('comments', () => {
 
     // 상위 카테고리 생성
     const parentCategory = new TestCategory('parent');
-    const parentC = await reqPostCategories(parentCategory);
+    const parentC = await reqPostCategories(token, parentCategory);
     parentC.should.have.status(201);
 
     // 하위 카테고리 생성
     const childCategory = new TestCategory('child', parentC.body.categoryId);
-    const childC = await reqPostCategories(childCategory);
+    const childC = await reqPostCategories(token, childCategory);
     childC.should.have.status(201);
 
 

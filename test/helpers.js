@@ -65,8 +65,9 @@ const reqRegister = registerForm => requester
   .post(`${API_URI}/users`)
   .send(registerForm);
 
-const reqPostCategories = category => requester
+const reqPostCategories = (token, category) => requester
   .post(`${API_URI}/categories`)
+  .set('x-access-token', token)
   .send(category);
 
 global.reqPostPosts = (userToken, post) => requester
