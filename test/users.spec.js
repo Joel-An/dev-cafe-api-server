@@ -34,6 +34,20 @@ describe('Users', () => {
           done();
         });
       });
+
+      it('첫 가입자는 admin이 된다', async () => {
+        const user = await User.findOne({ username: testUser.username });
+        assert.equal(user.isAdmin, true);
+      });
+
+      it('두번째 가입자는 일반회원이 된다', async () => {
+        const secondUser = copyAndFreeze(USER_ARRAY[1]);
+        const res = await reqRegister(secondUser);
+        res.should.have.status(201);
+
+        const user2 = await User.findOne({ username: secondUser.username });
+        assert.equal(user2.isAdmin, false);
+      });
     });
 
     context('password와 comfirmPassword가 다르면', () => {
