@@ -75,11 +75,15 @@ global.reqPostPosts = (userToken, post) => requester
   .set('x-access-token', userToken)
   .send({ ...post });
 
-global.samplePost = {
-  title: 'hello world',
-  contents: '#include<stdio.h>',
-  categoryId: null,
-};
+class TestPost {
+  constructor(post) {
+    this.title = post.title;
+    this.contents = post.contents;
+    this.categoryId = post.categoryId || null;
+  }
+}
+
+global.TestPost = TestPost;
 
 class TestComment {
   constructor(comment) {

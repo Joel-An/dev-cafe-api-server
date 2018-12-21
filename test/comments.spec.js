@@ -37,13 +37,19 @@ describe('comments', () => {
     const childCategory = new TestCategory('child', parentC.body.categoryId);
     const childC = await reqPostCategories(token, childCategory);
     childC.should.have.status(201);
-
+    const childCategoryId = childC.body.categoryId;
 
     // 글 2개 작성
-    const testPost = copyAndFreeze(samplePost);
-    const testPost2 = copyAndFreeze(samplePost);
-    testPost.categoryId = childC.body.categoryId;
-    testPost2.categoryId = childC.body.categoryId;
+    const testPost = new TestPost({
+      title: 'testTitle',
+      contents: 'hello',
+      categoryId: childCategoryId,
+    });
+    const testPost2 = new TestPost({
+      title: 'testTitle',
+      contents: 'hello',
+      categoryId: childCategoryId,
+    });
 
     const reqPost = reqPostPosts(token, testPost);
     const reqPost2 = reqPostPosts(token, testPost2);

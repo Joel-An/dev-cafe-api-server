@@ -3,8 +3,6 @@
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 
-const testPost = copyAndFreeze(samplePost);
-
 const reqGetPost = postId => requester
   .get(`${API_URI}/posts/${postId}`);
 
@@ -35,12 +33,13 @@ describe('Posts', () => {
     parentCategory = new TestCategory('parent');
     const parentC = await reqPostCategories(token, parentCategory);
     parentC.should.have.status(201);
+    parentCategory._id = parentC.body.categoryId;
 
     // 하위 카테고리 생성
     childCategory = new TestCategory('child', parentC.body.categoryId);
     const childC = await reqPostCategories(token, childCategory);
     childC.should.have.status(201);
-    testPost.categoryId = childC.body.categoryId;
+    childCategory._id = childC.body.categoryId;
   });
 
   after((done) => {
@@ -57,6 +56,11 @@ describe('Posts', () => {
     });
 
     it('성공하면 201코드, postId를 반환한다', async () => {
+      const testPost = new TestPost({
+        title: 'testTitle',
+        contents: 'hello',
+        categoryId: childCategory._id,
+      });
       const res = await reqPostPosts(token, testPost);
       res.should.have.status(201);
       res.body.should.have.property('postId');
@@ -69,6 +73,11 @@ describe('Posts', () => {
     });
 
     it('토큰이 없으면 401코드를 반환한다', async () => {
+      const testPost = new TestPost({
+        title: 'testTitle',
+        contents: 'hello',
+        categoryId: childCategory._id,
+      });
       const res = await reqPostPosts(null, testPost);
       res.should.have.status(401);
 
@@ -77,8 +86,11 @@ describe('Posts', () => {
     });
 
     it('카테고리 id가 invalid하면 400코드를 반환한다', async () => {
-      const wrongPost = copyAndFreeze(testPost);
-      wrongPost.categoryId = 'WRONG_ID';
+      const wrongPost = new TestPost({
+        title: 'testTitle',
+        contents: 'hello',
+        categoryId: 'WRONG_CATEGORY_ID',
+      });
 
       const res = await reqPostPosts(token, wrongPost);
       res.should.have.status(400);
@@ -88,13 +100,21 @@ describe('Posts', () => {
     });
 
     it('제목, 내용, 카테고리 누락시 400코드를 반환한다', async () => {
-      const titleX = copyAndFreeze(testPost);
-      const contentsX = copyAndFreeze(testPost);
-      const categoryX = copyAndFreeze(testPost);
-
-      titleX.title = '   ';
-      contentsX.contents = '';
-      categoryX.categoryId = null;
+      const titleX = new TestPost({
+        title: '     ',
+        contents: 'hello',
+        categoryId: childCategory._id,
+      });
+      const contentsX = new TestPost({
+        title: 'testTitle',
+        contents: '     ',
+        categoryId: childCategory._id,
+      });
+      const categoryX = new TestPost({
+        title: 'testTitle',
+        contents: 'hello',
+        categoryId: null,
+      });
 
       const res1 = reqPostPosts(token, titleX);
       const res2 = reqPostPosts(token, contentsX);
@@ -110,8 +130,11 @@ describe('Posts', () => {
     });
 
     it('카테고리가 존재하지 않으면 404코드를 반환한다', async () => {
-      const wrongPost = copyAndFreeze(testPost);
-      wrongPost.categoryId = new ObjectId();
+      const wrongPost = new TestPost({
+        title: 'testTitle',
+        contents: 'hello',
+        categoryId: new ObjectId(),
+      });
 
       const res = await reqPostPosts(token, wrongPost);
       res.should.have.status(404);
@@ -123,7 +146,13 @@ describe('Posts', () => {
 
   describe('GET /posts/:id', () => {
     let postId;
+    let testPost;
     before(async () => {
+      testPost = new TestPost({
+        title: 'testTitle',
+        contents: 'hello',
+        categoryId: childCategory._id,
+      });
       const res = await reqPostPosts(token, testPost);
       res.should.have.status(201);
       ({ postId } = res.body);
@@ -177,14 +206,16 @@ describe('Posts', () => {
     context('성공하면', () => {
       let posts;
       before(async () => {
-        const post1 = copyAndFreeze(testPost);
-        const post2 = copyAndFreeze(testPost);
-
-        post1.title = 'first post';
-        post1.contents = 'Hello';
-
-        post2.title = '2nd post';
-        post2.contents = 'EEEEEE';
+        const post1 = new TestPost({
+          title: 'first post',
+          contents: 'hello',
+          categoryId: childCategory._id,
+        });
+        const post2 = new TestPost({
+          title: '2nd post',
+          contents: 'hihi',
+          categoryId: childCategory._id,
+        });
 
         const reqP1 = reqPostPosts(token, post1);
         const reqP2 = reqPostPosts(token, post2);
