@@ -112,7 +112,14 @@ describe('Categories', () => {
       });
     });
 
-    it.skip('관리자가 아니라면 403코드를 반환한다', async () => {
+    context('관리자가 아니라면', () => {
+      it('403코드를 반환한다', async () => {
+        const res = await await reqPostCategories(userToken, parentCategory);
+        res.should.have.status(403);
+
+        const category = await Category.findOne({ name: parentCategory.name });
+        should.not.exist(category);
+      });
     });
   });
 
