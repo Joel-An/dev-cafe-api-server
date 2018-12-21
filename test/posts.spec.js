@@ -6,8 +6,11 @@ const Comment = require('../models/comment');
 const reqGetPost = postId => requester
   .get(`${API_URI}/posts/${postId}`);
 
-const reqGetPosts = () => requester
-  .get(`${API_URI}/posts`);
+const reqGetPosts = (query) => {
+  const queryString = query || '';
+  return requester
+    .get(`${API_URI}/posts?${queryString}`);
+};
 
 describe('Posts', () => {
   let token;
@@ -217,15 +220,23 @@ describe('Posts', () => {
           categoryId: childCategory._id,
         });
 
-        const reqP1 = reqPostPosts(token, post1);
-        const reqP2 = reqPostPosts(token, post2);
+        const post3 = new TestPost({
+          title: '3rd post',
+          contents: 'jojojo',
+          categoryId: parentCategory._id,
+        });
 
-        // 글 2개 작성
-        const responses = await Promise.all([reqP1, reqP2]);
-        responses[0].should.have.status(201);
-        responses[1].should.have.status(201);
 
-        const { postId } = responses[0].body;
+        // 하위 카테고리에 글 2개, 상위에 1개 작성
+        const reqP1 = await reqPostPosts(token, post1);
+        const reqP2 = await reqPostPosts(token, post2);
+        const reqP3 = await reqPostPosts(token, post3);
+
+        reqP1.should.have.status(201);
+        reqP2.should.have.status(201);
+        reqP3.should.have.status(201);
+
+        const { postId } = reqP1.body;
 
         const comment = new TestComment({
           contents: 'test',
@@ -238,11 +249,13 @@ describe('Posts', () => {
         res.should.have.status(201);
       });
 
-      it('200코드, posts를 반환한다', async () => {
+      it('200코드, 전체 posts를 반환한다', async () => {
         const res = await reqGetPosts();
         res.should.have.status(200);
         res.body.should.have.property('posts');
+
         ({ posts } = res.body);
+        assert.equal(posts.length, 3);
       });
 
       it('post에는 profileName이 있어야한다.', () => {
@@ -256,6 +269,19 @@ describe('Posts', () => {
 
       it('post에는 댓글 갯수가 있어야한다.', () => {
         assert.equal(posts[0].commentsCount, 1);
+      });
+
+      context('쿼리스트링으로 category를 지정하면', () => {
+        it('200코드, 카테고리가 같은 글을 반환한다', async () => {
+          const query = `category=${childCategory._id}`;
+          const res = await reqGetPosts(query);
+
+          res.should.have.status(200);
+          res.body.should.have.property('posts');
+
+          const filterdPosts = res.body.posts;
+          assert.equal(filterdPosts.length, 2);
+        });
       });
 
       after((done) => {
