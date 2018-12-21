@@ -6,7 +6,7 @@ const Comment = require('../../../models/comment');
 const Post = require('../../../models/post');
 
 module.exports = wrapAsync(async (req, res) => {
-  const { contents, postId } = req.body;
+  const { contents, postId, parent } = req.body;
   const userId = req.user._id;
 
   if (isEmptyInput(contents, postId)) {
@@ -26,7 +26,23 @@ module.exports = wrapAsync(async (req, res) => {
     return res.json('존재하지 않는 글입니다.');
   }
 
-  const comment = new Comment({ contents, author: userId, post: postId });
+  if (parent) {
+    if (!ObjectId.isValid(parent)) {
+      res.status(400);
+      return res.json('parentId 형식이 잘못되었습니다.');
+    }
+
+    const parentComment = await Comment.findById(parent);
+
+    if (!parentComment) {
+      res.status(404);
+      return res.json('부모 댓글이 존재하지 않습니다.');
+    }
+  }
+
+  const comment = new Comment({
+    contents, author: userId, post: postId, parent,
+  });
   await comment.save();
 
   res.status(201);

@@ -23,6 +23,12 @@ const commentSchema = new Schema({
   isDeleted: { type: Boolean, default: false },
 });
 
+// eslint-disable-next-line func-names
+commentSchema.pre('save', function (next) {
+  if (this.parent) { this.isChild = true; }
+  next();
+});
+
 commentSchema.methods.isValidAuthor = function (id) {
   return this.authorInfo._id.equals(id);
 };
