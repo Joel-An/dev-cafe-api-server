@@ -26,6 +26,7 @@ class TokenManager {
       ...this.payload,
       _id: user._id,
       email: user.email,
+      isAdmin: user.isAdmin,
     };
     const signOptions = options || this.signOptions;
 
