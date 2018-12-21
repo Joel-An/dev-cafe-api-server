@@ -8,7 +8,7 @@ exports.isAuthenticated = (req, res, next) => {
 
   getDecoded
     .then((decoded) => {
-      req.user = { _id: decoded._id, email: decoded.email };
+      req.user = decoded;
       next();
     })
     .catch((err) => {
