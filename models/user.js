@@ -9,7 +9,7 @@ const userSchema = new Schema({
   profileName: String,
   email: String,
   password: String,
-  userType: { type: String, enum: ['Guest', 'User', 'Admin'], default: 'User' },
+  isAdmin: { type: Boolean, default: false },
 });
 
 // password를 암호화

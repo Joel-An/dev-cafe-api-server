@@ -124,6 +124,11 @@ module.exports = wrapAsync(async (req, res) => {
   user.email = email;
   user.password = user.generateHash(password);
 
+  const users = await User.find({});
+  if (users.length === 0) {
+    user.isAdmin = true;
+  }
+
   await user.save();
 
   res.status(201);
