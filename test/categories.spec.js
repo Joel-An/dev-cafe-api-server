@@ -10,8 +10,9 @@ const reqGetCategories = () => requester
 const reqGetCategory = id => requester
   .get(`${API_URI}/categories/${id}`);
 
-const reqDeleteCategory = id => requester
-  .delete(`${API_URI}/categories/${id}`);
+const reqDeleteCategory = (token, id) => requester
+  .delete(`${API_URI}/categories/${id}`)
+  .set('x-access-token', token);
 
 const parentCategory = new TestCategory('parent');
 
@@ -254,7 +255,7 @@ describe('Categories', () => {
     });
 
     it('성공하면 204코드를 반환한다', async () => {
-      const res = await reqDeleteCategory(id);
+      const res = await reqDeleteCategory(adminToken, id);
       res.should.have.status(204);
 
       const checkDeleted = await reqGetCategory(id);
@@ -262,12 +263,12 @@ describe('Categories', () => {
     });
 
     it('id형식이 틀리다면 400코드를 반환한다', async () => {
-      const res = await reqDeleteCategory('WRONG_ID');
+      const res = await reqDeleteCategory(adminToken, 'WRONG_ID');
       res.should.have.status(400);
     });
 
     it('카테고리가 없다면 404코드를 반환한다', async () => {
-      const res = await reqDeleteCategory(new ObjectId());
+      const res = await reqDeleteCategory(adminToken, new ObjectId());
       res.should.have.status(404);
     });
 
@@ -279,7 +280,7 @@ describe('Categories', () => {
         res.should.have.status(201);
       });
       it('409코드를 반환한다', async () => {
-        const res = await reqDeleteCategory(id);
+        const res = await reqDeleteCategory(adminToken, id);
         res.should.have.status(409);
 
         const checkExist = await reqGetCategory(id);
