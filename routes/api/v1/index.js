@@ -6,6 +6,9 @@ const userRouter = require('./user');
 const postRouter = require('./post');
 const categoryRouter = require('./category');
 
+const { deserializer } = require('../../../middleware/authenticator');
+
+apiRouterV1.use(deserializer);
 apiRouterV1.use('/auth', authRouter);
 apiRouterV1.use('/comments', commentRouter);
 apiRouterV1.use('/users', userRouter);
