@@ -81,7 +81,14 @@ global.samplePost = {
   categoryId: null,
 };
 
-global.sampleComment = { contents: 'coffee coffee', postId: null, parent: null };
+class TestComment {
+  constructor(comment) {
+    this.contents = comment.contents;
+    this.postId = comment.postId || null;
+    this.parent = comment.parent || null;
+  }
+}
+global.TestComment = TestComment;
 
 global.reqPostComments = (userToken, comment) => requester
   .post(`${API_URI}/comments`)

@@ -4,9 +4,9 @@ const Comment = require('../models/comment');
 
 describe('comments', () => {
   let token;
+  let postId1;
+  let postId2;
   const user = copyAndFreeze(USER_ARRAY[0]);
-  const testComment = copyAndFreeze(sampleComment);
-  const testCommentForPost2 = copyAndFreeze(sampleComment);
 
   const reqGetComments = (query) => {
     const queryString = query || '';
@@ -52,8 +52,8 @@ describe('comments', () => {
     responses[0].should.have.status(201);
     responses[1].should.have.status(201);
 
-    testComment.postId = responses[0].body.postId;
-    testCommentForPost2.postId = responses[1].body.postId;
+    postId1 = responses[0].body.postId;
+    postId2 = responses[1].body.postId;
   });
 
   after((done) => {
@@ -66,6 +66,11 @@ describe('comments', () => {
     });
 
     it('성공하면 201코드, commentId를 반환한다', async () => {
+      const testComment = new TestComment({
+        contents: 'test',
+        postId: postId1,
+        parent: null,
+      });
       const res = await reqPostComments(token, testComment);
       res.should.have.status(201);
       res.body.should.have.property('commentId');
@@ -77,11 +82,17 @@ describe('comments', () => {
     });
 
     it('내용 or postId가 누락되면 400코드를 반환한다', async () => {
-      const emptyContents = copyAndFreeze(testComment);
-      emptyContents.contents = '';
+      const emptyContents = new TestComment({
+        contents: '',
+        postId: postId1,
+        parent: null,
+      });
 
-      const emptyPostId = copyAndFreeze(testComment);
-      emptyPostId.postId = '';
+      const emptyPostId = new TestComment({
+        contents: 'noPostId',
+        postId: null,
+        parent: null,
+      });
 
       const req1 = reqPostComments(token, emptyContents);
       const req2 = reqPostComments(token, emptyPostId);
@@ -96,8 +107,11 @@ describe('comments', () => {
     });
 
     it('postId가 invalid하면 400코드를 반환한다', async () => {
-      const invalidPostId = copyAndFreeze(testComment);
-      invalidPostId.postId = 'invalid_postId';
+      const invalidPostId = new TestComment({
+        contents: 'test',
+        postId: 'INVALID_POST_ID',
+        parent: null,
+      });
       const res = await reqPostComments(token, invalidPostId);
       res.should.have.status(400);
 
@@ -106,6 +120,11 @@ describe('comments', () => {
     });
 
     it('토큰이 누락되면 401코드를 반환한다', async () => {
+      const testComment = new TestComment({
+        contents: 'test',
+        postId: postId1,
+        parent: null,
+      });
       const res = await reqPostComments(null, testComment);
       res.should.have.status(401);
 
@@ -114,8 +133,12 @@ describe('comments', () => {
     });
 
     it('post가 존재하지않으면 404코드를 반환한다', async () => {
-      const notExistPostId = copyAndFreeze(testComment);
-      notExistPostId.postId = new ObjectId();
+      const notExistPostId = new TestComment({
+        contents: 'test',
+        postId: new ObjectId(),
+        parent: null,
+      });
+
       const res = await reqPostComments(token, notExistPostId);
       res.should.have.status(404);
 
@@ -124,17 +147,26 @@ describe('comments', () => {
     });
 
     context('자식 댓글을 생성할 때', () => {
-      let childComment;
+      let parentCommentId;
       before(async () => {
-        const parentComment = copyAndFreeze(testComment);
-        childComment = copyAndFreeze(testComment);
+        const parentComment = new TestComment({
+          contents: 'parentComment',
+          postId: postId1,
+          parent: null,
+        });
 
         const resParent = await reqPostComments(token, parentComment);
         resParent.should.have.status(201);
 
-        childComment.parent = resParent.body.commentId;
+        parentCommentId = resParent.body.commentId;
       });
       it('성공하면 201코드, commentId를 반환한다', async () => {
+        const childComment = new TestComment({
+          contents: 'childComment',
+          postId: postId1,
+          parent: parentCommentId,
+        });
+
         const res = await reqPostComments(token, childComment);
         res.should.have.status(201);
         const childCommentId = res.body.commentId;
@@ -144,9 +176,11 @@ describe('comments', () => {
         assert.equal(child.parent, childComment.parent);
       });
       it('부모댓글이 없으면 404코드를 반환한다', async () => {
-        const orphanComment = copyAndFreeze(childComment);
-        orphanComment.contents = 'no Parent';
-        orphanComment.parent = new ObjectId();
+        const orphanComment = new TestComment({
+          contents: 'no Parent',
+          postId: new ObjectId(),
+          parent: null,
+        });
 
         const res = await reqPostComments(token, orphanComment);
         res.should.have.status(404);
@@ -156,9 +190,11 @@ describe('comments', () => {
         should.not.exist(orphanDoc);
       });
       it('parentId가 invalid하면 400코드를 반환한다', async () => {
-        const invalidParentId = copyAndFreeze(childComment);
-        invalidParentId.contents = 'invalid parentId';
-        invalidParentId.parent = 'INVALID_PARENTID';
+        const invalidParentId = new TestComment({
+          contents: 'test',
+          postId: 'INVALID_PARENTID',
+          parent: null,
+        });
 
         const res = await reqPostComments(token, invalidParentId);
         res.should.have.status(400);
@@ -171,8 +207,10 @@ describe('comments', () => {
   });
 
   describe('GET /comments', () => {
-    let commentId1;
-    let commentId2;
+    let commentIdInPost1;
+    let commentIdInPost2;
+    let childCommentId1;
+    let childCommentId2;
 
     after((done) => {
       clearCollection(Comment, done);
@@ -186,8 +224,19 @@ describe('comments', () => {
 
     context('댓글이 있으면', () => {
       before(async () => {
-        const req1 = reqPostComments(token, testComment);
-        const req2 = reqPostComments(token, testCommentForPost2);
+        const commentForPost1 = new TestComment({
+          contents: 'I live in post1',
+          postId: postId1,
+          parent: null,
+        });
+        const commentForPost2 = new TestComment({
+          contents: 'I live in post2',
+          postId: postId2,
+          parent: null,
+        });
+
+        const req1 = reqPostComments(token, commentForPost1);
+        const req2 = reqPostComments(token, commentForPost2);
 
         const responses = await Promise.all([req1, req2]);
         responses[0].should.have.status(201);
@@ -196,8 +245,8 @@ describe('comments', () => {
         responses[0].body.should.have.property('commentId');
         responses[1].body.should.have.property('commentId');
 
-        commentId1 = responses[0].body.commentId;
-        commentId2 = responses[1].body.commentId;
+        commentIdInPost1 = responses[0].body.commentId;
+        commentIdInPost2 = responses[1].body.commentId;
       });
 
       it('200코드, 전체 댓글을 반환한다', async () => {
@@ -208,20 +257,20 @@ describe('comments', () => {
 
         const { comments } = res.body;
         assert.equal(comments.length, 2);
-        assert.equal(comments[0]._id, commentId1);
-        assert.equal(comments[1]._id, commentId2);
+        assert.equal(comments[0]._id, commentIdInPost1);
+        assert.equal(comments[1]._id, commentIdInPost2);
       });
 
       context('post(Id)를 쿼리스트링으로 지정하면', () => {
         it('200코드, 해당되는 comments를 반환한다', async () => {
-          const query = `post=${testComment.postId}`;
+          const query = `post=${postId1}`;
           const res = await reqGetComments(query);
           res.should.have.status(200);
           res.body.should.have.property('comments');
 
           const { comments } = res.body;
           assert.equal(comments.length, 1);
-          assert.equal(comments[0]._id, commentId1);
+          assert.equal(comments[0]._id, commentIdInPost1);
         });
       });
       context('post(Id)가 invalid하면', () => {

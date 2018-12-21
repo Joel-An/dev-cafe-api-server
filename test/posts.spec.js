@@ -194,8 +194,13 @@ describe('Posts', () => {
         responses[0].should.have.status(201);
         responses[1].should.have.status(201);
 
-        const comment = copyAndFreeze(sampleComment);
-        comment.postId = responses[0].body.postId;
+        const { postId } = responses[0].body;
+
+        const comment = new TestComment({
+          contents: 'test',
+          postId,
+          parent: null,
+        });
 
         // 첫 번재 글에 댓글 작성
         const res = await reqPostComments(token, comment);
