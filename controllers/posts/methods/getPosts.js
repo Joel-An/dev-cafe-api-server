@@ -1,10 +1,21 @@
+const mongoose = require('mongoose');
+
+const { ObjectId } = mongoose.Types;
+
 const { wrapAsync } = require('../../../util/util');
 const Post = require('../../../models/post');
 const User = require('../../../models/user');
 const Category = require('../../../models/category');
 
 module.exports = wrapAsync(async (req, res) => {
+  const { category } = req.query;
+
+  const matchOption = category ? { category: new ObjectId(category) } : {};
+
   const posts = await Post.aggregate([
+    {
+      $match: matchOption,
+    },
     {
       $lookup: {
         from: 'comments',
