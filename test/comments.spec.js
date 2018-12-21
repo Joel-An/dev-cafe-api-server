@@ -224,6 +224,7 @@ describe('comments', () => {
 
     context('댓글이 있으면', () => {
       before(async () => {
+        // post1, post2에 각각 댓글 하나씩 작성
         const commentForPost1 = new TestComment({
           contents: 'I live in post1',
           postId: postId1,
@@ -247,6 +248,29 @@ describe('comments', () => {
 
         commentIdInPost1 = responses[0].body.commentId;
         commentIdInPost2 = responses[1].body.commentId;
+
+        // post1에 있는 댓글에 자식 댓글 2개 작성
+        const childComment1 = new TestComment({
+          contents: 'child1',
+          postId: postId1,
+          parent: commentIdInPost1,
+        });
+        const childComment2 = new TestComment({
+          contents: 'child2',
+          postId: postId1,
+          parent: commentIdInPost1,
+        });
+
+        const reqChild1 = reqPostComments(token, childComment1);
+        const reqChild2 = reqPostComments(token, childComment2);
+
+        const childResponses = await Promise.all([reqChild1, reqChild2]);
+
+        childResponses[0].should.have.status(201);
+        childResponses[1].should.have.status(201);
+
+        childCommentId1 = childResponses[0].body.commentId;
+        childCommentId2 = childResponses[1].body.commentId;
       });
 
       it('200코드, 전체 댓글을 반환한다', async () => {
@@ -256,21 +280,36 @@ describe('comments', () => {
         res.body.should.have.property('comments');
 
         const { comments } = res.body;
-        assert.equal(comments.length, 2);
+        assert.equal(comments.length, 4);
         assert.equal(comments[0]._id, commentIdInPost1);
         assert.equal(comments[1]._id, commentIdInPost2);
       });
 
       context('post(Id)를 쿼리스트링으로 지정하면', () => {
         it('200코드, 해당되는 comments를 반환한다', async () => {
-          const query = `post=${postId1}`;
+          const query = `post=${postId2}`;
           const res = await reqGetComments(query);
           res.should.have.status(200);
           res.body.should.have.property('comments');
 
           const { comments } = res.body;
           assert.equal(comments.length, 1);
-          assert.equal(comments[0]._id, commentIdInPost1);
+          assert.equal(comments[0]._id, commentIdInPost2);
+        });
+
+        context('자식댓글이 존재한다면', () => {
+          it('200코드, 트리구조의 comments를 반환한다.', async () => {
+            const query = `post=${postId1}`;
+            const res = await reqGetComments(query);
+            res.should.have.status(200);
+            res.body.should.have.property('comments');
+
+            const { comments } = res.body;
+            assert.equal(comments.length, 1);
+            assert.equal(comments[0].children.length, 2);
+            assert.equal(comments[0].children[0]._id, childCommentId1);
+            assert.equal(comments[0].children[1]._id, childCommentId2);
+          });
         });
       });
       context('post(Id)가 invalid하면', () => {
