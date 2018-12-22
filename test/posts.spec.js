@@ -282,6 +282,36 @@ describe('Posts', () => {
           const filterdPosts = res.body.posts;
           assert.equal(filterdPosts.length, 2);
         });
+
+        context('카테고리가 존재하지 않으면', () => {
+          it('404코드를 반환한다', async () => {
+            const query = `category=${new ObjectId()}`;
+            const res = await reqGetPosts(query);
+
+            res.should.have.status(404);
+            res.body.should.not.have.property('posts');
+          });
+        });
+
+        context('category(Id)가 invalid 하면', () => {
+          it('400코드를 반환한다', async () => {
+            const query = 'category=INVALID_ID';
+            const res = await reqGetPosts(query);
+
+            res.should.have.status(400);
+            res.body.should.not.have.property('posts');
+          });
+        });
+
+        context('허용하지 않는 쿼리 파라메터를 사용하면', () => {
+          it('400코드를 반환한다', async () => {
+            const query = 'isAdmin=true&&rmrf=true';
+            const res = await reqGetPosts(query);
+
+            res.should.have.status(400);
+            res.body.should.not.have.property('posts');
+          });
+        });
       });
 
       after((done) => {
