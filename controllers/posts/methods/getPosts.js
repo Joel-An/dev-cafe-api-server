@@ -7,10 +7,32 @@ const Post = require('../../../models/post');
 const User = require('../../../models/user');
 const Category = require('../../../models/category');
 
-module.exports = wrapAsync(async (req, res) => {
-  const { category } = req.query;
+const isValidQueryParam = (query, options) => {
+  let flag = true;
+  Object.keys(query).forEach((param) => {
+    if (!(param in options)) {
+      flag = false;
+    }
+  });
+  return flag;
+};
 
-  const matchOption = category ? { category: new ObjectId(category) } : {};
+module.exports = wrapAsync(async (req, res) => {
+  const { query } = req;
+
+  if (query.category && !ObjectId.isValid(query.category)) {
+    res.status(400);
+    return res.json('categoryId 형식이 잘못되었습니다.');
+  }
+
+  const matchOption = query.category
+    ? { category: new ObjectId(query.category) }
+    : {};
+
+  if (!isValidQueryParam(query, matchOption)) {
+    res.status(400);
+    return res.json('허용하지 않는 쿼리 파라메터 입니다.');
+  }
 
   const posts = await Post.aggregate([
     {
