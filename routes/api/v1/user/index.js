@@ -7,6 +7,7 @@ const { isAuthenticated } = require('../../../../middleware/authenticator');
 userRouter.get('/', users.getUsers);
 userRouter.post('/', users.register);
 
+userRouter.get('/me', isAuthenticated, users.getMyInfo);
 userRouter.get('/:id', users.getUserById);
 
 userRouter.delete('/me', isAuthenticated, users.unRegister);
