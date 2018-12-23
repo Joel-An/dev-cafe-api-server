@@ -384,6 +384,44 @@ describe('Users', () => {
     });
   });
 
+  describe('GET /users/me', () => {
+    const testUser = copyAndFreeze(USER_ARRAY[0]);
+    let token;
+
+    const getMyInfo = userToken => requester
+      .get(`${API_URI}/users/me`)
+      .set('x-access-token', userToken);
+
+    before(async () => {
+      // 회원가입
+      const register = await reqRegister(testUser);
+      register.should.have.status(201);
+
+      // 로그인
+      const login = await reqLogin(testUser.username, testUser.password);
+
+      login.should.have.status(201);
+      login.body.should.have.property('accessToken');
+      token = login.body.accessToken;
+    });
+
+    it('성공하면 200코드, profileName을 받는다', async () => {
+      const res = await getMyInfo(token);
+      res.should.have.status(200);
+      res.body.should.have.property('myInfo');
+
+      const { myInfo } = res.body;
+
+      assert(myInfo.profileName, testUser.profileName);
+    });
+
+    it('토큰이 없다면 401코드를 받는다 ', async () => {
+      const emptyToken = null;
+      const res = await getMyInfo(emptyToken);
+      res.should.have.status(401);
+    });
+  });
+
   describe.skip('GET /users', () => {
     it('it should GET all users', (done) => {
       chai
