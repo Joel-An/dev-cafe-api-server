@@ -40,6 +40,7 @@ module.exports = wrapAsync(async (req, res) => {
 
   const comments = await Comment
     .find(cleanedOptions, null, { sort: { isChild: 1 } })
+    .populate('author', 'profileName')
     .lean();
 
   if (comments.length === 0) {
