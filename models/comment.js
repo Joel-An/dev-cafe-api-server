@@ -10,7 +10,7 @@ const commentSchema = new Schema({
   contents: { type: String, required: true },
   author: { type: ObjectId, ref: 'User' },
 
-  parent: { type: ObjectId, ref: 'Comment' },
+  parent: { type: ObjectId, ref: 'Comment', default: null },
   isChild: { type: Boolean, default: false },
 
   date: { type: Date, default: Date.now },
