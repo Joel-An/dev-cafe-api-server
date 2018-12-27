@@ -289,6 +289,9 @@ describe('comments', () => {
         assert.equal(comments.length, 4);
         assert.equal(comments[0]._id, commentIdInPost1);
         assert.equal(comments[1]._id, commentIdInPost2);
+
+        comments[0].author.should.have.property('profileName');
+        assert(comments[0].author.profileName, user.profileName);
       });
 
       context('post(Id)를 쿼리스트링으로 지정하면', () => {
