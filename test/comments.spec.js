@@ -283,9 +283,7 @@ describe('comments', () => {
         const res = await reqGetComments();
         res.should.have.status(200);
 
-        res.body.should.have.property('comments');
-
-        const { comments } = res.body;
+        const comments = res.body;
         assert.equal(comments.length, 4);
         assert.equal(comments[0]._id, commentIdInPost1);
         assert.equal(comments[1]._id, commentIdInPost2);
@@ -299,9 +297,8 @@ describe('comments', () => {
           const query = `post=${postId2}`;
           const res = await reqGetComments(query);
           res.should.have.status(200);
-          res.body.should.have.property('comments');
 
-          const { comments } = res.body;
+          const comments = res.body;
           assert.equal(comments.length, 1);
           assert.equal(comments[0]._id, commentIdInPost2);
         });
@@ -311,9 +308,8 @@ describe('comments', () => {
             const query = `post=${postId1}`;
             const res = await reqGetComments(query);
             res.should.have.status(200);
-            res.body.should.have.property('comments');
 
-            const { comments } = res.body;
+            const comments = res.body;
             assert.equal(comments.length, 1);
             assert.equal(comments[0].children.length, 2);
             assert.equal(comments[0].children[0]._id, childCommentId1);

@@ -50,5 +50,5 @@ module.exports = wrapAsync(async (req, res) => {
   const commemtsTree = query.post ? listToTree(comments) : comments;
 
   res.status(200);
-  return res.json({ comments: commemtsTree });
+  return res.json(commemtsTree);
 });
