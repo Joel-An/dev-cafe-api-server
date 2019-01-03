@@ -153,8 +153,7 @@ describe('Categories', () => {
       it('200코드, 카테고리 목록을 반환한다', async () => {
         const res = await reqGetCategories();
         res.should.have.status(200);
-        res.body.should.have.property('categories');
-        res.body.categories.length.should.be.equal(2);
+        res.body.length.should.be.equal(2);
       });
     });
 
@@ -185,9 +184,8 @@ describe('Categories', () => {
         const res = await reqGetCategories();
 
         res.should.have.status(200);
-        res.body.should.have.property('categories');
 
-        const { categories } = res.body;
+        const categories = res.body;
         categories.should.be.a('array');
         categories[0].name.should.be.equal(parent.name);
         categories[0].should.have.property('children');

@@ -12,5 +12,5 @@ module.exports = wrapAsync(async (req, res) => {
 
   const categories = listToTree(results);
   res.status(200);
-  return res.json({ categories });
+  return res.json(categories);
 });
