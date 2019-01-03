@@ -71,5 +71,5 @@ module.exports = wrapAsync(async (req, res) => {
   const results = await Category.populate(populatedPosts, { path: 'category', populate: { path: 'parent' } });
 
   res.status(200);
-  return res.json({ posts: results });
+  return res.json(results);
 });

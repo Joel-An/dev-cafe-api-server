@@ -252,9 +252,8 @@ describe('Posts', () => {
       it('200코드, 전체 posts를 반환한다', async () => {
         const res = await reqGetPosts();
         res.should.have.status(200);
-        res.body.should.have.property('posts');
 
-        ({ posts } = res.body);
+        posts = res.body;
         assert.equal(posts.length, 3);
       });
 
@@ -277,9 +276,8 @@ describe('Posts', () => {
           const res = await reqGetPosts(query);
 
           res.should.have.status(200);
-          res.body.should.have.property('posts');
 
-          const filterdPosts = res.body.posts;
+          const filterdPosts = res.body;
           assert.equal(filterdPosts.length, 2);
         });
 
