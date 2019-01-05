@@ -168,9 +168,8 @@ describe('Posts', () => {
     it('성공하면 200코드, post를 반환한다', async () => {
       const res = await reqGetPost(postId);
       res.should.have.status(200);
-      res.body.should.have.property('post');
 
-      const { post } = res.body;
+      const post = res.body;
       assert.equal(post.title, testPost.title);
       assert.equal(post.author.profileName, user.profileName);
       assert.equal(post.category.name, childCategory.name);

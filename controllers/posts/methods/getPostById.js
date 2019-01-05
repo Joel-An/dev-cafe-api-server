@@ -24,5 +24,5 @@ module.exports = wrapAsync(async (req, res) => {
   }
 
   res.status(200);
-  return res.json({ post });
+  return res.json(post);
 });
