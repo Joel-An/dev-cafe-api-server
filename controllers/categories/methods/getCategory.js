@@ -20,5 +20,5 @@ module.exports = wrapAsync(async (req, res) => {
   }
 
   res.status(200);
-  return res.json({ category });
+  return res.json(category);
 });

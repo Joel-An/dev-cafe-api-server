@@ -226,7 +226,7 @@ describe('Categories', () => {
         const res = await reqGetCategory(id);
 
         res.should.have.status(200);
-        const { category } = res.body;
+        const category = res.body;
         category.name.should.be.equal(testCategory.name);
       });
     });
