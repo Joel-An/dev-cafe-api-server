@@ -242,18 +242,11 @@ describe('comments', () => {
           parent: null,
         });
 
-        const req1 = reqPostComments(token, commentForPost1);
-        const req2 = reqPostComments(token, commentForPost2);
+        const res1 = await reqPostComments(token, commentForPost1);
+        const res2 = await reqPostComments(token, commentForPost2);
 
-        const responses = await Promise.all([req1, req2]);
-        responses[0].should.have.status(201);
-        responses[1].should.have.status(201);
-
-        responses[0].body.should.have.property('commentId');
-        responses[1].body.should.have.property('commentId');
-
-        commentIdInPost1 = responses[0].body.commentId;
-        commentIdInPost2 = responses[1].body.commentId;
+        commentIdInPost1 = res1.body.commentId;
+        commentIdInPost2 = res2.body.commentId;
 
         // post1에 있는 댓글에 자식 댓글 2개 작성
         const childComment1 = new TestComment({
@@ -317,6 +310,18 @@ describe('comments', () => {
           });
         });
       });
+      context('limit을 쿼리스트링으로 지정하면', () => {
+        it('지정한 갯수만큼의 댓글을 반환한다', async () => {
+          assert.equal(true, false);
+        });
+        context.skip('post(Id)를 쿼리스트링으로 지정하면', () => {
+          it('지정한 갯수만큼의 부모 댓글을 반환한다', async () => {
+
+          });
+        });
+      });
+
+
       context('post(Id)가 invalid하면', () => {
         it('400코드를 반환한다', async () => {
           const query = 'post=INVALID_POSTID';
