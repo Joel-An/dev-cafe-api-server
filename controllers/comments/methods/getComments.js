@@ -4,10 +4,11 @@ const { ObjectId } = mongoose.Types;
 const { wrapAsync } = require('../../../util/util');
 const Comment = require('../../../models/comment');
 
-const isValidQueryParam = (query, options) => {
+const isValidQueryParam = (query) => {
+  const validQueryParams = ['post', 'limit'];
   let flag = true;
   Object.keys(query).forEach((param) => {
-    if (!(param in options)) {
+    if (!(validQueryParams.includes(param))) {
       flag = false;
     }
   });
@@ -28,8 +29,9 @@ module.exports = wrapAsync(async (req, res) => {
     post: query.post,
     isChild: query.post ? false : undefined,
   };
+  const limit = query.limit ? Number.parseInt(query.limit, 10) : 0;
 
-  if (!isValidQueryParam(query, options)) {
+  if (!isValidQueryParam(query)) {
     res.status(400);
     return res.json({ message: '허용하지않는 쿼리 파라메터입니다.' });
   }
@@ -52,6 +54,7 @@ module.exports = wrapAsync(async (req, res) => {
         select: 'profileName',
       },
     })
+    .limit(limit)
     .lean();
 
   if (comments.length === 0) {
