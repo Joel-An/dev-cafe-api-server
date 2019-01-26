@@ -260,16 +260,11 @@ describe('comments', () => {
           parent: commentIdInPost1,
         });
 
-        const reqChild1 = reqPostComments(token, childComment1);
-        const reqChild2 = reqPostComments(token, childComment2);
+        const resChild1 = await reqPostComments(token, childComment1);
+        const resChild2 = await reqPostComments(token, childComment2);
 
-        const childResponses = await Promise.all([reqChild1, reqChild2]);
-
-        childResponses[0].should.have.status(201);
-        childResponses[1].should.have.status(201);
-
-        childCommentId1 = childResponses[0].body.commentId;
-        childCommentId2 = childResponses[1].body.commentId;
+        childCommentId1 = resChild1.body.commentId;
+        childCommentId2 = resChild2.body.commentId;
       });
 
       it('200코드, 전체 댓글을 반환한다', async () => {
