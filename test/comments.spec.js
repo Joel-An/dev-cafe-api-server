@@ -326,9 +326,36 @@ describe('comments', () => {
           const comments = res.body;
           assert.equal(comments.length, limit);
         });
-        context.skip('post(Id)를 쿼리스트링으로 지정하면', () => {
-          it('지정한 갯수만큼의 부모 댓글을 반환한다', async () => {
+        context('post(Id)를 쿼리스트링으로 설정했을 때', () => {
+          it('limit으로 지정한 갯수 만큼의 부모 댓글을 반환한다', async () => {
+            const limit = 3;
 
+            const query = `post=${postId1}&limit=${limit}`;
+            const res = await reqGetComments(query);
+            res.should.have.status(200);
+
+            const comments = res.body;
+
+            assert.equal(comments.length, limit);
+            comments.forEach((comment) => {
+              assert.equal(comment.isChild, false);
+            });
+          });
+
+          it('limit보다 부모 댓글 갯수가 적다면 전체 부모 댓글을 반환한다', async () => {
+            const TOTAL_COMMENTS = 12;
+            const TOTAL_PARENT_COMMENTS = 10;
+
+            const query = `post=${postId1}&limit=${TOTAL_COMMENTS}`;
+            const res = await reqGetComments(query);
+            res.should.have.status(200);
+
+            const comments = res.body;
+
+            assert.equal(comments.length, TOTAL_PARENT_COMMENTS);
+            comments.forEach((comment) => {
+              assert.equal(comment.isChild, false);
+            });
           });
         });
       });
