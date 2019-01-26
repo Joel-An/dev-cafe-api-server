@@ -4,7 +4,7 @@ const { ObjectId } = mongoose.Types;
 
 const { wrapAsync } = require('../../../util/util');
 const Category = require('../../../models/category');
-
+const Socket = require('../../../util/Socket');
 
 module.exports = wrapAsync(async (req, res) => {
   const { id } = req.params;
@@ -27,5 +27,7 @@ module.exports = wrapAsync(async (req, res) => {
   }
 
   await Category.findByIdAndDelete(id);
+  Socket.emitDeleteCategory(id);
+
   return res.status(204).end();
 });
