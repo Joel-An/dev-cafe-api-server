@@ -11,6 +11,7 @@ const commentSchema = new Schema({
   author: { type: ObjectId, ref: 'User' },
 
   parent: { type: ObjectId, ref: 'Comment', default: null },
+  childComments: [{ type: ObjectId, ref: 'Comment' }],
   isChild: { type: Boolean, default: false },
 
   date: { type: Date, default: Date.now },

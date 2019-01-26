@@ -45,6 +45,13 @@ module.exports = wrapAsync(async (req, res) => {
   });
   await comment.save();
 
+  if (comment.isChild) {
+    await Comment.findByIdAndUpdate(
+      comment.parent,
+      { $push: { childComments: comment._id } }
+    );
+  }
+
   res.status(201);
   return res.json({ commentId: comment._id });
 });
