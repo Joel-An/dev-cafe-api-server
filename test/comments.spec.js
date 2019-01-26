@@ -230,12 +230,18 @@ describe('comments', () => {
 
     context('댓글이 있으면', () => {
       before(async () => {
-        // post1, post2에 각각 댓글 하나씩 작성
+        // post1에 댓글 10개, post2에 댓글 1개 작성
         const commentForPost1 = new TestComment({
           contents: 'I live in post1',
           postId: postId1,
           parent: null,
         });
+        const extraCommentForPost1 = new TestComment({
+          contents: 'An extra comment in post1',
+          postId: postId1,
+          parent: null,
+        });
+
         const commentForPost2 = new TestComment({
           contents: 'I live in post2',
           postId: postId2,
@@ -245,10 +251,15 @@ describe('comments', () => {
         const res1 = await reqPostComments(token, commentForPost1);
         const res2 = await reqPostComments(token, commentForPost2);
 
+        const reqExtra9Comments = new Array(9).fill(null)
+          .map(() => reqPostComments(token, extraCommentForPost1));
+
+        await Promise.all(reqExtra9Comments);
+
         commentIdInPost1 = res1.body.commentId;
         commentIdInPost2 = res2.body.commentId;
 
-        // post1에 있는 댓글에 자식 댓글 2개 작성
+        // post1에 있는 첫번째 댓글에 자식 댓글 2개 작성
         const childComment1 = new TestComment({
           contents: 'child1',
           postId: postId1,
@@ -272,7 +283,7 @@ describe('comments', () => {
         res.should.have.status(200);
 
         const comments = res.body;
-        assert.equal(comments.length, 4);
+        assert.equal(comments.length, 13);
         assert.equal(comments[0]._id, commentIdInPost1);
         assert.equal(comments[1]._id, commentIdInPost2);
 
@@ -298,7 +309,7 @@ describe('comments', () => {
             res.should.have.status(200);
 
             const comments = res.body;
-            assert.equal(comments.length, 1);
+            assert.equal(comments.length, 10);
             assert.equal(comments[0].childComments.length, 2);
             assert.equal(comments[0].childComments[0]._id, childCommentId1);
             assert.equal(comments[0].childComments[1]._id, childCommentId2);
