@@ -42,7 +42,7 @@ module.exports = wrapAsync(async (req, res) => {
   const cleanedOptions = removeEmptyOption(options);
 
   const comments = await Comment
-    .find(cleanedOptions, null, { sort: { isChild: 1 } })
+    .find(cleanedOptions, null)
     .populate('author', 'profileName')
     .populate({
       path: 'childComments',
