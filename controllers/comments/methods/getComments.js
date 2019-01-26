@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const { ObjectId } = mongoose.Types;
-const { wrapAsync, listToTree } = require('../../../util/util');
+const { wrapAsync } = require('../../../util/util');
 const Comment = require('../../../models/comment');
 
 const isValidQueryParam = (query, options) => {
@@ -17,14 +17,17 @@ const isValidQueryParam = (query, options) => {
 const removeEmptyOption = (options) => {
   const cleanedOptions = { ...options };
   Object.keys(cleanedOptions).forEach((key) => {
-    if (!cleanedOptions[key]) { delete cleanedOptions[key]; }
+    if (typeof cleanedOptions[key] === 'undefined') { delete cleanedOptions[key]; }
   });
   return cleanedOptions;
 };
 
 module.exports = wrapAsync(async (req, res) => {
   const { query } = req;
-  const options = { post: query.post };
+  const options = {
+    post: query.post,
+    isChild: query.post ? false : undefined,
+  };
 
   if (!isValidQueryParam(query, options)) {
     res.status(400);
@@ -41,14 +44,20 @@ module.exports = wrapAsync(async (req, res) => {
   const comments = await Comment
     .find(cleanedOptions, null, { sort: { isChild: 1 } })
     .populate('author', 'profileName')
+    .populate({
+      path: 'childComments',
+      populate: {
+        path: 'author',
+        model: 'User',
+        select: 'profileName',
+      },
+    })
     .lean();
 
   if (comments.length === 0) {
     return res.status(404).end();
   }
 
-  const commemtsTree = query.post ? listToTree(comments) : comments;
-
   res.status(200);
-  return res.json(commemtsTree);
+  return res.json(comments);
 });

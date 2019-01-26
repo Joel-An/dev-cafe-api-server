@@ -311,9 +311,9 @@ describe('comments', () => {
 
             const comments = res.body;
             assert.equal(comments.length, 1);
-            assert.equal(comments[0].children.length, 2);
-            assert.equal(comments[0].children[0]._id, childCommentId1);
-            assert.equal(comments[0].children[1]._id, childCommentId2);
+            assert.equal(comments[0].childComments.length, 2);
+            assert.equal(comments[0].childComments[0]._id, childCommentId1);
+            assert.equal(comments[0].childComments[1]._id, childCommentId2);
           });
         });
       });
