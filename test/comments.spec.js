@@ -318,7 +318,13 @@ describe('comments', () => {
       });
       context('limit을 쿼리스트링으로 지정하면', () => {
         it('지정한 갯수만큼의 댓글을 반환한다', async () => {
-          assert.equal(true, false);
+          const limit = 3;
+          const query = `limit=${limit}`;
+          const res = await reqGetComments(query);
+          res.should.have.status(200);
+
+          const comments = res.body;
+          assert.equal(comments.length, limit);
         });
         context.skip('post(Id)를 쿼리스트링으로 지정하면', () => {
           it('지정한 갯수만큼의 부모 댓글을 반환한다', async () => {
