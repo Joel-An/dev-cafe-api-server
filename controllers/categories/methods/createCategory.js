@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types;
 const { wrapAsync, isEmptyInput } = require('../../../util/util');
 const Category = require('../../../models/category');
-
+const Socket = require('../../../util/Socket');
 
 module.exports = wrapAsync(async (req, res) => {
   const { name, parent } = req.body;
@@ -33,6 +33,8 @@ module.exports = wrapAsync(async (req, res) => {
 
   const category = new Category({ name, parent });
   await category.save();
+
+  Socket.emitNewCategory(category._id);
 
   res.status(201);
   return res.json({ categoryId: category._id });
