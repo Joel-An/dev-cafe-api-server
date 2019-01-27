@@ -66,6 +66,16 @@ module.exports = wrapAsync(async (req, res) => {
     return res.json({ message: '허용하지않는 쿼리 파라메터입니다.' });
   }
 
+  if (query.before && !ObjectId.isValid(query.before)) {
+    res.status(400);
+    return res.json({ message: 'before(id) 형식이 틀렸습니다.' });
+  }
+
+  if (query.after && !ObjectId.isValid(query.after)) {
+    res.status(400);
+    return res.json({ message: 'after(id)  형식이 틀렸습니다.' });
+  }
+
   if (options.post && !ObjectId.isValid(options.post)) {
     res.status(400);
     return res.json({ message: 'postId 형식이 틀렸습니다.' });
