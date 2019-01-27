@@ -401,6 +401,45 @@ describe('comments', () => {
           res.body.should.not.have.property('comments');
         });
       });
+
+      context('invalid limit', () => {
+        it('limit이 음수인 경우, default limit이 적용된다', async () => {
+          const invalidLimit = '-10';
+          const query = `limit=${invalidLimit}`;
+          const res = await reqGetComments(query);
+
+          res.should.have.status(200);
+          assert.equal(res.body.length, DEFAULT_LIMIT);
+        });
+
+        it('limit이 0인 경우, default limit이 적용된다', async () => {
+          const invalidLimit = '0';
+          const query = `limit=${invalidLimit}`;
+          const res = await reqGetComments(query);
+
+          res.should.have.status(200);
+          assert.equal(res.body.length, DEFAULT_LIMIT);
+        });
+
+        it('limit이 소수인 경우, 소숫점은 버림하여 적용된다', async () => {
+          const invalidLimit = '8.92345';
+          const query = `limit=${invalidLimit}`;
+          const res = await reqGetComments(query);
+
+          res.should.have.status(200);
+          assert.equal(res.body.length, 8);
+        });
+
+        it('limit이 문자열인 경우, default limit이 적용된다', async () => {
+          const invalidLimit = 'ABCDE';
+          const query = `limit=${invalidLimit}`;
+          const res = await reqGetComments(query);
+
+          res.should.have.status(200);
+          assert.equal(res.body.length, DEFAULT_LIMIT);
+        });
+      });
+
       context('허용하지않는 쿼리 파라메터를 사용하면', () => {
         it('400코드를 반환한다', async () => {
           const wrongQuery = 'pAst=22&isAdmin=true';
