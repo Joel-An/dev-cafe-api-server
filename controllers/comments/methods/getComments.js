@@ -55,6 +55,7 @@ module.exports = wrapAsync(async (req, res) => {
       },
     })
     .limit(limit)
+    .sort('-date')
     .lean();
 
   if (comments.length === 0) {
