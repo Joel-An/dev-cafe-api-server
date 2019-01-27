@@ -74,5 +74,6 @@ module.exports = wrapAsync(async (req, res) => {
   }
 
   res.status(200);
+  res.header('next-page-url', 'testUrl');
   return res.json(comments);
 });
