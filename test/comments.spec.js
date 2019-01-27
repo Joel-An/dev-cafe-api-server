@@ -396,6 +396,38 @@ describe('comments', () => {
         });
       });
 
+      context('before/after를 쿼리 파라메터로 지정했을 때', () => {
+        let allComments;
+        before(async () => {
+          const query = 'limit=100';
+          const res = await reqGetComments(query);
+          allComments = res.body;
+        });
+
+        context('after="afterId"', () => {
+          it('afterId보다 오래된 댓글을 limit 만큼 반환한다 ', async () => {
+            const limit = 3;
+            const afterIdIndex = 10;
+            const afterId = allComments[afterIdIndex]._id;
+
+            const query = `limit=${limit}&after=${afterId}`;
+            const res = await reqGetComments(query);
+            const responseComments = res.body;
+
+            const sliceFrom = afterIdIndex + 1;
+            const sliceTo = sliceFrom + limit;
+
+            const expectedComments = allComments.slice(sliceFrom, sliceTo);
+            assert.equal(expectedComments.length, limit);
+
+            responseComments.forEach((responseComment, index) => {
+              assert.equal(responseComment._id, expectedComments[index]._id);
+            });
+          });
+        });
+
+      });
+
 
       context('post(Id)가 invalid하면', () => {
         it('400코드를 반환한다', async () => {
