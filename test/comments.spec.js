@@ -555,6 +555,30 @@ describe('comments', () => {
         });
       });
 
+      context('invalid before/after', () => {
+        it('before or after가 ObjectId가 아니라면, 400 에러를 반환한다', async () => {
+          const invalidId1 = 'ABCDE';
+          const invalidId2 = '1321';
+          const invalidId3 = '[@$@$';
+
+          const query1 = `before=${invalidId1}`;
+          const query2 = `after=${invalidId2}`;
+          const query3 = `before=${invalidId3}`;
+          const query4 = `before=${invalidId2}&after=${invalidId3}`;
+
+          const req1 = reqGetComments(query1);
+          const req2 = reqGetComments(query2);
+          const req3 = reqGetComments(query3);
+          const req4 = reqGetComments(query4);
+
+          const responses = await Promise.all([req1, req2, req3, req4]);
+
+          responses.forEach((response) => {
+            response.should.have.status(400);
+          });
+        });
+      });
+
       context('허용하지않는 쿼리 파라메터를 사용하면', () => {
         it('400코드를 반환한다', async () => {
           const wrongQuery = 'pAst=22&isAdmin=true';
