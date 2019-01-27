@@ -218,6 +218,17 @@ describe('comments', () => {
     let childCommentId1;
     let childCommentId2;
 
+
+    const TOTAL_PARENT_COMMENTS_IN_POST1 = 40;
+    const TOTAL_CHILD_COMMENTS_IN_POST1 = 2;
+    const TOTAL_COMMENTS_IN_POST1 = TOTAL_PARENT_COMMENTS_IN_POST1 + TOTAL_CHILD_COMMENTS_IN_POST1;
+
+    const TOTAL_PARENT_COMMENTS_IN_POST2 = 1;
+    const TOTAL_CHILD_COMMENTS_IN_POST2 = 0;
+    const TOTAL_COMMENTS_IN_POST2 = TOTAL_PARENT_COMMENTS_IN_POST2 + TOTAL_CHILD_COMMENTS_IN_POST2;
+
+    const TOTAL_COMMENTS = TOTAL_COMMENTS_IN_POST1 + TOTAL_COMMENTS_IN_POST2;
+
     after((done) => {
       clearCollection(Comment, done);
     });
@@ -228,16 +239,25 @@ describe('comments', () => {
       });
     });
 
-    context('댓글이 있으면', () => {
+    context('댓글이 있을 때', () => {
       before(async () => {
-        // post1에 댓글 10개, post2에 댓글 1개 작성
-        const commentForPost1 = new TestComment({
-          contents: 'I live in post1',
+        // post1에 부모 댓글 40개, post2에 부모 댓글 1개 작성
+
+        // - post1에 부모 댓글 39개
+        const extraCommentForPost1 = new TestComment({
+          contents: 'An extra comment in post1',
           postId: postId1,
           parent: null,
         });
-        const extraCommentForPost1 = new TestComment({
-          contents: 'An extra comment in post1',
+
+        const reqExtra39Comments = new Array(TOTAL_PARENT_COMMENTS_IN_POST1 - 1).fill(null)
+          .map(() => reqPostComments(token, extraCommentForPost1));
+
+        await Promise.all(reqExtra39Comments);
+
+        // post1, post2에 부모 댓글 1개씩
+        const commentForPost1 = new TestComment({
+          contents: 'I live in post1',
           postId: postId1,
           parent: null,
         });
@@ -251,15 +271,11 @@ describe('comments', () => {
         const res1 = await reqPostComments(token, commentForPost1);
         const res2 = await reqPostComments(token, commentForPost2);
 
-        const reqExtra9Comments = new Array(9).fill(null)
-          .map(() => reqPostComments(token, extraCommentForPost1));
-
-        await Promise.all(reqExtra9Comments);
 
         commentIdInPost1 = res1.body.commentId;
         commentIdInPost2 = res2.body.commentId;
 
-        // post1에 있는 첫번째 댓글에 자식 댓글 2개 작성
+        // post1에 있는 최신 댓글에 자식 댓글 2개 작성
         const childComment1 = new TestComment({
           contents: 'child1',
           postId: postId1,
@@ -309,7 +325,7 @@ describe('comments', () => {
             res.should.have.status(200);
 
             const comments = res.body;
-            assert.equal(comments.length, 10);
+            assert.equal(comments.length, TOTAL_PARENT_COMMENTS_IN_POST1);
             assert.equal(comments[0].childComments.length, 2);
             assert.equal(comments[0].childComments[0]._id, childCommentId1);
             assert.equal(comments[0].childComments[1]._id, childCommentId2);
@@ -343,16 +359,13 @@ describe('comments', () => {
           });
 
           it('limit보다 부모 댓글 갯수가 적다면 전체 부모 댓글을 반환한다', async () => {
-            const TOTAL_COMMENTS = 12;
-            const TOTAL_PARENT_COMMENTS = 10;
-
-            const query = `post=${postId1}&limit=${TOTAL_COMMENTS}`;
+            const query = `post=${postId1}&limit=${TOTAL_COMMENTS_IN_POST1}`;
             const res = await reqGetComments(query);
             res.should.have.status(200);
 
             const comments = res.body;
 
-            assert.equal(comments.length, TOTAL_PARENT_COMMENTS);
+            assert.equal(comments.length, TOTAL_PARENT_COMMENTS_IN_POST1);
             comments.forEach((comment) => {
               assert.equal(comment.isChild, false);
             });
