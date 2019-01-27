@@ -309,6 +309,10 @@ describe('comments', () => {
           response.should.have.status(200);
         });
 
+        it('헤더에 next-page-url이 포함되어 있다', () => {
+          response.header.should.have.property('next-page-url');
+        });
+
         it('limit이 설정되지 않은 경우, 30개의 댓글을 반환한다', () => {
           assert.notEqual(comments.length, TOTAL_COMMENTS);
           assert.equal(comments.length, DEFAULT_LIMIT);
