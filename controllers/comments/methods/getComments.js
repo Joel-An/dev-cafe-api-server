@@ -29,7 +29,7 @@ module.exports = wrapAsync(async (req, res) => {
     post: query.post,
     isChild: query.post ? false : undefined,
   };
-  const limit = query.limit ? Number.parseInt(query.limit, 10) : 0;
+  const limit = query.limit ? Number.parseInt(query.limit, 10) : 30;
 
   if (!isValidQueryParam(query)) {
     res.status(400);
