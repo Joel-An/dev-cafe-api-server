@@ -294,17 +294,30 @@ describe('comments', () => {
         childCommentId2 = resChild2.body.commentId;
       });
 
-      it('200코드, 전체 댓글을 반환한다', async () => {
-        const res = await reqGetComments();
-        res.should.have.status(200);
+      context('GET /comments 요청이 성공하면', () => {
+        let response;
+        let comments;
+        before(async () => {
+          response = await reqGetComments();
+          comments = response.body;
+        });
+        it('200코드를 반환한다', async () => {
+          response.should.have.status(200);
+        });
+        it('전체 댓글을 반환한다', async () => {
+          assert.equal(comments.length, TOTAL_COMMENTS);
+        });
 
-        const comments = res.body;
-        assert.equal(comments.length, 13);
-        assert.equal(comments[0]._id, commentIdInPost1);
-        assert.equal(comments[1]._id, commentIdInPost2);
-
-        comments[0].author.should.have.property('profileName');
-        assert(comments[0].author.profileName, user.profileName);
+        it('최신 댓글이 배열의 첫번째에 위치한다', async () => {
+          assert.equal(comments[0]._id, childCommentId2);
+          assert.equal(comments[1]._id, childCommentId1);
+        });
+        it('댓글에는 작성자의 profileName이 포함되어 있다', async () => {
+          comments.forEach((comment) => {
+            comment.author.should.have.property('profileName');
+            assert(comment.author.profileName, user.profileName);
+          });
+        });
       });
 
       context('post(Id)를 쿼리스트링으로 지정하면', () => {
