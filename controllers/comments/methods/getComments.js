@@ -7,7 +7,7 @@ const Comment = require('../../../models/comment');
 const DEFAULT_LIMIT = 30;
 
 const isValidQueryParam = (query) => {
-  const validQueryParams = ['post', 'limit'];
+  const validQueryParams = ['post', 'limit', 'after'];
   let flag = true;
   Object.keys(query).forEach((param) => {
     if (!(validQueryParams.includes(param))) {
@@ -39,6 +39,7 @@ module.exports = wrapAsync(async (req, res) => {
   const options = {
     post: query.post,
     isChild: query.post ? false : undefined,
+    _id: query.after ? { $lt: query.after } : undefined,
   };
   const limit = parseLimit(query.limit);
 
@@ -66,7 +67,7 @@ module.exports = wrapAsync(async (req, res) => {
       },
     })
     .limit(limit)
-    .sort('-date')
+    .sort({ _id: 'desc' })
     .lean();
 
   if (comments.length === 0) {
