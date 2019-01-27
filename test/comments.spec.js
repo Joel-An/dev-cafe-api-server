@@ -2,6 +2,10 @@
 /* eslint-disable no-undef */
 const Comment = require('../models/comment');
 
+const reqDeleteComments = (token, commentId) => requester
+  .delete(`${API_URI}/comments/${commentId}`)
+  .set('x-access-token', token);
+
 describe('comments', () => {
   let token;
   let postId1;
@@ -426,6 +430,81 @@ describe('comments', () => {
           });
         });
 
+        context('before="beforeId"', () => {
+          let newCommentIds;
+
+          before(async () => {
+            // 새로운 댓글 3개 등록
+            const newComment = new TestComment({
+              contents: 'new comment',
+              postId: postId1,
+              parent: null,
+            });
+
+            const res1 = await reqPostComments(token, newComment);
+            const res2 = await reqPostComments(token, newComment);
+            const res3 = await reqPostComments(token, newComment);
+
+            newCommentIds = [
+              res3.body.commentId,
+              res2.body.commentId,
+              res1.body.commentId,
+            ];
+          });
+
+          after(async () => {
+            // 등록한 댓글 3개 제거
+            const req1 = reqDeleteComments(token, newCommentIds[0]);
+            const req2 = reqDeleteComments(token, newCommentIds[1]);
+            const req3 = reqDeleteComments(token, newCommentIds[2]);
+
+            await Promise.all([req1, req2, req3]);
+          });
+
+          it('beforeId보다 최신 댓글을 limit 만큼 반환한다 ', async () => {
+            // 원래 가지고 있던 댓글 중, 가장 최신 댓글을 기준으로 댓글 3개 요청
+            const limit = 3;
+            const beforeIdIndex = 0;
+            const beforeId = allComments[beforeIdIndex]._id;
+
+            const query = `limit=${limit}&before=${beforeId}`;
+            const res = await reqGetComments(query);
+
+            res.should.have.status(200);
+            const responseComments = res.body;
+
+            responseComments.forEach((responseComment, index) => {
+              assert.equal(responseComment._id, newCommentIds[index]);
+            });
+          });
+        });
+
+        context('after="afterId"&before="beforeId"', () => {
+          it('afterId, beforeId 사이의 댓글을 limit 만큼 반환한다 ', async () => {
+            const limit = 3;
+            const beforeIdIndex = 10;
+            const afterIdIndex = beforeIdIndex - limit - 1;
+
+            const afterId = allComments[afterIdIndex]._id;
+            const beforeId = allComments[beforeIdIndex]._id;
+
+            const query = `limit=${limit}&before=${beforeId}&after=${afterId}`;
+            const res = await reqGetComments(query);
+
+            res.should.have.status(200);
+            const responseComments = res.body;
+
+            const sliceFrom = afterIdIndex + 1;
+            const sliceTo = beforeIdIndex;
+
+            const expectedComments = allComments.slice(sliceFrom, sliceTo);
+            assert.equal(expectedComments.length, limit);
+
+            responseComments.forEach((responseComment, index) => {
+              assert.equal(responseComment._id, expectedComments[index]._id);
+            });
+          });
+        });
       });
 
 
