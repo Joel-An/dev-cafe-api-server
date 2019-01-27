@@ -229,6 +229,8 @@ describe('comments', () => {
 
     const TOTAL_COMMENTS = TOTAL_COMMENTS_IN_POST1 + TOTAL_COMMENTS_IN_POST2;
 
+    const DEFAULT_LIMIT = 30;
+
     after((done) => {
       clearCollection(Comment, done);
     });
@@ -304,8 +306,9 @@ describe('comments', () => {
         it('200코드를 반환한다', async () => {
           response.should.have.status(200);
         });
-        it('전체 댓글을 반환한다', async () => {
-          assert.equal(comments.length, TOTAL_COMMENTS);
+        it('limit이 설정되지 않은 경우, 30개의 댓글을 반환한다', async () => {
+          assert.notEqual(comments.length, TOTAL_COMMENTS);
+          assert.equal(comments.length, DEFAULT_LIMIT);
         });
 
         it('최신 댓글이 배열의 첫번째에 위치한다', async () => {
@@ -338,7 +341,6 @@ describe('comments', () => {
             res.should.have.status(200);
 
             const comments = res.body;
-            assert.equal(comments.length, TOTAL_PARENT_COMMENTS_IN_POST1);
             assert.equal(comments[0].childComments.length, 2);
             assert.equal(comments[0].childComments[0]._id, childCommentId1);
             assert.equal(comments[0].childComments[1]._id, childCommentId2);
