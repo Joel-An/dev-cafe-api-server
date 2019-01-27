@@ -299,13 +299,16 @@ describe('comments', () => {
       context('GET /comments 요청이 성공하면', () => {
         let response;
         let comments;
+
         before(async () => {
           response = await reqGetComments();
           comments = response.body;
         });
+
         it('200코드를 반환한다', async () => {
           response.should.have.status(200);
         });
+
         it('limit이 설정되지 않은 경우, 30개의 댓글을 반환한다', async () => {
           assert.notEqual(comments.length, TOTAL_COMMENTS);
           assert.equal(comments.length, DEFAULT_LIMIT);
@@ -315,6 +318,7 @@ describe('comments', () => {
           assert.equal(comments[0]._id, childCommentId2);
           assert.equal(comments[1]._id, childCommentId1);
         });
+
         it('댓글에는 작성자의 profileName이 포함되어 있다', async () => {
           comments.forEach((comment) => {
             comment.author.should.have.property('profileName');
