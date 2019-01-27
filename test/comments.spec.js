@@ -305,21 +305,21 @@ describe('comments', () => {
           comments = response.body;
         });
 
-        it('200코드를 반환한다', async () => {
+        it('200코드를 반환한다', () => {
           response.should.have.status(200);
         });
 
-        it('limit이 설정되지 않은 경우, 30개의 댓글을 반환한다', async () => {
+        it('limit이 설정되지 않은 경우, 30개의 댓글을 반환한다', () => {
           assert.notEqual(comments.length, TOTAL_COMMENTS);
           assert.equal(comments.length, DEFAULT_LIMIT);
         });
 
-        it('최신 댓글이 배열의 첫번째에 위치한다', async () => {
+        it('최신 댓글이 배열의 첫번째에 위치한다', () => {
           assert.equal(comments[0]._id, childCommentId2);
           assert.equal(comments[1]._id, childCommentId1);
         });
 
-        it('댓글에는 작성자의 profileName이 포함되어 있다', async () => {
+        it('댓글에는 작성자의 profileName이 포함되어 있다', () => {
           comments.forEach((comment) => {
             comment.author.should.have.property('profileName');
             assert(comment.author.profileName, user.profileName);
