@@ -4,6 +4,8 @@ const { ObjectId } = mongoose.Types;
 const { wrapAsync } = require('../../../util/util');
 const Comment = require('../../../models/comment');
 
+const DEFAULT_LIMIT = 30;
+
 const isValidQueryParam = (query) => {
   const validQueryParams = ['post', 'limit'];
   let flag = true;
@@ -23,13 +25,22 @@ const removeEmptyOption = (options) => {
   return cleanedOptions;
 };
 
+const parseLimit = (limit) => {
+  const parsed = Number.parseInt(limit, 10);
+
+  if (Number.isNaN(parsed) || parsed <= 0) {
+    return DEFAULT_LIMIT;
+  }
+  return parsed;
+};
+
 module.exports = wrapAsync(async (req, res) => {
   const { query } = req;
   const options = {
     post: query.post,
     isChild: query.post ? false : undefined,
   };
-  const limit = query.limit ? Number.parseInt(query.limit, 10) : 30;
+  const limit = parseLimit(query.limit);
 
   if (!isValidQueryParam(query)) {
     res.status(400);
