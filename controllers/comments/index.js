@@ -8,3 +8,4 @@
 
 exports.getComments = require('./methods/getComments');
 exports.createComment = require('./methods/createComment');
+exports.deleteComment = require('./methods/deleteComment');
