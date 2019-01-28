@@ -6,6 +6,8 @@ const reqDeleteComments = (token, commentId) => requester
   .delete(`${API_URI}/comments/${commentId}`)
   .set('x-access-token', token);
 
+const reqGetComment = commentId => requester.get(`${API_URI}/comments/${commentId}`);
+
 describe('comments', () => {
   let token;
   let postId1;
@@ -670,6 +672,45 @@ describe('comments', () => {
           res.body.should.not.have.property('comments');
         });
       });
+    });
+  });
+
+  describe('GET /comments/:id', () => {
+    let testComment;
+    let testCommentId;
+
+    before(async () => {
+      testComment = new TestComment({
+        contents: 'test',
+        postId: postId1,
+        parent: null,
+      });
+      const res = await reqPostComments(token, testComment);
+      testCommentId = res.body.commentId;
+    });
+
+    after(async () => {
+      await clearCollection(Comment);
+    });
+
+    it('성공하면 200코드, comment를 반환한다', async () => {
+      const res = await reqGetComment(testCommentId);
+      res.should.have.status(200);
+
+      const comment = res.body;
+      assert.equal(comment._id, testCommentId);
+      assert.equal(comment.contents, testComment.contents);
+    });
+
+    it('comment가 없으면 404코드를 반환한다', async () => {
+      const res = await reqGetComment(new ObjectId());
+      res.should.have.status(404);
+    });
+
+    it('commentId가 invalid하다면 400코드를 반환한다', async () => {
+      const invalidCommentId = 'invalidCommentId';
+      const res = await reqGetComment(invalidCommentId);
+      res.should.have.status(400);
     });
   });
 });
