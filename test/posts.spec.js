@@ -50,12 +50,12 @@ describe('Posts', () => {
   });
 
   describe('POST /posts', () => {
-    before((done) => {
-      clearCollection(Post, done);
+    before(async () => {
+      await clearCollection(Post);
     });
 
-    afterEach((done) => {
-      clearCollection(Post, done);
+    afterEach(async () => {
+      await clearCollection(Post);
     });
 
     it('성공하면 201코드, postId를 반환한다', async () => {
@@ -161,8 +161,8 @@ describe('Posts', () => {
       ({ postId } = res.body);
     });
 
-    after((done) => {
-      clearCollection(Post, done);
+    after(async () => {
+      await clearCollection(Post);
     });
 
     it('성공하면 200코드, post를 반환한다', async () => {
@@ -190,13 +190,13 @@ describe('Posts', () => {
   });
 
   describe('GET /posts', () => {
-    before((done) => {
-      clearCollection(Post, done);
+    before(async () => {
+      await clearCollection(Post);
     });
 
     context('글이 없으면', () => {
-      before((done) => {
-        clearCollection(Post, done);
+      before(async () => {
+        await clearCollection(Post);
       });
 
       it('404코드를 반환한다', async () => {
@@ -311,11 +311,11 @@ describe('Posts', () => {
         });
       });
 
-      after((done) => {
-        clearCollection(Post, done);
+      after(async () => {
+        await clearCollection(Post);
       });
-      after((done) => {
-        clearCollection(Comment, done);
+      after(async () => {
+        await clearCollection(Comment);
       });
     });
   });

@@ -6,16 +6,16 @@ describe('Auth', () => {
   const testUser = copyAndFreeze(USER_ARRAY[0]);
 
   describe('POST /auth', () => {
-    before((done) => {
-      clearCollection(User, done);
+    before(async () => {
+      await clearCollection(User);
     });
     before(async () => {
       const res = await reqRegister(testUser);
 
       res.should.have.status(201);
     });
-    after((done) => {
-      clearCollection(User, done);
+    after(async () => {
+      await clearCollection(User);
     });
 
     it('로그인에 성공하면 response로 201 code와 엑세스 토큰을 받아야한다', async () => {

@@ -39,12 +39,7 @@ class TestCategory {
   }
 }
 
-const clearCollection = (Model, done) => {
-  Model.deleteMany({}, (err) => {
-    if (err) console.error(err);
-    done();
-  });
-};
+const clearCollection = Model => Model.deleteMany({});
 
 const dropDatabase = (done) => {
   const collections = Object.keys(mongoose.connection.collections);

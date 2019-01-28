@@ -51,11 +51,11 @@ describe('Categories', () => {
   });
 
   describe('POST /categories', () => {
-    before((done) => {
-      clearCollection(Category, done);
+    before(async () => {
+      await clearCollection(Category);
     });
-    afterEach((done) => {
-      clearCollection(Category, done);
+    afterEach(async () => {
+      await clearCollection(Category);
     });
 
     context('상위 카테코리 생성에 성공하면', () => {
@@ -125,12 +125,12 @@ describe('Categories', () => {
   });
 
   describe('GET /categories', () => {
-    before((done) => {
-      clearCollection(Category, done);
+    before(async () => {
+      await clearCollection(Category);
     });
 
-    afterEach((done) => {
-      clearCollection(Category, done);
+    afterEach(async () => {
+      await clearCollection(Category);
     });
 
     it('카테고리가 없다면 404코드를 반환한다', async () => {
@@ -195,12 +195,12 @@ describe('Categories', () => {
   });
 
   describe('GET /categories/:id', () => {
-    before((done) => {
-      clearCollection(Category, done);
+    before(async () => {
+      await clearCollection(Category);
     });
 
-    afterEach((done) => {
-      clearCollection(Category, done);
+    afterEach(async () => {
+      await clearCollection(Category);
     });
 
     it('카테고리가 없으면 404코드를 반환한다', async () => {
@@ -236,8 +236,8 @@ describe('Categories', () => {
     let testCategory;
     let id;
 
-    before((done) => {
-      clearCollection(Category, done);
+    before(async () => {
+      await clearCollection(Category);
     });
 
     beforeEach(async () => {
@@ -248,8 +248,8 @@ describe('Categories', () => {
       id = res.body.categoryId;
     });
 
-    afterEach((done) => {
-      clearCollection(Category, done);
+    afterEach(async () => {
+      await clearCollection(Category);
     });
 
     it('성공하면 204코드를 반환한다', async () => {

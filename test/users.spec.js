@@ -7,11 +7,11 @@ const TokenManager = require('../util/token');
 describe('Users', () => {
   describe('POST /users (회원가입)', () => {
     context('회원가입에 성공하면', () => {
-      before((done) => {
-        clearCollection(User, done);
+      before(async () => {
+        await clearCollection(User);
       });
-      after((done) => {
-        clearCollection(User, done);
+      after(async () => {
+        await clearCollection(User);
       });
       const testUser = copyAndFreeze(USER_ARRAY[0]);
 
@@ -51,11 +51,11 @@ describe('Users', () => {
     });
 
     context('password와 comfirmPassword가 다르면', () => {
-      before((done) => {
-        clearCollection(User, done);
+      before(async () => {
+        await clearCollection(User);
       });
-      after((done) => {
-        clearCollection(User, done);
+      after(async () => {
+        await clearCollection(User);
       });
 
       const carelessUser = copyAndFreeze(USER_ARRAY[0]);
@@ -82,11 +82,11 @@ describe('Users', () => {
     });
 
     context('비밀번호가 8~20자리 숫자,영어,특수문자로 조합되지 않으면', () => {
-      before((done) => {
-        clearCollection(User, done);
+      before(async () => {
+        await clearCollection(User);
       });
-      after((done) => {
-        clearCollection(User, done);
+      after(async () => {
+        await clearCollection(User);
       });
       const carelessUser = copyAndFreeze(USER_ARRAY[0]);
 
@@ -110,11 +110,11 @@ describe('Users', () => {
     });
 
     context('입력하지 않은 정보가 있다면', () => {
-      before((done) => {
-        clearCollection(User, done);
+      before(async () => {
+        await clearCollection(User);
       });
-      after((done) => {
-        clearCollection(User, done);
+      after(async () => {
+        await clearCollection(User);
       });
 
       const carelessUser = copyAndFreeze(USER_ARRAY[0]);
@@ -137,11 +137,11 @@ describe('Users', () => {
     });
 
     context('E-mail 형식이 틀렸다면', () => {
-      before((done) => {
-        clearCollection(User, done);
+      before(async () => {
+        await clearCollection(User);
       });
-      after((done) => {
-        clearCollection(User, done);
+      after(async () => {
+        await clearCollection(User);
       });
 
       const carelessUser = copyAndFreeze(USER_ARRAY[0]);
@@ -173,8 +173,8 @@ describe('Users', () => {
       newUser.username = 'SAME';
       newUser.email = 'same@same.com';
 
-      before((done) => {
-        clearCollection(User, done);
+      before(async () => {
+        await clearCollection(User);
       });
 
       before(async () => {
@@ -182,8 +182,8 @@ describe('Users', () => {
         res.should.have.status(201);
       });
 
-      after((done) => {
-        clearCollection(User, done);
+      after(async () => {
+        await clearCollection(User);
       });
 
       it('response로 403 error와 DUPLICATED_USERINFO message를 받는다', async () => {
@@ -203,12 +203,12 @@ describe('Users', () => {
     });
 
     context('username에 영어,숫자,하이픈(-) 을 제외한 특수문자가 있다면 ', () => {
-      before((done) => {
-        clearCollection(User, done);
+      before(async () => {
+        await clearCollection(User);
       });
 
-      after((done) => {
-        clearCollection(User, done);
+      after(async () => {
+        await clearCollection(User);
       });
 
       const carelessUser = copyAndFreeze(USER_ARRAY[0]);
@@ -234,12 +234,12 @@ describe('Users', () => {
       const newUser = copyAndFreeze(USER_ARRAY[0]);
       newUser.profileName = '123456789012345678901';
 
-      before((done) => {
-        clearCollection(User, done);
+      before(async () => {
+        await clearCollection(User);
       });
 
-      after((done) => {
-        clearCollection(User, done);
+      after(async () => {
+        await clearCollection(User);
       });
 
       const carelessUser = copyAndFreeze(USER_ARRAY[0]);
@@ -286,8 +286,8 @@ describe('Users', () => {
       login.body.should.have.property('accessToken');
       validToken = login.body.accessToken;
     });
-    afterEach((done) => {
-      clearCollection(User, done);
+    afterEach(async () => {
+      await clearCollection(User);
     });
     context('성공하면', () => {
       it('204코드를 받고 DB에 회원정보가 없어야한다', async () => {

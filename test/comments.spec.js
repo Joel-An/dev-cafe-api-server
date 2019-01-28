@@ -71,8 +71,8 @@ describe('comments', () => {
   });
 
   describe('POST /comments', () => {
-    afterEach((done) => {
-      clearCollection(Comment, done);
+    afterEach(async () => {
+      await clearCollection(Comment);
     });
 
     it('성공하면 201코드, commentId를 반환한다', async () => {
@@ -235,8 +235,8 @@ describe('comments', () => {
 
     const DEFAULT_LIMIT = 30;
 
-    after((done) => {
-      clearCollection(Comment, done);
+    after(async () => {
+      await clearCollection(Comment);
     });
     context('댓글이 없으면', () => {
       it('404코드를 반환한다', async () => {
