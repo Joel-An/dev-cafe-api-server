@@ -508,6 +508,13 @@ describe('comments', () => {
       });
 
       context('헤더 next-page-url', () => {
+        let allComments;
+        before(async () => {
+          const query = 'limit=100';
+          const res = await reqGetComments(query);
+          allComments = res.body;
+        });
+
         it('설정한 post(id)는 next-page-url에 반영된다', async () => {
           const query = `post=${postId1}`;
           const res = await reqGetComments(query);
@@ -532,6 +539,23 @@ describe('comments', () => {
 
           const nextPageUrl = res.header['next-page-url'];
           nextPageUrl.should.include(expectedLimit);
+        });
+
+        it('next-page-url을 이용하여 다음 페이지를 받아올 수 있다.', async () => {
+          const limit = 3;
+
+          const query = `limit=${limit}`;
+          const res = await reqGetComments(query);
+          const nextPageUrl = res.header['next-page-url'];
+
+          const nextRes = await requester.get(nextPageUrl);
+          nextRes.should.have.status(200);
+
+          const responseComments = nextRes.body;
+          const expectedComments = [allComments[3], allComments[4], allComments[5]];
+
+          assert.equal(responseComments.length, limit);
+          assert.deepEqual(responseComments, expectedComments);
         });
       });
 
