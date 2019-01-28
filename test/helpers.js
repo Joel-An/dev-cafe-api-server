@@ -60,6 +60,11 @@ const reqRegister = registerForm => requester
   .post(`${API_URI}/users`)
   .send(registerForm);
 
+const requestUnregister = (userToken, password) => requester
+  .delete(`${API_URI}/users/me`)
+  .set('x-access-token', userToken)
+  .send({ password });
+
 const reqPostCategories = (token, category) => requester
   .post(`${API_URI}/categories`)
   .set('x-access-token', token)
@@ -108,6 +113,7 @@ global.USER_ARRAY = USER_ARRAY;
 global.TestCategory = TestCategory;
 global.reqLogin = reqLogin;
 global.reqRegister = reqRegister;
+global.requestUnregister = requestUnregister;
 global.reqPostCategories = reqPostCategories;
 global.ObjectId = ObjectId;
 

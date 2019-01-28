@@ -266,12 +266,6 @@ describe('Users', () => {
     const testUser = copyAndFreeze(USER_ARRAY[0]);
     let validToken;
 
-    // 회원 탈퇴 요청 (토큰, 비밀번호)
-    const requestUnregister = (userToken, password) => requester
-      .delete(`${API_URI}/users/me`)
-      .set('x-access-token', userToken)
-      .send({ password });
-
     const findUserByUsername = username => User.findOne({ username });
 
     beforeEach(async () => {
