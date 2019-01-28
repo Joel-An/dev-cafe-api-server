@@ -52,6 +52,16 @@ const setRange = (before, after) => {
   return range;
 };
 
+const buildNextPageUrl = (baseUrl, query, comments) => {
+  const limit = `?limit=${parseLimit(query.limit)}`;
+  const post = query.post ? `&post=${query.post}` : '';
+
+  const lastComment = comments[comments.length - 1];
+  const after = `&after=${lastComment._id}`;
+
+  return baseUrl + limit + post + after;
+};
+
 module.exports = wrapAsync(async (req, res) => {
   const { query } = req;
   const options = {
@@ -102,7 +112,9 @@ module.exports = wrapAsync(async (req, res) => {
     return res.status(404).end();
   }
 
+  const nextPageUrl = buildNextPageUrl(req.baseUrl, query, comments);
+
   res.status(200);
-  res.header('next-page-url', 'testUrl');
+  res.header('next-page-url', nextPageUrl);
   return res.json(comments);
 });
