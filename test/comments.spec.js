@@ -6,6 +6,11 @@ const reqDeleteComments = (token, commentId) => requester
   .delete(`${API_URI}/comments/${commentId}`)
   .set('x-access-token', token);
 
+const reqUpdateComment = (token, comment) => requester
+  .put(`${API_URI}/comments/${comment._id}`)
+  .set('x-access-token', token)
+  .send(comment);
+
 const reqGetComment = commentId => requester.get(`${API_URI}/comments/${commentId}`);
 
 describe('comments', () => {
@@ -902,6 +907,126 @@ describe('comments', () => {
           const invalidCommentId = 'invalidCommentId';
           const res = await reqDeleteComments(token, invalidCommentId);
           res.should.have.status(400);
+        });
+      });
+    });
+  });
+  describe('UPDATE /comments/:id', () => {
+    let testComment;
+    let testCommentId;
+    before(async () => {
+      // 테스트용 댓글 1개 등록
+      testComment = new TestComment({
+        contents: 'comment for update test',
+        postId: postId1,
+        parent: null,
+      });
+      const res = await reqPostComments(token, testComment);
+      testCommentId = res.body.commentId;
+    });
+
+    after(async () => {
+      await clearCollection(Comment);
+    });
+
+    context('성공하면', () => {
+      let editedComment;
+      let updatedComment;
+
+      let resUpdateComment;
+      let resGetComment;
+
+      before(async () => {
+        editedComment = new TestComment({
+          contents: 'edited contents',
+          _id: testCommentId,
+        });
+        resUpdateComment = await reqUpdateComment(token, editedComment);
+        resGetComment = await reqGetComment(testCommentId);
+        updatedComment = resGetComment.body;
+      });
+
+      it('204 코드를 반환한다', async () => {
+        resUpdateComment.should.have.status(204);
+      });
+
+      it('댓글 내용이 갱신된다', async () => {
+        assert.equal(updatedComment.contents, editedComment.contents);
+      });
+
+      it('댓글의 수정 여부가 true로 설정되고, 수정 시간이 갱신된다', async () => {
+        assert.equal(updatedComment.isThisModified, true);
+        should.exist(updatedComment.modifiedDate);
+        assert.equal(updatedComment.modifiedDate > updatedComment.date, true);
+      });
+    });
+
+    context('invalid request', () => {
+      context('자신의 댓글이 아닌 경우', () => {
+        let otherUser;
+        let tokenForOtherUser;
+        before(async () => {
+          // 회원가입
+          otherUser = copyAndFreeze(USER_ARRAY[1]);
+          const register = await reqRegister(otherUser);
+          register.should.have.status(201);
+
+          // 로그인
+          const login = await reqLogin(otherUser.username, otherUser.password);
+          login.should.have.status(201);
+          tokenForOtherUser = login.body.accessToken;
+        });
+
+        after(async () => {
+          // 회원 탈퇴
+          const res = await requestUnregister(tokenForOtherUser, otherUser.password);
+          res.should.have.status(204);
+        });
+
+        it('401코드를 반환한다', async () => {
+          const editedComment = new TestComment({
+            contents: 'edited contents again',
+            _id: testCommentId,
+          });
+          const res = await reqUpdateComment(tokenForOtherUser, editedComment);
+          res.should.have.status(401);
+
+          const resGetComment = await reqGetComment(testCommentId);
+          const comment = resGetComment.body;
+
+          assert.notEqual(comment.contents, editedComment.contents);
+        });
+      });
+
+      context('수정하려는 댓글이 없는 경우', () => {
+        it('404코드를 반환한다', async () => {
+          const editedComment = new TestComment({
+            contents: 'will get 404 error',
+            _id: new ObjectId(),
+          });
+          const res = await reqUpdateComment(token, editedComment);
+          res.should.have.status(404);
+
+          const resGetComment = await reqGetComment(testCommentId);
+          const comment = resGetComment.body;
+
+          assert.notEqual(comment.contents, editedComment.contents);
+        });
+      });
+
+      context('commentId가 invalid한 경우', () => {
+        it('400코드를 반환한다', async () => {
+          const editedComment = new TestComment({
+            contents: 'got invalid Id',
+            _id: 'wrongId',
+          });
+          const res = await reqUpdateComment(token, editedComment);
+          res.should.have.status(400);
+
+          const resGetComment = await reqGetComment(testCommentId);
+          const comment = resGetComment.body;
+
+          assert.notEqual(comment.contents, editedComment.contents);
         });
       });
     });
