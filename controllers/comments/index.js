@@ -7,5 +7,6 @@
 */
 
 exports.getComments = require('./methods/getComments');
+exports.getCommentById = require('./methods/getCommentById');
 exports.createComment = require('./methods/createComment');
 exports.deleteComment = require('./methods/deleteComment');

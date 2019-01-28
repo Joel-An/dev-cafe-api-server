@@ -6,6 +6,7 @@ const { isAuthenticated } = require('../../../../middleware/authenticator');
  */
 
 commentRouter.get('/', comments.getComments);
+commentRouter.get('/:id', comments.getCommentById);
 commentRouter.post('/', isAuthenticated, comments.createComment);
 commentRouter.delete('/:id', isAuthenticated, comments.deleteComment);
 
