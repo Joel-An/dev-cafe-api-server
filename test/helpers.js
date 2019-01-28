@@ -90,6 +90,7 @@ class TestComment {
     this.contents = comment.contents;
     this.postId = comment.postId || null;
     this.parent = comment.parent || null;
+    this._id = comment._id || null;
   }
 }
 global.TestComment = TestComment;
