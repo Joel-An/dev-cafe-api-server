@@ -71,7 +71,7 @@ describe('comments', () => {
   });
 
   describe('POST /comments', () => {
-    afterEach(async () => {
+    after(async () => {
       await clearCollection(Comment);
     });
 
@@ -89,6 +89,8 @@ describe('comments', () => {
       should.exist(comment);
       assert.equal(comment.contents, testComment.contents);
       assert.equal(comment.post, testComment.postId);
+
+      await clearCollection(Comment);
     });
 
     it('내용 or postId가 누락되면 400코드를 반환한다', async () => {
@@ -170,21 +172,50 @@ describe('comments', () => {
 
         parentCommentId = resParent.body.commentId;
       });
-      it('성공하면 201코드, commentId를 반환한다', async () => {
-        const childComment = new TestComment({
-          contents: 'childComment',
-          postId: postId1,
-          parent: parentCommentId,
+
+      after(async () => {
+        await clearCollection(Comment);
+      });
+
+      context('성공하면', () => {
+        let childComment;
+        let res;
+
+        before(async () => {
+          childComment = new TestComment({
+            contents: 'childComment',
+            postId: postId1,
+            parent: parentCommentId,
+          });
+
+          res = await reqPostComments(token, childComment);
         });
 
-        const res = await reqPostComments(token, childComment);
-        res.should.have.status(201);
-        const childCommentId = res.body.commentId;
+        it('201코드를 반환한다', async () => {
+          res.should.have.status(201);
+        });
 
-        const child = await Comment.findById(childCommentId);
-        assert.equal(child.isChild, true);
-        assert.equal(child.parent, childComment.parent);
+        it('commentId를 반환한다', async () => {
+          res.body.should.have.property('commentId');
+        });
+
+        it('DB에 댓글이 저장되어 있어야 한다', async () => {
+          const childCommentId = res.body.commentId;
+
+          const child = await Comment.findById(childCommentId);
+          assert.equal(child.isChild, true);
+          assert.equal(child.parent, childComment.parent);
+        });
+
+        it('부모댓글의 childComments에 자식댓글의 id가 저장된다', async () => {
+          const childCommentId = res.body.commentId;
+
+          const parent = await Comment.findById(parentCommentId);
+          should.exist(parent);
+          parent.childComments.should.include(childCommentId);
+        });
       });
+
       it('부모댓글이 없으면 404코드를 반환한다', async () => {
         const orphanComment = new TestComment({
           contents: 'no Parent',
