@@ -713,4 +713,197 @@ describe('comments', () => {
       res.should.have.status(400);
     });
   });
+
+  describe('DELETE /comments', () => {
+    const postTestComments = async () => {
+      // 부모 댓글 1개 등록
+      const parentComment = new TestComment({
+        contents: 'parent1 has 2 children',
+        postId: postId1,
+        parent: null,
+      });
+      const resParent = await reqPostComments(token, parentComment);
+      const parentId = resParent.body.commentId;
+
+      // 자식 댓글 2개 등록
+      const childComment1 = new TestComment({
+        contents: 'child1',
+        postId: postId1,
+        parent: parentId,
+      });
+      const childComment2 = new TestComment({
+        contents: 'child2',
+        postId: postId1,
+        parent: parentId,
+      });
+
+      const resChild1 = await reqPostComments(token, childComment1);
+      const resChild2 = await reqPostComments(token, childComment2);
+
+      const childId1 = resChild1.body.commentId;
+      const childId2 = resChild2.body.commentId;
+
+      // 자식이 없는 일반 댓글 1개 등록
+      const normalComment = new TestComment({
+        contents: 'comment has no child',
+        postId: postId1,
+        parent: null,
+      });
+      const resNormal = await reqPostComments(token, normalComment);
+      const normalCommentId = resNormal.body.commentId;
+
+      return {
+        parentId, childId1, childId2, normalCommentId,
+      };
+    };
+
+    context('부모 댓글을 삭제할 때', () => {
+      context('자식이 있는 경우', () => {
+        let commentIds;
+        let res;
+
+        before(async () => {
+          commentIds = await postTestComments();
+          res = await reqDeleteComments(token, commentIds.parentId);
+        });
+
+        after(async () => {
+          clearCollection(Comment);
+        });
+
+        it('204 코드를 반환한다', async () => {
+          res.should.have.status(204);
+        });
+
+        it('부모댓글은 삭제되지 않는다', async () => {
+          const resParent = await reqGetComment(commentIds.parentId);
+          resParent.should.have.status(200);
+        });
+
+        it('부모댓글의 내용이 "삭제된 댓글입니다."로 바뀐다', async () => {
+          const resParent = await reqGetComment(commentIds.parentId);
+
+          const parentComment = resParent.body;
+          assert.equal(parentComment.contents, '삭제된 댓글입니다.');
+          assert.equal(parentComment.isDeleted, true);
+        });
+      });
+
+      context('자식이 없는 경우', () => {
+        let noChildCommentId;
+        let res;
+
+        before(async () => {
+          const commentIds = await postTestComments();
+          noChildCommentId = commentIds.normalCommentId;
+
+          res = await reqDeleteComments(token, noChildCommentId);
+        });
+
+        after(async () => {
+          clearCollection(Comment);
+        });
+
+        it('204 코드를 반환한다', async () => {
+          res.should.have.status(204);
+        });
+
+        it('댓글은 삭제된다', async () => {
+          const resNormalComment = await reqGetComment(noChildCommentId);
+          resNormalComment.should.have.status(404);
+        });
+      });
+    });
+
+    context('자식 댓글을 삭제하면', () => {
+      let commentIds;
+      let res;
+
+      before(async () => {
+        commentIds = await postTestComments();
+        res = await reqDeleteComments(token, commentIds.childId1);
+      });
+
+      after(async () => {
+        clearCollection(Comment);
+      });
+
+      it('204 코드를 반환한다', async () => {
+        res.should.have.status(204);
+      });
+
+      it('댓글은 삭제된다', async () => {
+        const resChild1 = await reqGetComment(commentIds.childId1);
+        resChild1.should.have.status(404);
+      });
+
+      it('부모댓글의 childComments가 갱신되어, 삭제된 자식 댓글은 제거된다', async () => {
+        const resParent = await reqGetComment(commentIds.parentId);
+        const parentComment = resParent.body;
+
+        const resChild2 = await reqGetComment(commentIds.childId2);
+        const childComment2 = resChild2.body;
+
+        assert.equal(parentComment.childComments.length, 1);
+        assert.deepInclude(parentComment.childComments, childComment2);
+      });
+    });
+
+    context('invalid request', () => {
+      let commentId;
+      before(async () => {
+        const commentIds = await postTestComments();
+        commentId = commentIds.normalCommentId;
+      });
+
+      after(async () => {
+        clearCollection(Comment);
+      });
+
+      context('자신의 댓글이 아닌 경우', () => {
+        let otherUser;
+        let tokenForOtherUser;
+        before(async () => {
+          // 회원가입
+          otherUser = copyAndFreeze(USER_ARRAY[1]);
+          const register = await reqRegister(otherUser);
+          register.should.have.status(201);
+
+          // 로그인
+          const login = await reqLogin(otherUser.username, otherUser.password);
+          login.should.have.status(201);
+          tokenForOtherUser = login.body.accessToken;
+        });
+
+        after(async () => {
+          // 회원 탈퇴
+          const res = await requestUnregister(tokenForOtherUser, otherUser.password);
+          res.should.have.status(204);
+        });
+
+        it('401코드를 반환한다', async () => {
+          const res = await reqDeleteComments(tokenForOtherUser, commentId);
+          res.should.have.status(401);
+
+          const resComment = await reqGetComment(commentId);
+          resComment.should.have.status(200);
+        });
+      });
+
+      context('삭제하려는 댓글이 없는 경우', () => {
+        it('404코드를 반환한다', async () => {
+          const res = await reqDeleteComments(token, new ObjectId());
+          res.should.have.status(404);
+        });
+      });
+
+      context('commentId가 invalid한 경우', () => {
+        it('400코드를 반환한다', async () => {
+          const invalidCommentId = 'invalidCommentId';
+          const res = await reqDeleteComments(token, invalidCommentId);
+          res.should.have.status(400);
+        });
+      });
+    });
+  });
 });
