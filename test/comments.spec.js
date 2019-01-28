@@ -507,6 +507,34 @@ describe('comments', () => {
         });
       });
 
+      context('헤더 next-page-url', () => {
+        it('설정한 post(id)는 next-page-url에 반영된다', async () => {
+          const query = `post=${postId1}`;
+          const res = await reqGetComments(query);
+
+          const nextPageUrl = res.header['next-page-url'];
+          nextPageUrl.should.include(query);
+        });
+
+        it('설정한 limit은 next-page-url에 반영된다', async () => {
+          const limit = 10;
+          const query = `limit=${limit}`;
+          const res = await reqGetComments(query);
+
+          const nextPageUrl = res.header['next-page-url'];
+          nextPageUrl.should.include(query);
+        });
+
+        it('limit을 설정하지 않았다면 기본 limit이 next-page-url에 반영된다', async () => {
+          const res = await reqGetComments();
+
+          const expectedLimit = `limit=${DEFAULT_LIMIT}`;
+
+          const nextPageUrl = res.header['next-page-url'];
+          nextPageUrl.should.include(expectedLimit);
+        });
+      });
+
 
       context('post(Id)가 invalid하면', () => {
         it('400코드를 반환한다', async () => {
