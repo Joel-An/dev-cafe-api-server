@@ -9,5 +9,6 @@ commentRouter.get('/', comments.getComments);
 commentRouter.get('/:id', comments.getCommentById);
 commentRouter.post('/', isAuthenticated, comments.createComment);
 commentRouter.delete('/:id', isAuthenticated, comments.deleteComment);
+commentRouter.put('/:id', isAuthenticated, comments.updateComment);
 
 module.exports = commentRouter;
