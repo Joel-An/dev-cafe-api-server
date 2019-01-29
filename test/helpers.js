@@ -125,7 +125,7 @@ const postTestComment = async ({
     parent: parentCommentId,
   });
 
-  const res = await reqPostPosts(token, testComment);
+  const res = await reqPostComments(token, testComment);
   const commentId = selectCommentId(res);
 
   return commentId;
