@@ -93,6 +93,10 @@ class TestComment {
     this.parent = comment.parent || null;
     this._id = comment._id || null;
   }
+
+  setId(id) {
+    this._id = id;
+  }
 }
 global.TestComment = TestComment;
 
