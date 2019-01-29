@@ -286,6 +286,23 @@ describe('Categories', () => {
       });
     });
 
+    context('글이 존재한다면', async () => {
+      beforeEach(async () => {
+        await postTestPost({
+          token: adminToken,
+          postfix: 'alreay got a post, can`t delete this category',
+          categoryId: id,
+        });
+      });
+      it('409코드를 반환한다', async () => {
+        const res = await reqDeleteCategory(adminToken, id);
+        res.should.have.status(409);
+
+        const checkExist = await reqGetCategory(id);
+        checkExist.should.have.status(200);
+      });
+    });
+
     it('관리자가 아니라면 403코드를 반환한다', async () => {
       const res = await reqDeleteCategory(userToken, id);
       res.should.have.status(403);
