@@ -4,6 +4,8 @@ const { ObjectId } = mongoose.Types;
 
 const { wrapAsync } = require('../../../util/util');
 const Category = require('../../../models/category');
+const Post = require('../../../models/post');
+
 const Socket = require('../../../util/Socket');
 
 module.exports = wrapAsync(async (req, res) => {
@@ -18,6 +20,12 @@ module.exports = wrapAsync(async (req, res) => {
 
   if (!category) {
     return res.status(404).end();
+  }
+
+  const post = await Post.findOne({ category: category._id });
+
+  if (post) {
+    return res.status(409).json({ message: '카테고리에 글이 존재합니다.' });
   }
 
   if (!category.isChild) {
