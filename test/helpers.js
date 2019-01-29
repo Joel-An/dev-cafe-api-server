@@ -100,6 +100,36 @@ global.reqPostComments = (userToken, comment) => requester
   .set('x-access-token', userToken)
   .send({ ...comment });
 
+const selectPostId = response => response.body.postId;
+const selectCommentId = response => response.body.commentId;
+
+const postTestPost = async ({ token, categoryId, postfix = '' }) => {
+  const testPost = new TestPost({
+    title: `test post title${postfix}`,
+    contents: `test post contents${postfix}`,
+    categoryId,
+  });
+
+  const res = await reqPostPosts(token, testPost);
+  const postId = selectPostId(res);
+
+  return postId;
+};
+
+const postTestComment = async ({
+  token, postId, parentCommentId = null, postfix = '',
+}) => {
+  const testComment = new TestComment({
+    contents: `test comment${postfix}`,
+    postId,
+    parent: parentCommentId,
+  });
+
+  const res = await reqPostPosts(token, testComment);
+  const commentId = selectCommentId(res);
+
+  return commentId;
+};
 
 const reqGetComments = (query) => {
   const queryString = query || '';
@@ -125,7 +155,8 @@ global.reqRegister = reqRegister;
 global.requestUnregister = requestUnregister;
 global.reqPostCategories = reqPostCategories;
 global.ObjectId = ObjectId;
-
+global.postTestPost = postTestPost;
+global.postTestComment = postTestComment;
 global.reqGetComments = reqGetComments;
 global.reqGetComment = reqGetComment;
 
