@@ -16,6 +16,11 @@ const reqDeletePost = (token, postId) => requester
   .delete(`${API_URI}/posts/${postId}`)
   .set('x-access-token', token);
 
+const reqUpdatePost = (token, post) => requester
+  .put(`${API_URI}/posts/${post._id}`)
+  .set('x-access-token', token)
+  .send(post);
+
 describe('Posts', () => {
   let token;
   let parentCategory;
@@ -461,6 +466,105 @@ describe('Posts', () => {
           const invalidPostId = 'INVALID_POST_ID';
           const resDeletePost = await reqDeletePost(token, invalidPostId);
           resDeletePost.should.have.status(400);
+        });
+      });
+    });
+  });
+
+  describe('UPDATE(PUT) /posts/:id', () => {
+    let postId;
+
+    before(async () => {
+      postId = await postTestPost({
+        token,
+        postfix: 'test post for update request',
+        categoryId: childCategory._id,
+      });
+    });
+
+    after(async () => {
+      await clearCollection(Post);
+    });
+
+    context('성공하면', () => {
+      let resUpdatePost;
+
+      let originalPost;
+      let editedPost;
+      let updatedPost;
+      before(async () => {
+        // 수정하기 전 글 저장
+        const resGetOriginalPost = await reqGetPost(postId);
+        originalPost = resGetOriginalPost.body;
+
+        // 글 내용 수정
+        editedPost = new TestPost({
+          title: 'new title',
+          contents: 'new contents',
+          _id: originalPost._id,
+        });
+
+        // 수정된 글 갱신 요청
+        resUpdatePost = await reqUpdatePost(token, editedPost);
+
+        // 수정이 완료된 글 요청
+        const resGetUpdatedPost = await reqGetPost(postId);
+        updatedPost = resGetUpdatedPost.body;
+      });
+
+      it('204 코드를 반환한다', () => {
+        resUpdatePost.should.have.status(204);
+      });
+      it('글의 내용이 갱신된다', async () => {
+        assert.equal(updatedPost.title, editedPost.title);
+        assert.equal(updatedPost.contents, editedPost.contents);
+      });
+      it('글의 수정 여부가 true로 설정되고, 수정 시간이 갱신된다', () => {
+        assert.equal(updatedPost.isThisModified, true);
+
+        should.exist(updatedPost.modifiedDate);
+        assert.equal(updatedPost.modifiedDate > updatedPost.date, true);
+      });
+    });
+    context('invalid request', () => {
+      context('자신의 글이 아닌 경우', () => {
+        it('401코드를 반환한다', async () => {
+          const editedPost = new TestPost({
+            title: 'edited title again',
+            contents: 'edited contents again',
+            _id: postId,
+          });
+          const res = await reqUpdatePost(otherUserToken, editedPost);
+          res.should.have.status(401);
+
+          const resGetPost = await reqGetPost(postId);
+          const post = resGetPost.body;
+
+          assert.notEqual(post.contents, editedPost.contents);
+        });
+      });
+
+      context('수정하려는 글이 없는 경우', () => {
+        it('404코드를 반환한다', async () => {
+          const editedPost = new TestPost({
+            title: 'will get 404 error',
+            contents: 'will get 404 error',
+            _id: new ObjectId(),
+          });
+          const res = await reqUpdatePost(otherUserToken, editedPost);
+          res.should.have.status(404);
+        });
+      });
+
+      context('postId가 invalid한 경우', () => {
+        it('400코드를 반환한다', async () => {
+          const editedPost = new TestPost({
+            title: 'will get 400 error',
+            contents: 'will get 400 error',
+            _id: 'INVALID_POST_ID',
+          });
+          const res = await reqUpdatePost(otherUserToken, editedPost);
+          res.should.have.status(400);
         });
       });
     });
