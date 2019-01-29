@@ -11,4 +11,6 @@ postRouter.get('/search', posts.searchTitle);
 postRouter.post('/', isAuthenticated, posts.createPost);
 postRouter.post('/:id/upvotes', posts.upvote);
 postRouter.post('/:id/downvotes', posts.downvote);
+
+postRouter.delete('/:id', isAuthenticated, posts.deletePost);
 module.exports = postRouter;
