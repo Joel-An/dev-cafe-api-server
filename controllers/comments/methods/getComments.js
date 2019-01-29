@@ -42,11 +42,11 @@ const setRange = (before, after) => {
   const range = {};
 
   if (before) {
-    range.$gt = before;
+    range.$lt = before;
   }
 
   if (after) {
-    range.$lt = after;
+    range.$gt = after;
   }
 
   return range;
@@ -105,7 +105,7 @@ module.exports = wrapAsync(async (req, res) => {
       },
     })
     .limit(limit)
-    .sort({ _id: 'desc' })
+    .sort({ date: 'asc' })
     .lean();
 
   if (comments.length === 0) {
