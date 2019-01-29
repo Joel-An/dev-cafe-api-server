@@ -101,6 +101,14 @@ global.reqPostComments = (userToken, comment) => requester
   .send({ ...comment });
 
 
+const reqGetComments = (query) => {
+  const queryString = query || '';
+  return requester
+    .get(`${API_URI}/comments?${queryString}`);
+};
+
+const reqGetComment = commentId => requester.get(`${API_URI}/comments/${commentId}`);
+
 global.chai = chai;
 global.should = should;
 global.assert = chai.assert;
@@ -118,6 +126,8 @@ global.requestUnregister = requestUnregister;
 global.reqPostCategories = reqPostCategories;
 global.ObjectId = ObjectId;
 
+global.reqGetComments = reqGetComments;
+global.reqGetComment = reqGetComment;
 
 before(() => {
   global.requester = chai.request(server).keepOpen();

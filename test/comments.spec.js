@@ -11,19 +11,11 @@ const reqUpdateComment = (token, comment) => requester
   .set('x-access-token', token)
   .send(comment);
 
-const reqGetComment = commentId => requester.get(`${API_URI}/comments/${commentId}`);
-
 describe('comments', () => {
   let token;
   let postId1;
   let postId2;
   const user = copyAndFreeze(USER_ARRAY[0]);
-
-  const reqGetComments = (query) => {
-    const queryString = query || '';
-    return requester
-      .get(`${API_URI}/comments?${queryString}`);
-  };
 
   before((done) => {
     dropDatabase(done);
