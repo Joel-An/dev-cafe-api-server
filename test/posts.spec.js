@@ -12,11 +12,18 @@ const reqGetPosts = (query) => {
     .get(`${API_URI}/posts?${queryString}`);
 };
 
+const reqDeletePost = (token, postId) => requester
+  .delete(`${API_URI}/posts/${postId}`)
+  .set('x-access-token', token);
+
 describe('Posts', () => {
   let token;
   let parentCategory;
   let childCategory;
   const user = copyAndFreeze(USER_ARRAY[0]);
+
+  let otherUserToken;
+  const otherUser = copyAndFreeze(USER_ARRAY[1]);
 
   before((done) => {
     dropDatabase(done);
@@ -24,13 +31,20 @@ describe('Posts', () => {
 
   before(async () => {
     // 회원가입
-    const register = await reqRegister(user);
-    register.should.have.status(201);
+    const registerUser = await reqRegister(user);
+    registerUser.should.have.status(201);
+
+    const registerOhterUser = await reqRegister(otherUser);
+    registerOhterUser.should.have.status(201);
 
     // 로그인
-    const login = await reqLogin(user.username, user.password);
-    login.should.have.status(201);
-    token = login.body.accessToken;
+    const userLogin = await reqLogin(user.username, user.password);
+    userLogin.should.have.status(201);
+    token = userLogin.body.accessToken;
+
+    const ohtherUserLogin = await reqLogin(otherUser.username, otherUser.password);
+    ohtherUserLogin.should.have.status(201);
+    otherUserToken = ohtherUserLogin.body.accessToken;
 
     // 상위 카테고리 생성
     parentCategory = new TestCategory('parent');
@@ -316,6 +330,138 @@ describe('Posts', () => {
       });
       after(async () => {
         await clearCollection(Comment);
+      });
+    });
+  });
+
+  describe('DELETE /posts/:id', () => {
+    const setTestPostsAndComments = async () => {
+      // 글 2개 작성, 첫 글에는 댓글 2개 작성
+      const postIdWith2Comments = await postTestPost({
+        token,
+        postfix: 'has 2 comments',
+        categoryId: childCategory._id,
+      });
+
+      const parentCommentId = await postTestComment({
+        token,
+        postId: postIdWith2Comments,
+      });
+
+      const childCommentId = await postTestComment({
+        token,
+        postId: postIdWith2Comments,
+        parentCommentId,
+      });
+
+      const postIdWithoutComment = await postTestPost({
+        token,
+        postfix: 'doesn`t have comments',
+        categoryId: childCategory._id,
+      });
+
+      return {
+        postIdWith2Comments, parentCommentId, childCommentId, postIdWithoutComment,
+      };
+    };
+
+    context('댓글이 있는 경우', () => {
+      let ids;
+      let resDeletePost;
+
+      before(async () => {
+        ids = await setTestPostsAndComments();
+
+        // 글 삭제 요청
+        resDeletePost = await reqDeletePost(token, ids.postIdWith2Comments);
+      });
+
+      after(async () => {
+        await clearCollection(Post);
+        await clearCollection(Comment);
+      });
+
+      it('204 코드를 반환한다', () => {
+        resDeletePost.should.have.status(204);
+      });
+
+      it('DB에서 글이 삭제된다', async () => {
+        const resGetPost = await reqGetPost(ids.postIdWith2Comments);
+        resGetPost.should.have.status(404);
+      });
+
+      it('글에 달린 모든 댓글이 삭제된다', async () => {
+        const resGetParentComment = await reqGetComment(ids.parentCommentId);
+        resGetParentComment.should.have.status(404);
+
+        const resGetChildComment = await reqGetComment(ids.childCommentId);
+        resGetChildComment.should.have.status(404);
+      });
+    });
+
+    context('댓글이 없는 경우', () => {
+      let ids;
+      let resDeletePost;
+
+      before(async () => {
+        ids = await setTestPostsAndComments();
+
+        // 글 삭제 요청
+        resDeletePost = await reqDeletePost(token, ids.postIdWithoutComment);
+      });
+
+      after(async () => {
+        await clearCollection(Post);
+        await clearCollection(Comment);
+      });
+
+      it('204 코드를 반환한다', () => {
+        resDeletePost.should.have.status(204);
+      });
+
+      it('DB에서 글이 삭제된다', async () => {
+        const resGetPost = await reqGetPost(ids.postIdWithoutComment);
+        resGetPost.should.have.status(404);
+      });
+    });
+
+    context('invalid request', () => {
+      let postId;
+
+      before(async () => {
+        postId = await postTestPost({
+          token,
+          postfix: 'test post for invalid request',
+          categoryId: childCategory._id,
+        });
+      });
+
+      after(async () => {
+        await clearCollection(Post);
+      });
+
+      context('자신의 글이 아닌 경우', () => {
+        it('401코드를 반환한다', async () => {
+          const resDeletePost = await reqDeletePost(otherUserToken, postId);
+          resDeletePost.should.have.status(401);
+
+          const resGetPost = await reqGetPost(postId);
+          resGetPost.should.have.status(200);
+        });
+      });
+      context('삭제하려는 글이 없는 경우', () => {
+        it('404코드를 반환한다', async () => {
+          const notExistPost = new ObjectId();
+          const resDeletePost = await reqDeletePost(token, notExistPost);
+          resDeletePost.should.have.status(404);
+        });
+      });
+      context('postId가 invalid할 경우', () => {
+        it('400코드를 반환한다', async () => {
+          const invalidPostId = 'INVALID_POST_ID';
+          const resDeletePost = await reqDeletePost(token, invalidPostId);
+          resDeletePost.should.have.status(400);
+        });
       });
     });
   });
