@@ -16,3 +16,4 @@ exports.searchTitle = require('./methods/searchTitle');
 exports.createPost = require('./methods/createPost');
 
 exports.deletePost = require('./methods/deletePost');
+exports.updatePost = require('./methods/updatePost');

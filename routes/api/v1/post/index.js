@@ -13,4 +13,5 @@ postRouter.post('/:id/upvotes', posts.upvote);
 postRouter.post('/:id/downvotes', posts.downvote);
 
 postRouter.delete('/:id', isAuthenticated, posts.deletePost);
+postRouter.put('/:id', isAuthenticated, posts.updatePost);
 module.exports = postRouter;
