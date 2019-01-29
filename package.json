@@ -12,6 +12,7 @@
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "express": "~4.16.0",
+    "fxjs2": "^0.2.1",
     "http-errors": "~1.6.2",
     "jsonwebtoken": "^8.4.0",
     "mongoose": "^5.3.15",
