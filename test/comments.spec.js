@@ -1,5 +1,9 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
+const {
+  L, go, map, curry,
+} = require('fxjs2');
+
 const Comment = require('../models/comment');
 
 const reqDeleteComments = (token, commentId) => requester
@@ -247,11 +251,9 @@ describe('comments', () => {
   });
 
   describe('GET /comments', () => {
-    let commentIdInPost1;
-    let commentIdInPost2;
-    let childCommentId1;
-    let childCommentId2;
-
+    let commentsInPost1;
+    let commentsInPost2;
+    let childComments;
 
     const TOTAL_PARENT_COMMENTS_IN_POST1 = 40;
     const TOTAL_CHILD_COMMENTS_IN_POST1 = 2;
@@ -277,60 +279,72 @@ describe('comments', () => {
 
     context('댓글이 있을 때', () => {
       before(async () => {
-        // post1에 부모 댓글 40개, post2에 부모 댓글 1개 작성
+        /* - post1
+              -comment1
+              -comment2
+              -comment3
+              ...
+              -comment39
+              -comment40
+                -comment40's child comment1
+                -comment40's child comment2
 
-        // - post1에 부모 댓글 39개
-        const extraCommentForPost1 = new TestComment({
-          contents: 'An extra comment in post1',
-          postId: postId1,
-          parent: null,
+            - post2
+              -comment1
+        */
+
+        const postComment = curry(async (userToken, comment) => {
+          const res = await reqPostComments(userToken, comment);
+          const id = res.body.commentId;
+          comment.setId(id);
+
+          return comment;
         });
 
-        const reqExtra39Comments = new Array(TOTAL_PARENT_COMMENTS_IN_POST1 - 1).fill(null)
-          .map(() => reqPostComments(token, extraCommentForPost1));
+        const createComment = curry((postId, num) => {
+          const comment = new TestComment({
+            contents: `test comment${num}`,
+            postId,
+          });
 
-        await Promise.all(reqExtra39Comments);
-
-        // post1, post2에 부모 댓글 1개씩
-        const commentForPost1 = new TestComment({
-          contents: 'I live in post1',
-          postId: postId1,
-          parent: null,
+          return comment;
         });
 
-        const commentForPost2 = new TestComment({
-          contents: 'I live in post2',
-          postId: postId2,
-          parent: null,
+        const createChildCommentOf = curry((comment, num) => {
+          const childComment = new TestComment({
+            contents: `${comment.contents}'s child comment${num}`,
+            postId: comment.postId,
+            parent: comment._id,
+          });
+
+          return childComment;
         });
 
-        const res1 = await reqPostComments(token, commentForPost1);
-        const res2 = await reqPostComments(token, commentForPost2);
+        // post1에 댓글 40개 작성
+        commentsInPost1 = await go(
+          L.range(TOTAL_PARENT_COMMENTS_IN_POST1),
+          map(createComment(postId1)),
+          map(postComment(token)),
+        );
 
+        // post2에 댓글 1개 작성
+        commentsInPost2 = await go(
+          L.range(TOTAL_PARENT_COMMENTS_IN_POST2),
+          map(createComment(postId2)),
+          map(postComment(token)),
+        );
 
-        commentIdInPost1 = res1.body.commentId;
-        commentIdInPost2 = res2.body.commentId;
+        // post1의 최신 댓글에 답글(자식 댓글) 2개 작성
+        const latestComment = commentsInPost1[TOTAL_PARENT_COMMENTS_IN_POST1 - 1];
 
-        // post1에 있는 최신 댓글에 자식 댓글 2개 작성
-        const childComment1 = new TestComment({
-          contents: 'child1',
-          postId: postId1,
-          parent: commentIdInPost1,
-        });
-        const childComment2 = new TestComment({
-          contents: 'child2',
-          postId: postId1,
-          parent: commentIdInPost1,
-        });
-
-        const resChild1 = await reqPostComments(token, childComment1);
-        const resChild2 = await reqPostComments(token, childComment2);
-
-        childCommentId1 = resChild1.body.commentId;
-        childCommentId2 = resChild2.body.commentId;
+        childComments = await go(
+          L.range(TOTAL_CHILD_COMMENTS_IN_POST1),
+          map(createChildCommentOf(latestComment)),
+          map(postComment(token)),
+        );
       });
 
-      context('GET /comments 요청이 성공하면', () => {
+      context('기본 GET /comments 요청이 성공하면', () => {
         let response;
         let comments;
 
@@ -352,9 +366,13 @@ describe('comments', () => {
           assert.equal(comments.length, DEFAULT_LIMIT);
         });
 
-        it('최신 댓글이 배열의 첫번째에 위치한다', () => {
-          assert.equal(comments[0]._id, childCommentId2);
-          assert.equal(comments[1]._id, childCommentId1);
+        it('최신 댓글이 목록의 마지막에 위치한다', async () => {
+          for (let i = 0; i < comments.length - 1; i += 1) {
+            const prevCommentDate = new Date(comments[i].date);
+            const nextCommentDate = new Date(comments[i + 1].date);
+
+            nextCommentDate.should.above(prevCommentDate);
+          }
         });
 
         it('댓글에는 작성자의 profileName이 포함되어 있다', () => {
@@ -372,20 +390,22 @@ describe('comments', () => {
           res.should.have.status(200);
 
           const comments = res.body;
-          assert.equal(comments.length, 1);
-          assert.equal(comments[0]._id, commentIdInPost2);
+          assert.equal(comments.length, TOTAL_COMMENTS_IN_POST2);
+          assert.equal(comments[0]._id, commentsInPost2[0]._id);
         });
 
         context('자식댓글이 존재한다면', () => {
           it('200코드, 트리구조의 comments를 반환한다.', async () => {
-            const query = `post=${postId1}`;
+            const query = `post=${postId1}&limit=${TOTAL_PARENT_COMMENTS_IN_POST1}`;
             const res = await reqGetComments(query);
             res.should.have.status(200);
 
+            const lastIndex = TOTAL_PARENT_COMMENTS_IN_POST1 - 1;
+
             const comments = res.body;
-            assert.equal(comments[0].childComments.length, 2);
-            assert.equal(comments[0].childComments[0]._id, childCommentId1);
-            assert.equal(comments[0].childComments[1]._id, childCommentId2);
+            assert.equal(comments[lastIndex].childComments.length, 2);
+            assert.equal(comments[lastIndex].childComments[0]._id, childComments[0]._id);
+            assert.equal(comments[lastIndex].childComments[1]._id, childComments[1]._id);
           });
         });
       });
@@ -438,29 +458,32 @@ describe('comments', () => {
           allComments = res.body;
         });
 
-        context('after="afterId"', () => {
-          it('afterId보다 오래된 댓글을 limit 만큼 반환한다 ', async () => {
-            const limit = 3;
-            const afterIdIndex = 10;
-            const afterId = allComments[afterIdIndex]._id;
+        context('before="beforeId"', () => {
+          it('beforeId보다 오래된 댓글을 limit 혹은 최대 갯수 만큼 반환한다', async () => {
+            const limit = 10;
+            const beforeIndex = 4;
+            const beforeId = allComments[beforeIndex]._id;
 
-            const query = `limit=${limit}&after=${afterId}`;
+            const query = `limit=${limit}&before=${beforeId}`;
             const res = await reqGetComments(query);
             const responseComments = res.body;
 
-            const sliceFrom = afterIdIndex + 1;
-            const sliceTo = sliceFrom + limit;
-
-            const expectedComments = allComments.slice(sliceFrom, sliceTo);
-            assert.equal(expectedComments.length, limit);
+            // allComments[4] 보다 오래된 댓글은 [0,1,2,3] 밖에 없다.
+            const expectedComments = [
+              allComments[0],
+              allComments[1],
+              allComments[2],
+              allComments[3],
+            ];
 
             responseComments.forEach((responseComment, index) => {
               assert.equal(responseComment._id, expectedComments[index]._id);
+              assert.equal(responseComment.contents, expectedComments[index].contents);
             });
           });
         });
 
-        context('before="beforeId"', () => {
+        context('after="afterId"', () => {
           let newCommentIds;
 
           before(async () => {
@@ -476,9 +499,9 @@ describe('comments', () => {
             const res3 = await reqPostComments(token, newComment);
 
             newCommentIds = [
-              res3.body.commentId,
-              res2.body.commentId,
               res1.body.commentId,
+              res2.body.commentId,
+              res3.body.commentId,
             ];
           });
 
@@ -491,13 +514,13 @@ describe('comments', () => {
             await Promise.all([req1, req2, req3]);
           });
 
-          it('beforeId보다 최신 댓글을 limit 만큼 반환한다 ', async () => {
+          it('afterId보다 최신 댓글을 limit 만큼 반환한다 ', async () => {
             // 원래 가지고 있던 댓글 중, 가장 최신 댓글을 기준으로 댓글 3개 요청
             const limit = 3;
-            const beforeIdIndex = 0;
-            const beforeId = allComments[beforeIdIndex]._id;
+            const afterIndex = allComments.length - 1;
+            const afterId = allComments[afterIndex]._id;
 
-            const query = `limit=${limit}&before=${beforeId}`;
+            const query = `limit=${limit}&after=${afterId}`;
             const res = await reqGetComments(query);
 
             res.should.have.status(200);
