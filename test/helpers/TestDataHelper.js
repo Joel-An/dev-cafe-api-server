@@ -48,6 +48,10 @@ const createChildCommentOf = (comment, num = 0) => {
   return childComment;
 };
 
+const deletePost = async (userToken, post) => {
+  await App.reqDeletePost(userToken, post._id);
+};
+
 
 const TestDataHelper = {
   postPost: curry(postPost),
@@ -55,6 +59,7 @@ const TestDataHelper = {
   postComment: curry(postComment),
   createCommentInto: curry(createCommentInto),
   createChildCommentOf: curry(createChildCommentOf),
+  deletePost: curry(deletePost),
 };
 
 
