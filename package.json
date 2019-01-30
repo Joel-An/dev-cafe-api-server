@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "cross-env NODE_ENV=development nodemon ./bin/www",
-    "test": "mocha --file ./test/helpers.js ./test/**/*.spec.js --timeout 10000 --exit"
+    "test": "mocha --file ./test/helpers/index.js ./test/**/*.spec.js --timeout 10000 --exit"
   },
   "dependencies": {
     "acorn": "^6.0.4",

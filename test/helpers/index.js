@@ -9,11 +9,11 @@ chai.use(chaiHttp);
 const mongoose = require('mongoose');
 
 const { ObjectId } = mongoose.Types;
-const server = require('../bin/www');
+const server = require('../../bin/www');
 
 const API_URI = '/api/v1';
 
-const User = require('../models/user');
+const User = require('../../models/user');
 
 const USER_ARRAY = [
   {
