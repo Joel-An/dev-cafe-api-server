@@ -5,15 +5,7 @@ const {
 } = require('fxjs2');
 
 const Comment = require('../models/comment');
-
-const reqDeleteComments = (token, commentId) => requester
-  .delete(`${API_URI}/comments/${commentId}`)
-  .set('x-access-token', token);
-
-const reqUpdateComment = (token, comment) => requester
-  .put(`${API_URI}/comments/${comment._id}`)
-  .set('x-access-token', token)
-  .send(comment);
+const App = require('./helpers/App');
 
 describe('comments', () => {
   let token;
@@ -27,22 +19,22 @@ describe('comments', () => {
 
   before(async () => {
     // 회원가입
-    const register = await reqRegister(user);
+    const register = await App.reqRegister(user);
     register.should.have.status(201);
 
     // 로그인
-    const login = await reqLogin(user.username, user.password);
+    const login = await App.reqLogin(user.username, user.password);
     login.should.have.status(201);
     token = login.body.accessToken;
 
     // 상위 카테고리 생성
     const parentCategory = new TestCategory('parent');
-    const parentC = await reqPostCategories(token, parentCategory);
+    const parentC = await App.reqPostCategory(token, parentCategory);
     parentC.should.have.status(201);
 
     // 하위 카테고리 생성
     const childCategory = new TestCategory('child', parentC.body.categoryId);
-    const childC = await reqPostCategories(token, childCategory);
+    const childC = await App.reqPostCategory(token, childCategory);
     childC.should.have.status(201);
     const childCategoryId = childC.body.categoryId;
 
@@ -58,8 +50,8 @@ describe('comments', () => {
       categoryId: childCategoryId,
     });
 
-    const reqPost = reqPostPosts(token, testPost);
-    const reqPost2 = reqPostPosts(token, testPost2);
+    const reqPost = App.reqPostPost(token, testPost);
+    const reqPost2 = App.reqPostPost(token, testPost2);
 
     const responses = await Promise.all([reqPost, reqPost2]);
     responses[0].should.have.status(201);
@@ -84,7 +76,7 @@ describe('comments', () => {
         postId: postId1,
         parent: null,
       });
-      const res = await reqPostComments(token, testComment);
+      const res = await App.reqPostComment(token, testComment);
       res.should.have.status(201);
       res.body.should.have.property('commentId');
 
@@ -109,8 +101,8 @@ describe('comments', () => {
         parent: null,
       });
 
-      const req1 = reqPostComments(token, emptyContents);
-      const req2 = reqPostComments(token, emptyPostId);
+      const req1 = App.reqPostComment(token, emptyContents);
+      const req2 = App.reqPostComment(token, emptyPostId);
 
       const responses = await Promise.all([req1, req2]);
 
@@ -127,7 +119,7 @@ describe('comments', () => {
         postId: 'INVALID_POST_ID',
         parent: null,
       });
-      const res = await reqPostComments(token, invalidPostId);
+      const res = await App.reqPostComment(token, invalidPostId);
       res.should.have.status(400);
 
       const comments = await Comment.find({});
@@ -140,7 +132,7 @@ describe('comments', () => {
         postId: postId1,
         parent: null,
       });
-      const res = await reqPostComments(null, testComment);
+      const res = await App.reqPostComment(null, testComment);
       res.should.have.status(401);
 
       const comments = await Comment.find({});
@@ -154,7 +146,7 @@ describe('comments', () => {
         parent: null,
       });
 
-      const res = await reqPostComments(token, notExistPostId);
+      const res = await App.reqPostComment(token, notExistPostId);
       res.should.have.status(404);
 
       const comments = await Comment.find({});
@@ -170,7 +162,7 @@ describe('comments', () => {
           parent: null,
         });
 
-        const resParent = await reqPostComments(token, parentComment);
+        const resParent = await App.reqPostComment(token, parentComment);
         resParent.should.have.status(201);
 
         parentCommentId = resParent.body.commentId;
@@ -191,7 +183,7 @@ describe('comments', () => {
             parent: parentCommentId,
           });
 
-          res = await reqPostComments(token, childComment);
+          res = await App.reqPostComment(token, childComment);
         });
 
         it('201코드를 반환한다', async () => {
@@ -226,7 +218,7 @@ describe('comments', () => {
           parent: null,
         });
 
-        const res = await reqPostComments(token, orphanComment);
+        const res = await App.reqPostComment(token, orphanComment);
         res.should.have.status(404);
 
         const orphanDoc = await Comment
@@ -240,7 +232,7 @@ describe('comments', () => {
           parent: null,
         });
 
-        const res = await reqPostComments(token, invalidParentId);
+        const res = await App.reqPostComment(token, invalidParentId);
         res.should.have.status(400);
 
         const invalidPidDoc = await Comment
@@ -272,7 +264,7 @@ describe('comments', () => {
     });
     context('댓글이 없으면', () => {
       it('404코드를 반환한다', async () => {
-        const res = await reqGetComments();
+        const res = await App.reqGetComments();
         res.should.have.status(404);
       });
     });
@@ -294,7 +286,7 @@ describe('comments', () => {
         */
 
         const postComment = curry(async (userToken, comment) => {
-          const res = await reqPostComments(userToken, comment);
+          const res = await App.reqPostComment(userToken, comment);
           const id = res.body.commentId;
           comment.setId(id);
 
@@ -349,7 +341,7 @@ describe('comments', () => {
         let comments;
 
         before(async () => {
-          response = await reqGetComments();
+          response = await App.reqGetComments();
           comments = response.body;
         });
 
@@ -386,7 +378,7 @@ describe('comments', () => {
       context('post(Id)를 쿼리스트링으로 지정하면', () => {
         it('200코드, 해당되는 comments를 반환한다', async () => {
           const query = `post=${postId2}`;
-          const res = await reqGetComments(query);
+          const res = await App.reqGetComments(query);
           res.should.have.status(200);
 
           const comments = res.body;
@@ -397,7 +389,7 @@ describe('comments', () => {
         context('자식댓글이 존재한다면', () => {
           it('200코드, 트리구조의 comments를 반환한다.', async () => {
             const query = `post=${postId1}&limit=${TOTAL_PARENT_COMMENTS_IN_POST1}`;
-            const res = await reqGetComments(query);
+            const res = await App.reqGetComments(query);
             res.should.have.status(200);
 
             const lastIndex = TOTAL_PARENT_COMMENTS_IN_POST1 - 1;
@@ -413,7 +405,7 @@ describe('comments', () => {
         it('지정한 갯수만큼의 댓글을 반환한다', async () => {
           const limit = 3;
           const query = `limit=${limit}`;
-          const res = await reqGetComments(query);
+          const res = await App.reqGetComments(query);
           res.should.have.status(200);
 
           const comments = res.body;
@@ -424,7 +416,7 @@ describe('comments', () => {
             const limit = 3;
 
             const query = `post=${postId1}&limit=${limit}`;
-            const res = await reqGetComments(query);
+            const res = await App.reqGetComments(query);
             res.should.have.status(200);
 
             const comments = res.body;
@@ -437,7 +429,7 @@ describe('comments', () => {
 
           it('limit보다 부모 댓글 갯수가 적다면 전체 부모 댓글을 반환한다', async () => {
             const query = `post=${postId1}&limit=${TOTAL_COMMENTS_IN_POST1}`;
-            const res = await reqGetComments(query);
+            const res = await App.reqGetComments(query);
             res.should.have.status(200);
 
             const comments = res.body;
@@ -454,7 +446,7 @@ describe('comments', () => {
         let allComments;
         before(async () => {
           const query = 'limit=100';
-          const res = await reqGetComments(query);
+          const res = await App.reqGetComments(query);
           allComments = res.body;
         });
 
@@ -465,7 +457,7 @@ describe('comments', () => {
             const beforeId = allComments[beforeIndex]._id;
 
             const query = `limit=${limit}&before=${beforeId}`;
-            const res = await reqGetComments(query);
+            const res = await App.reqGetComments(query);
             const responseComments = res.body;
 
             // allComments[4] 보다 오래된 댓글은 [0,1,2,3] 밖에 없다.
@@ -494,9 +486,9 @@ describe('comments', () => {
               parent: null,
             });
 
-            const res1 = await reqPostComments(token, newComment);
-            const res2 = await reqPostComments(token, newComment);
-            const res3 = await reqPostComments(token, newComment);
+            const res1 = await App.reqPostComment(token, newComment);
+            const res2 = await App.reqPostComment(token, newComment);
+            const res3 = await App.reqPostComment(token, newComment);
 
             newCommentIds = [
               res1.body.commentId,
@@ -507,9 +499,9 @@ describe('comments', () => {
 
           after(async () => {
             // 등록한 댓글 3개 제거
-            const req1 = reqDeleteComments(token, newCommentIds[0]);
-            const req2 = reqDeleteComments(token, newCommentIds[1]);
-            const req3 = reqDeleteComments(token, newCommentIds[2]);
+            const req1 = App.reqDeleteComment(token, newCommentIds[0]);
+            const req2 = App.reqDeleteComment(token, newCommentIds[1]);
+            const req3 = App.reqDeleteComment(token, newCommentIds[2]);
 
             await Promise.all([req1, req2, req3]);
           });
@@ -521,7 +513,7 @@ describe('comments', () => {
             const afterId = allComments[afterIndex]._id;
 
             const query = `limit=${limit}&after=${afterId}`;
-            const res = await reqGetComments(query);
+            const res = await App.reqGetComments(query);
 
             res.should.have.status(200);
             const responseComments = res.body;
@@ -542,7 +534,7 @@ describe('comments', () => {
             const beforeId = allComments[beforeIdIndex]._id;
 
             const query = `limit=${limit}&before=${beforeId}&after=${afterId}`;
-            const res = await reqGetComments(query);
+            const res = await App.reqGetComments(query);
 
             res.should.have.status(200);
             const responseComments = res.body;
@@ -564,13 +556,13 @@ describe('comments', () => {
         let allComments;
         before(async () => {
           const query = 'limit=100';
-          const res = await reqGetComments(query);
+          const res = await App.reqGetComments(query);
           allComments = res.body;
         });
 
         it('설정한 post(id)는 next-page-url에 반영된다', async () => {
           const query = `post=${postId1}`;
-          const res = await reqGetComments(query);
+          const res = await App.reqGetComments(query);
 
           const nextPageUrl = res.header['next-page-url'];
           nextPageUrl.should.include(query);
@@ -579,14 +571,14 @@ describe('comments', () => {
         it('설정한 limit은 next-page-url에 반영된다', async () => {
           const limit = 10;
           const query = `limit=${limit}`;
-          const res = await reqGetComments(query);
+          const res = await App.reqGetComments(query);
 
           const nextPageUrl = res.header['next-page-url'];
           nextPageUrl.should.include(query);
         });
 
         it('limit을 설정하지 않았다면 기본 limit이 next-page-url에 반영된다', async () => {
-          const res = await reqGetComments();
+          const res = await App.reqGetComments();
 
           const expectedLimit = `limit=${DEFAULT_LIMIT}`;
 
@@ -598,10 +590,10 @@ describe('comments', () => {
           const limit = 3;
 
           const query = `limit=${limit}`;
-          const res = await reqGetComments(query);
+          const res = await App.reqGetComments(query);
           const nextPageUrl = res.header['next-page-url'];
 
-          const nextRes = await requester.get(nextPageUrl);
+          const nextRes = await App.get(nextPageUrl);
           nextRes.should.have.status(200);
 
           const responseComments = nextRes.body;
@@ -616,7 +608,7 @@ describe('comments', () => {
       context('post(Id)가 invalid하면', () => {
         it('400코드를 반환한다', async () => {
           const query = 'post=INVALID_POSTID';
-          const res = await reqGetComments(query);
+          const res = await App.reqGetComments(query);
           res.should.have.status(400);
           res.body.should.not.have.property('comments');
         });
@@ -626,7 +618,7 @@ describe('comments', () => {
         it('limit이 음수인 경우, default limit이 적용된다', async () => {
           const invalidLimit = '-10';
           const query = `limit=${invalidLimit}`;
-          const res = await reqGetComments(query);
+          const res = await App.reqGetComments(query);
 
           res.should.have.status(200);
           assert.equal(res.body.length, DEFAULT_LIMIT);
@@ -635,7 +627,7 @@ describe('comments', () => {
         it('limit이 0인 경우, default limit이 적용된다', async () => {
           const invalidLimit = '0';
           const query = `limit=${invalidLimit}`;
-          const res = await reqGetComments(query);
+          const res = await App.reqGetComments(query);
 
           res.should.have.status(200);
           assert.equal(res.body.length, DEFAULT_LIMIT);
@@ -644,7 +636,7 @@ describe('comments', () => {
         it('limit이 소수인 경우, 소숫점은 버림하여 적용된다', async () => {
           const invalidLimit = '8.92345';
           const query = `limit=${invalidLimit}`;
-          const res = await reqGetComments(query);
+          const res = await App.reqGetComments(query);
 
           res.should.have.status(200);
           assert.equal(res.body.length, 8);
@@ -653,7 +645,7 @@ describe('comments', () => {
         it('limit이 문자열인 경우, default limit이 적용된다', async () => {
           const invalidLimit = 'ABCDE';
           const query = `limit=${invalidLimit}`;
-          const res = await reqGetComments(query);
+          const res = await App.reqGetComments(query);
 
           res.should.have.status(200);
           assert.equal(res.body.length, DEFAULT_LIMIT);
@@ -671,10 +663,10 @@ describe('comments', () => {
           const query3 = `before=${invalidId3}`;
           const query4 = `before=${invalidId2}&after=${invalidId3}`;
 
-          const req1 = reqGetComments(query1);
-          const req2 = reqGetComments(query2);
-          const req3 = reqGetComments(query3);
-          const req4 = reqGetComments(query4);
+          const req1 = App.reqGetComments(query1);
+          const req2 = App.reqGetComments(query2);
+          const req3 = App.reqGetComments(query3);
+          const req4 = App.reqGetComments(query4);
 
           const responses = await Promise.all([req1, req2, req3, req4]);
 
@@ -687,7 +679,7 @@ describe('comments', () => {
       context('허용하지않는 쿼리 파라메터를 사용하면', () => {
         it('400코드를 반환한다', async () => {
           const wrongQuery = 'pAst=22&isAdmin=true';
-          const res = await reqGetComments(wrongQuery);
+          const res = await App.reqGetComments(wrongQuery);
           res.should.have.status(400);
           res.body.should.not.have.property('comments');
         });
@@ -705,7 +697,7 @@ describe('comments', () => {
         postId: postId1,
         parent: null,
       });
-      const res = await reqPostComments(token, testComment);
+      const res = await App.reqPostComment(token, testComment);
       testCommentId = res.body.commentId;
     });
 
@@ -714,7 +706,7 @@ describe('comments', () => {
     });
 
     it('성공하면 200코드, comment를 반환한다', async () => {
-      const res = await reqGetComment(testCommentId);
+      const res = await App.reqGetComment(testCommentId);
       res.should.have.status(200);
 
       const comment = res.body;
@@ -723,13 +715,13 @@ describe('comments', () => {
     });
 
     it('comment가 없으면 404코드를 반환한다', async () => {
-      const res = await reqGetComment(new ObjectId());
+      const res = await App.reqGetComment(new ObjectId());
       res.should.have.status(404);
     });
 
     it('commentId가 invalid하다면 400코드를 반환한다', async () => {
       const invalidCommentId = 'invalidCommentId';
-      const res = await reqGetComment(invalidCommentId);
+      const res = await App.reqGetComment(invalidCommentId);
       res.should.have.status(400);
     });
   });
@@ -742,7 +734,7 @@ describe('comments', () => {
         postId: postId1,
         parent: null,
       });
-      const resParent = await reqPostComments(token, parentComment);
+      const resParent = await App.reqPostComment(token, parentComment);
       const parentId = resParent.body.commentId;
 
       // 자식 댓글 2개 등록
@@ -757,8 +749,8 @@ describe('comments', () => {
         parent: parentId,
       });
 
-      const resChild1 = await reqPostComments(token, childComment1);
-      const resChild2 = await reqPostComments(token, childComment2);
+      const resChild1 = await App.reqPostComment(token, childComment1);
+      const resChild2 = await App.reqPostComment(token, childComment2);
 
       const childId1 = resChild1.body.commentId;
       const childId2 = resChild2.body.commentId;
@@ -769,7 +761,7 @@ describe('comments', () => {
         postId: postId1,
         parent: null,
       });
-      const resNormal = await reqPostComments(token, normalComment);
+      const resNormal = await App.reqPostComment(token, normalComment);
       const normalCommentId = resNormal.body.commentId;
 
       return {
@@ -784,7 +776,7 @@ describe('comments', () => {
 
         before(async () => {
           commentIds = await postTestComments();
-          res = await reqDeleteComments(token, commentIds.parentId);
+          res = await App.reqDeleteComment(token, commentIds.parentId);
         });
 
         after(async () => {
@@ -796,12 +788,12 @@ describe('comments', () => {
         });
 
         it('부모댓글은 삭제되지 않는다', async () => {
-          const resParent = await reqGetComment(commentIds.parentId);
+          const resParent = await App.reqGetComment(commentIds.parentId);
           resParent.should.have.status(200);
         });
 
         it('부모댓글의 내용이 "삭제된 댓글입니다."로 바뀐다', async () => {
-          const resParent = await reqGetComment(commentIds.parentId);
+          const resParent = await App.reqGetComment(commentIds.parentId);
 
           const parentComment = resParent.body;
           assert.equal(parentComment.contents, '삭제된 댓글입니다.');
@@ -817,7 +809,7 @@ describe('comments', () => {
           const commentIds = await postTestComments();
           noChildCommentId = commentIds.normalCommentId;
 
-          res = await reqDeleteComments(token, noChildCommentId);
+          res = await App.reqDeleteComment(token, noChildCommentId);
         });
 
         after(async () => {
@@ -829,7 +821,7 @@ describe('comments', () => {
         });
 
         it('댓글은 삭제된다', async () => {
-          const resNormalComment = await reqGetComment(noChildCommentId);
+          const resNormalComment = await App.reqGetComment(noChildCommentId);
           resNormalComment.should.have.status(404);
         });
       });
@@ -841,7 +833,7 @@ describe('comments', () => {
 
       before(async () => {
         commentIds = await postTestComments();
-        res = await reqDeleteComments(token, commentIds.childId1);
+        res = await App.reqDeleteComment(token, commentIds.childId1);
       });
 
       after(async () => {
@@ -853,15 +845,15 @@ describe('comments', () => {
       });
 
       it('댓글은 삭제된다', async () => {
-        const resChild1 = await reqGetComment(commentIds.childId1);
+        const resChild1 = await App.reqGetComment(commentIds.childId1);
         resChild1.should.have.status(404);
       });
 
       it('부모댓글의 childComments가 갱신되어, 삭제된 자식 댓글은 제거된다', async () => {
-        const resParent = await reqGetComment(commentIds.parentId);
+        const resParent = await App.reqGetComment(commentIds.parentId);
         const parentComment = resParent.body;
 
-        const resChild2 = await reqGetComment(commentIds.childId2);
+        const resChild2 = await App.reqGetComment(commentIds.childId2);
         const childComment2 = resChild2.body;
 
         assert.equal(parentComment.childComments.length, 1);
@@ -886,33 +878,33 @@ describe('comments', () => {
         before(async () => {
           // 회원가입
           otherUser = copyAndFreeze(USER_ARRAY[1]);
-          const register = await reqRegister(otherUser);
+          const register = await App.reqRegister(otherUser);
           register.should.have.status(201);
 
           // 로그인
-          const login = await reqLogin(otherUser.username, otherUser.password);
+          const login = await App.reqLogin(otherUser.username, otherUser.password);
           login.should.have.status(201);
           tokenForOtherUser = login.body.accessToken;
         });
 
         after(async () => {
           // 회원 탈퇴
-          const res = await requestUnregister(tokenForOtherUser, otherUser.password);
+          const res = await App.reqUnregister(tokenForOtherUser, otherUser.password);
           res.should.have.status(204);
         });
 
         it('401코드를 반환한다', async () => {
-          const res = await reqDeleteComments(tokenForOtherUser, commentId);
+          const res = await App.reqDeleteComment(tokenForOtherUser, commentId);
           res.should.have.status(401);
 
-          const resComment = await reqGetComment(commentId);
+          const resComment = await App.reqGetComment(commentId);
           resComment.should.have.status(200);
         });
       });
 
       context('삭제하려는 댓글이 없는 경우', () => {
         it('404코드를 반환한다', async () => {
-          const res = await reqDeleteComments(token, new ObjectId());
+          const res = await App.reqDeleteComment(token, new ObjectId());
           res.should.have.status(404);
         });
       });
@@ -920,7 +912,7 @@ describe('comments', () => {
       context('commentId가 invalid한 경우', () => {
         it('400코드를 반환한다', async () => {
           const invalidCommentId = 'invalidCommentId';
-          const res = await reqDeleteComments(token, invalidCommentId);
+          const res = await App.reqDeleteComment(token, invalidCommentId);
           res.should.have.status(400);
         });
       });
@@ -936,7 +928,7 @@ describe('comments', () => {
         postId: postId1,
         parent: null,
       });
-      const res = await reqPostComments(token, testComment);
+      const res = await App.reqPostComment(token, testComment);
       testCommentId = res.body.commentId;
     });
 
@@ -956,8 +948,8 @@ describe('comments', () => {
           contents: 'edited contents',
           _id: testCommentId,
         });
-        resUpdateComment = await reqUpdateComment(token, editedComment);
-        resGetComment = await reqGetComment(testCommentId);
+        resUpdateComment = await App.reqUpdateComment(token, editedComment);
+        resGetComment = await App.reqGetComment(testCommentId);
         updatedComment = resGetComment.body;
       });
 
@@ -983,18 +975,18 @@ describe('comments', () => {
         before(async () => {
           // 회원가입
           otherUser = copyAndFreeze(USER_ARRAY[1]);
-          const register = await reqRegister(otherUser);
+          const register = await App.reqRegister(otherUser);
           register.should.have.status(201);
 
           // 로그인
-          const login = await reqLogin(otherUser.username, otherUser.password);
+          const login = await App.reqLogin(otherUser.username, otherUser.password);
           login.should.have.status(201);
           tokenForOtherUser = login.body.accessToken;
         });
 
         after(async () => {
           // 회원 탈퇴
-          const res = await requestUnregister(tokenForOtherUser, otherUser.password);
+          const res = await App.reqUnregister(tokenForOtherUser, otherUser.password);
           res.should.have.status(204);
         });
 
@@ -1003,10 +995,10 @@ describe('comments', () => {
             contents: 'edited contents again',
             _id: testCommentId,
           });
-          const res = await reqUpdateComment(tokenForOtherUser, editedComment);
+          const res = await App.reqUpdateComment(tokenForOtherUser, editedComment);
           res.should.have.status(401);
 
-          const resGetComment = await reqGetComment(testCommentId);
+          const resGetComment = await App.reqGetComment(testCommentId);
           const comment = resGetComment.body;
 
           assert.notEqual(comment.contents, editedComment.contents);
@@ -1019,10 +1011,10 @@ describe('comments', () => {
             contents: 'will get 404 error',
             _id: new ObjectId(),
           });
-          const res = await reqUpdateComment(token, editedComment);
+          const res = await App.reqUpdateComment(token, editedComment);
           res.should.have.status(404);
 
-          const resGetComment = await reqGetComment(testCommentId);
+          const resGetComment = await App.reqGetComment(testCommentId);
           const comment = resGetComment.body;
 
           assert.notEqual(comment.contents, editedComment.contents);
@@ -1035,10 +1027,10 @@ describe('comments', () => {
             contents: 'got invalid Id',
             _id: 'wrongId',
           });
-          const res = await reqUpdateComment(token, editedComment);
+          const res = await App.reqUpdateComment(token, editedComment);
           res.should.have.status(400);
 
-          const resGetComment = await reqGetComment(testCommentId);
+          const resGetComment = await App.reqGetComment(testCommentId);
           const comment = resGetComment.body;
 
           assert.notEqual(comment.contents, editedComment.contents);
