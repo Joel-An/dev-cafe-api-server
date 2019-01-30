@@ -3,23 +3,7 @@
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 
-const reqGetPost = postId => requester
-  .get(`${API_URI}/posts/${postId}`);
-
-const reqGetPosts = (query) => {
-  const queryString = query || '';
-  return requester
-    .get(`${API_URI}/posts?${queryString}`);
-};
-
-const reqDeletePost = (token, postId) => requester
-  .delete(`${API_URI}/posts/${postId}`)
-  .set('x-access-token', token);
-
-const reqUpdatePost = (token, post) => requester
-  .put(`${API_URI}/posts/${post._id}`)
-  .set('x-access-token', token)
-  .send(post);
+const App = require('./helpers/App');
 
 describe('Posts', () => {
   let token;
@@ -36,30 +20,30 @@ describe('Posts', () => {
 
   before(async () => {
     // 회원가입
-    const registerUser = await reqRegister(user);
+    const registerUser = await App.reqRegister(user);
     registerUser.should.have.status(201);
 
-    const registerOhterUser = await reqRegister(otherUser);
+    const registerOhterUser = await App.reqRegister(otherUser);
     registerOhterUser.should.have.status(201);
 
     // 로그인
-    const userLogin = await reqLogin(user.username, user.password);
+    const userLogin = await App.reqLogin(user.username, user.password);
     userLogin.should.have.status(201);
     token = userLogin.body.accessToken;
 
-    const ohtherUserLogin = await reqLogin(otherUser.username, otherUser.password);
+    const ohtherUserLogin = await App.reqLogin(otherUser.username, otherUser.password);
     ohtherUserLogin.should.have.status(201);
     otherUserToken = ohtherUserLogin.body.accessToken;
 
     // 상위 카테고리 생성
     parentCategory = new TestCategory('parent');
-    const parentC = await reqPostCategories(token, parentCategory);
+    const parentC = await App.reqPostCategory(token, parentCategory);
     parentC.should.have.status(201);
     parentCategory._id = parentC.body.categoryId;
 
     // 하위 카테고리 생성
     childCategory = new TestCategory('child', parentC.body.categoryId);
-    const childC = await reqPostCategories(token, childCategory);
+    const childC = await App.reqPostCategory(token, childCategory);
     childC.should.have.status(201);
     childCategory._id = childC.body.categoryId;
   });
@@ -83,7 +67,7 @@ describe('Posts', () => {
         contents: 'hello',
         categoryId: childCategory._id,
       });
-      const res = await reqPostPosts(token, testPost);
+      const res = await App.reqPostPost(token, testPost);
       res.should.have.status(201);
       res.body.should.have.property('postId');
 
@@ -100,7 +84,7 @@ describe('Posts', () => {
         contents: 'hello',
         categoryId: childCategory._id,
       });
-      const res = await reqPostPosts(null, testPost);
+      const res = await App.reqPostPost(null, testPost);
       res.should.have.status(401);
 
       const post = await Post.findOne({ title: testPost.title });
@@ -114,7 +98,7 @@ describe('Posts', () => {
         categoryId: 'WRONG_CATEGORY_ID',
       });
 
-      const res = await reqPostPosts(token, wrongPost);
+      const res = await App.reqPostPost(token, wrongPost);
       res.should.have.status(400);
 
       const post = await Post.findOne({ title: wrongPost.title });
@@ -138,9 +122,9 @@ describe('Posts', () => {
         categoryId: null,
       });
 
-      const res1 = reqPostPosts(token, titleX);
-      const res2 = reqPostPosts(token, contentsX);
-      const res3 = reqPostPosts(token, categoryX);
+      const res1 = App.reqPostPost(token, titleX);
+      const res2 = App.reqPostPost(token, contentsX);
+      const res3 = App.reqPostPost(token, categoryX);
 
       const results = await Promise.all([res1, res2, res3]);
       results[0].should.have.status(400);
@@ -158,7 +142,7 @@ describe('Posts', () => {
         categoryId: new ObjectId(),
       });
 
-      const res = await reqPostPosts(token, wrongPost);
+      const res = await App.reqPostPost(token, wrongPost);
       res.should.have.status(404);
 
       const post = await Post.findOne({ title: wrongPost.title });
@@ -175,7 +159,7 @@ describe('Posts', () => {
         contents: 'hello',
         categoryId: childCategory._id,
       });
-      const res = await reqPostPosts(token, testPost);
+      const res = await App.reqPostPost(token, testPost);
       res.should.have.status(201);
       ({ postId } = res.body);
     });
@@ -185,7 +169,7 @@ describe('Posts', () => {
     });
 
     it('성공하면 200코드, post를 반환한다', async () => {
-      const res = await reqGetPost(postId);
+      const res = await App.reqGetPost(postId);
       res.should.have.status(200);
 
       const post = res.body;
@@ -196,13 +180,13 @@ describe('Posts', () => {
     });
 
     it('post가 없으면 404코드를 반환한다', async () => {
-      const res = await reqGetPost(new ObjectId());
+      const res = await App.reqGetPost(new ObjectId());
       res.should.have.status(404);
       should.not.exist(res.body.post);
     });
 
     it('postId가 invalid하다면 400코드를 반환한다', async () => {
-      const res = await reqGetPost('INVALID_ID');
+      const res = await App.reqGetPost('INVALID_ID');
       res.should.have.status(400);
       should.not.exist(res.body.post);
     });
@@ -219,7 +203,7 @@ describe('Posts', () => {
       });
 
       it('404코드를 반환한다', async () => {
-        const res = await reqGetPosts();
+        const res = await App.reqGetPosts();
         res.should.have.status(404);
       });
     });
@@ -246,9 +230,9 @@ describe('Posts', () => {
 
 
         // 하위 카테고리에 글 2개, 상위에 1개 작성
-        const reqP1 = await reqPostPosts(token, post1);
-        const reqP2 = await reqPostPosts(token, post2);
-        const reqP3 = await reqPostPosts(token, post3);
+        const reqP1 = await App.reqPostPost(token, post1);
+        const reqP2 = await App.reqPostPost(token, post2);
+        const reqP3 = await App.reqPostPost(token, post3);
 
         reqP1.should.have.status(201);
         reqP2.should.have.status(201);
@@ -263,12 +247,12 @@ describe('Posts', () => {
         });
 
         // 첫 번재 글에 댓글 작성
-        const res = await reqPostComments(token, comment);
+        const res = await App.reqPostComment(token, comment);
         res.should.have.status(201);
       });
 
       it('200코드, 전체 posts를 반환한다', async () => {
-        const res = await reqGetPosts();
+        const res = await App.reqGetPosts();
         res.should.have.status(200);
 
         posts = res.body;
@@ -291,7 +275,7 @@ describe('Posts', () => {
       context('쿼리스트링으로 category를 지정하면', () => {
         it('200코드, 카테고리가 같은 글을 반환한다', async () => {
           const query = `category=${childCategory._id}`;
-          const res = await reqGetPosts(query);
+          const res = await App.reqGetPosts(query);
 
           res.should.have.status(200);
 
@@ -302,7 +286,7 @@ describe('Posts', () => {
         context('카테고리가 존재하지 않으면', () => {
           it('404코드를 반환한다', async () => {
             const query = `category=${new ObjectId()}`;
-            const res = await reqGetPosts(query);
+            const res = await App.reqGetPosts(query);
 
             res.should.have.status(404);
             res.body.should.not.have.property('posts');
@@ -312,7 +296,7 @@ describe('Posts', () => {
         context('category(Id)가 invalid 하면', () => {
           it('400코드를 반환한다', async () => {
             const query = 'category=INVALID_ID';
-            const res = await reqGetPosts(query);
+            const res = await App.reqGetPosts(query);
 
             res.should.have.status(400);
             res.body.should.not.have.property('posts');
@@ -322,7 +306,7 @@ describe('Posts', () => {
         context('허용하지 않는 쿼리 파라메터를 사용하면', () => {
           it('400코드를 반환한다', async () => {
             const query = 'isAdmin=true&&rmrf=true';
-            const res = await reqGetPosts(query);
+            const res = await App.reqGetPosts(query);
 
             res.should.have.status(400);
             res.body.should.not.have.property('posts');
@@ -378,7 +362,7 @@ describe('Posts', () => {
         ids = await setTestPostsAndComments();
 
         // 글 삭제 요청
-        resDeletePost = await reqDeletePost(token, ids.postIdWith2Comments);
+        resDeletePost = await App.reqDeletePost(token, ids.postIdWith2Comments);
       });
 
       after(async () => {
@@ -391,15 +375,15 @@ describe('Posts', () => {
       });
 
       it('DB에서 글이 삭제된다', async () => {
-        const resGetPost = await reqGetPost(ids.postIdWith2Comments);
+        const resGetPost = await App.reqGetPost(ids.postIdWith2Comments);
         resGetPost.should.have.status(404);
       });
 
       it('글에 달린 모든 댓글이 삭제된다', async () => {
-        const resGetParentComment = await reqGetComment(ids.parentCommentId);
+        const resGetParentComment = await App.reqGetComment(ids.parentCommentId);
         resGetParentComment.should.have.status(404);
 
-        const resGetChildComment = await reqGetComment(ids.childCommentId);
+        const resGetChildComment = await App.reqGetComment(ids.childCommentId);
         resGetChildComment.should.have.status(404);
       });
     });
@@ -412,7 +396,7 @@ describe('Posts', () => {
         ids = await setTestPostsAndComments();
 
         // 글 삭제 요청
-        resDeletePost = await reqDeletePost(token, ids.postIdWithoutComment);
+        resDeletePost = await App.reqDeletePost(token, ids.postIdWithoutComment);
       });
 
       after(async () => {
@@ -425,7 +409,7 @@ describe('Posts', () => {
       });
 
       it('DB에서 글이 삭제된다', async () => {
-        const resGetPost = await reqGetPost(ids.postIdWithoutComment);
+        const resGetPost = await App.reqGetPost(ids.postIdWithoutComment);
         resGetPost.should.have.status(404);
       });
     });
@@ -447,24 +431,24 @@ describe('Posts', () => {
 
       context('자신의 글이 아닌 경우', () => {
         it('401코드를 반환한다', async () => {
-          const resDeletePost = await reqDeletePost(otherUserToken, postId);
+          const resDeletePost = await App.reqDeletePost(otherUserToken, postId);
           resDeletePost.should.have.status(401);
 
-          const resGetPost = await reqGetPost(postId);
+          const resGetPost = await App.reqGetPost(postId);
           resGetPost.should.have.status(200);
         });
       });
       context('삭제하려는 글이 없는 경우', () => {
         it('404코드를 반환한다', async () => {
           const notExistPost = new ObjectId();
-          const resDeletePost = await reqDeletePost(token, notExistPost);
+          const resDeletePost = await App.reqDeletePost(token, notExistPost);
           resDeletePost.should.have.status(404);
         });
       });
       context('postId가 invalid할 경우', () => {
         it('400코드를 반환한다', async () => {
           const invalidPostId = 'INVALID_POST_ID';
-          const resDeletePost = await reqDeletePost(token, invalidPostId);
+          const resDeletePost = await App.reqDeletePost(token, invalidPostId);
           resDeletePost.should.have.status(400);
         });
       });
@@ -494,7 +478,7 @@ describe('Posts', () => {
       let updatedPost;
       before(async () => {
         // 수정하기 전 글 저장
-        const resGetOriginalPost = await reqGetPost(postId);
+        const resGetOriginalPost = await App.reqGetPost(postId);
         originalPost = resGetOriginalPost.body;
 
         // 글 내용 수정
@@ -505,10 +489,10 @@ describe('Posts', () => {
         });
 
         // 수정된 글 갱신 요청
-        resUpdatePost = await reqUpdatePost(token, editedPost);
+        resUpdatePost = await App.reqUpdatePost(token, editedPost);
 
         // 수정이 완료된 글 요청
-        const resGetUpdatedPost = await reqGetPost(postId);
+        const resGetUpdatedPost = await App.reqGetPost(postId);
         updatedPost = resGetUpdatedPost.body;
       });
 
@@ -534,10 +518,10 @@ describe('Posts', () => {
             contents: 'edited contents again',
             _id: postId,
           });
-          const res = await reqUpdatePost(otherUserToken, editedPost);
+          const res = await App.reqUpdatePost(otherUserToken, editedPost);
           res.should.have.status(401);
 
-          const resGetPost = await reqGetPost(postId);
+          const resGetPost = await App.reqGetPost(postId);
           const post = resGetPost.body;
 
           assert.notEqual(post.contents, editedPost.contents);
@@ -551,7 +535,7 @@ describe('Posts', () => {
             contents: 'will get 404 error',
             _id: new ObjectId(),
           });
-          const res = await reqUpdatePost(otherUserToken, editedPost);
+          const res = await App.reqUpdatePost(otherUserToken, editedPost);
           res.should.have.status(404);
         });
       });
@@ -563,7 +547,7 @@ describe('Posts', () => {
             contents: 'will get 400 error',
             _id: 'INVALID_POST_ID',
           });
-          const res = await reqUpdatePost(otherUserToken, editedPost);
+          const res = await App.reqUpdatePost(otherUserToken, editedPost);
           res.should.have.status(400);
         });
       });
