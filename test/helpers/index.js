@@ -1,13 +1,39 @@
 /* eslint-disable no-undef */
+
+// Assertions
 const chai = require('chai');
 
 const should = chai.should();
+const { assert } = chai;
 
+global.should = should;
+global.assert = assert;
+
+// DB
 const mongoose = require('mongoose');
 
 const { ObjectId } = mongoose.Types;
 
+const clearCollection = Model => Model.deleteMany({});
+
+const dropDatabase = (done) => {
+  const collections = Object.keys(mongoose.connection.collections);
+
+  collections.forEach((collection) => {
+    mongoose.connection.collections[collection].deleteMany(() => {});
+  });
+  done();
+};
+
+global.ObjectId = ObjectId;
+global.clearCollection = clearCollection;
+global.dropDatabase = dropDatabase;
+
+// 테스트용 서버
 const App = require('./App');
+
+// 테스트용 데이터
+const copyAndFreeze = obj => Object.preventExtensions({ ...obj });
 
 const USER_ARRAY = [
   {
@@ -33,19 +59,6 @@ class TestCategory {
   }
 }
 
-const clearCollection = Model => Model.deleteMany({});
-
-const dropDatabase = (done) => {
-  const collections = Object.keys(mongoose.connection.collections);
-
-  collections.forEach((collection) => {
-    mongoose.connection.collections[collection].deleteMany(() => {});
-  });
-  done();
-};
-
-const copyAndFreeze = obj => Object.preventExtensions({ ...obj });
-
 class TestPost {
   constructor(post) {
     this.title = post.title;
@@ -55,7 +68,6 @@ class TestPost {
   }
 }
 
-global.TestPost = TestPost;
 
 class TestComment {
   constructor(comment) {
@@ -69,7 +81,15 @@ class TestComment {
     this._id = id;
   }
 }
+
+global.copyAndFreeze = copyAndFreeze;
+global.USER_ARRAY = USER_ARRAY;
+global.TestCategory = TestCategory;
+global.TestPost = TestPost;
 global.TestComment = TestComment;
+
+
+// 테스트 데이터 builder
 
 const selectPostId = response => response.body.postId;
 const selectCommentId = response => response.body.commentId;
@@ -102,23 +122,17 @@ const postTestComment = async ({
   return commentId;
 };
 
-global.chai = chai;
-global.should = should;
-global.assert = chai.assert;
-global.clearCollection = clearCollection;
-global.dropDatabase = dropDatabase;
-global.copyAndFreeze = copyAndFreeze;
-global.USER_ARRAY = USER_ARRAY;
-global.TestCategory = TestCategory;
-global.ObjectId = ObjectId;
 global.postTestPost = postTestPost;
 global.postTestComment = postTestComment;
 
+
+// 전체 테스트 전,후로 서버 open
 before(() => {
   App.open();
   // eslint-disable-next-line no-console
   console.log('<Server is kept open>');
 });
+
 after(() => {
   App.close();
   // eslint-disable-next-line no-console
