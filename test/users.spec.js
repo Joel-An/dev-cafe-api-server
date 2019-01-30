@@ -2,6 +2,7 @@
 /* eslint-disable no-undef */
 const { USER_ERR } = require('../constants/message');
 const TokenManager = require('../util/token');
+const User = require('../models/user');
 
 const App = require('./helpers/App');
 

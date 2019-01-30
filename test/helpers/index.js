@@ -12,8 +12,6 @@ const App = require('./App');
 const should = chai.should();
 chai.use(chaiHttp);
 
-const User = require('../../models/user');
-
 const USER_ARRAY = [
   {
     username: 'Bacon',
@@ -113,7 +111,6 @@ global.assert = chai.assert;
 global.clearCollection = clearCollection;
 global.dropDatabase = dropDatabase;
 global.copyAndFreeze = copyAndFreeze;
-global.User = User;
 global.USER_ARRAY = USER_ARRAY;
 global.TestCategory = TestCategory;
 global.ObjectId = ObjectId;

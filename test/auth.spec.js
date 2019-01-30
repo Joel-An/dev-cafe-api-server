@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
 const { AUTH_ERR } = require('../constants/message');
+const User = require('../models/user');
 const App = require('./helpers/App');
 
 describe('Auth', () => {
