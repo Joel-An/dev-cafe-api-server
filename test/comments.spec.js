@@ -9,8 +9,8 @@ const App = require('./helpers/App');
 
 describe('comments', () => {
   let token;
-  let postId1;
-  let postId2;
+  let post1;
+  let post2;
   const user = copyAndFreeze(USER_ARRAY[0]);
 
   before((done) => {
@@ -39,26 +39,29 @@ describe('comments', () => {
     const childCategoryId = childC.body.categoryId;
 
     // 글 2개 작성
-    const testPost = new TestPost({
-      title: 'testTitle',
-      contents: 'hello',
+    post1 = new TestPost({
+      title: 'post1',
+      contents: 'post1',
       categoryId: childCategoryId,
     });
-    const testPost2 = new TestPost({
-      title: 'testTitle',
-      contents: 'hello',
+    post2 = new TestPost({
+      title: 'post2',
+      contents: 'post2',
       categoryId: childCategoryId,
     });
 
-    const reqPost = App.reqPostPost(token, testPost);
-    const reqPost2 = App.reqPostPost(token, testPost2);
+    const reqPost = App.reqPostPost(token, post1);
+    const reqPost2 = App.reqPostPost(token, post2);
 
     const responses = await Promise.all([reqPost, reqPost2]);
     responses[0].should.have.status(201);
     responses[1].should.have.status(201);
 
-    postId1 = responses[0].body.postId;
-    postId2 = responses[1].body.postId;
+    const postId1 = responses[0].body.postId;
+    const postId2 = responses[1].body.postId;
+
+    post1.setId(postId1);
+    post2.setId(postId2);
   });
 
   after((done) => {
@@ -73,7 +76,7 @@ describe('comments', () => {
     it('성공하면 201코드, commentId를 반환한다', async () => {
       const testComment = new TestComment({
         contents: 'test',
-        postId: postId1,
+        postId: post1._id,
         parent: null,
       });
       const res = await App.reqPostComment(token, testComment);
@@ -91,7 +94,7 @@ describe('comments', () => {
     it('내용 or postId가 누락되면 400코드를 반환한다', async () => {
       const emptyContents = new TestComment({
         contents: '',
-        postId: postId1,
+        postId: post1._id,
         parent: null,
       });
 
@@ -129,7 +132,7 @@ describe('comments', () => {
     it('토큰이 누락되면 401코드를 반환한다', async () => {
       const testComment = new TestComment({
         contents: 'test',
-        postId: postId1,
+        postId: post1._id,
         parent: null,
       });
       const res = await App.reqPostComment(null, testComment);
@@ -158,7 +161,7 @@ describe('comments', () => {
       before(async () => {
         const parentComment = new TestComment({
           contents: 'parentComment',
-          postId: postId1,
+          postId: post1._id,
           parent: null,
         });
 
@@ -179,7 +182,7 @@ describe('comments', () => {
         before(async () => {
           childComment = new TestComment({
             contents: 'childComment',
-            postId: postId1,
+            postId: post1._id,
             parent: parentCommentId,
           });
 
@@ -293,16 +296,16 @@ describe('comments', () => {
           return comment;
         });
 
-        const createComment = curry((postId, num) => {
+        const createCommentInto = curry((post, num = 0) => {
           const comment = new TestComment({
-            contents: `test comment${num}`,
-            postId,
+            contents: `test comment${num} in post ${post.title}`,
+            postId: post._id,
           });
 
           return comment;
         });
 
-        const createChildCommentOf = curry((comment, num) => {
+        const createChildCommentOf = curry((comment, num = 0) => {
           const childComment = new TestComment({
             contents: `${comment.contents}'s child comment${num}`,
             postId: comment.postId,
@@ -315,14 +318,14 @@ describe('comments', () => {
         // post1에 댓글 40개 작성
         commentsInPost1 = await go(
           L.range(TOTAL_PARENT_COMMENTS_IN_POST1),
-          map(createComment(postId1)),
+          map(createCommentInto(post1)),
           map(postComment(token)),
         );
 
         // post2에 댓글 1개 작성
         commentsInPost2 = await go(
           L.range(TOTAL_PARENT_COMMENTS_IN_POST2),
-          map(createComment(postId2)),
+          map(createCommentInto(post2)),
           map(postComment(token)),
         );
 
@@ -377,7 +380,7 @@ describe('comments', () => {
 
       context('post(Id)를 쿼리스트링으로 지정하면', () => {
         it('200코드, 해당되는 comments를 반환한다', async () => {
-          const query = `post=${postId2}`;
+          const query = `post=${post2._id}`;
           const res = await App.reqGetComments(query);
           res.should.have.status(200);
 
@@ -388,7 +391,7 @@ describe('comments', () => {
 
         context('자식댓글이 존재한다면', () => {
           it('200코드, 트리구조의 comments를 반환한다.', async () => {
-            const query = `post=${postId1}&limit=${TOTAL_PARENT_COMMENTS_IN_POST1}`;
+            const query = `post=${post1._id}&limit=${TOTAL_PARENT_COMMENTS_IN_POST1}`;
             const res = await App.reqGetComments(query);
             res.should.have.status(200);
 
@@ -415,7 +418,7 @@ describe('comments', () => {
           it('limit으로 지정한 갯수 만큼의 부모 댓글을 반환한다', async () => {
             const limit = 3;
 
-            const query = `post=${postId1}&limit=${limit}`;
+            const query = `post=${post1._id}&limit=${limit}`;
             const res = await App.reqGetComments(query);
             res.should.have.status(200);
 
@@ -428,7 +431,7 @@ describe('comments', () => {
           });
 
           it('limit보다 부모 댓글 갯수가 적다면 전체 부모 댓글을 반환한다', async () => {
-            const query = `post=${postId1}&limit=${TOTAL_COMMENTS_IN_POST1}`;
+            const query = `post=${post1._id}&limit=${TOTAL_COMMENTS_IN_POST1}`;
             const res = await App.reqGetComments(query);
             res.should.have.status(200);
 
@@ -482,7 +485,7 @@ describe('comments', () => {
             // 새로운 댓글 3개 등록
             const newComment = new TestComment({
               contents: 'new comment',
-              postId: postId1,
+              postId: post1._id,
               parent: null,
             });
 
@@ -561,7 +564,7 @@ describe('comments', () => {
         });
 
         it('설정한 post(id)는 next-page-url에 반영된다', async () => {
-          const query = `post=${postId1}`;
+          const query = `post=${post1._id}`;
           const res = await App.reqGetComments(query);
 
           const nextPageUrl = res.header['next-page-url'];
@@ -694,7 +697,7 @@ describe('comments', () => {
     before(async () => {
       testComment = new TestComment({
         contents: 'test',
-        postId: postId1,
+        postId: post1._id,
         parent: null,
       });
       const res = await App.reqPostComment(token, testComment);
@@ -731,7 +734,7 @@ describe('comments', () => {
       // 부모 댓글 1개 등록
       const parentComment = new TestComment({
         contents: 'parent1 has 2 children',
-        postId: postId1,
+        postId: post1._id,
         parent: null,
       });
       const resParent = await App.reqPostComment(token, parentComment);
@@ -740,12 +743,12 @@ describe('comments', () => {
       // 자식 댓글 2개 등록
       const childComment1 = new TestComment({
         contents: 'child1',
-        postId: postId1,
+        postId: post1._id,
         parent: parentId,
       });
       const childComment2 = new TestComment({
         contents: 'child2',
-        postId: postId1,
+        postId: post1._id,
         parent: parentId,
       });
 
@@ -758,7 +761,7 @@ describe('comments', () => {
       // 자식이 없는 일반 댓글 1개 등록
       const normalComment = new TestComment({
         contents: 'comment has no child',
-        postId: postId1,
+        postId: post1._id,
         parent: null,
       });
       const resNormal = await App.reqPostComment(token, normalComment);
@@ -925,7 +928,7 @@ describe('comments', () => {
       // 테스트용 댓글 1개 등록
       testComment = new TestComment({
         contents: 'comment for update test',
-        postId: postId1,
+        postId: post1._id,
         parent: null,
       });
       const res = await App.reqPostComment(token, testComment);
