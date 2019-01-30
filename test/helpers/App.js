@@ -28,6 +28,10 @@ const reqUnregister = (userToken, password) => requester
   .set('x-access-token', userToken)
   .send({ password });
 
+const reqMyInfo = userToken => requester
+  .get(`${API_URI}/users/me`)
+  .set('x-access-token', userToken);
+
 // 인증(로그인) 기능
 const reqLogin = (username, password) => requester
   .post(`${API_URI}/auth`)
@@ -38,8 +42,9 @@ const App = {
   open,
   close,
   reqRegister,
-  reqLogin,
   reqUnregister,
+  reqMyInfo,
+  reqLogin,
 };
 
 module.exports = App;

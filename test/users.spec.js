@@ -3,6 +3,7 @@
 const { USER_ERR } = require('../constants/message');
 const TokenManager = require('../util/token');
 
+const App = require('./helpers/App');
 
 describe('Users', () => {
   describe('POST /users (회원가입)', () => {
@@ -16,7 +17,7 @@ describe('Users', () => {
       const testUser = copyAndFreeze(USER_ARRAY[0]);
 
       it('response로 201 status, profileName, email을 받는다', async () => {
-        const res = await reqRegister(testUser);
+        const res = await App.reqRegister(testUser);
 
         res.should.have.status(201);
         res.should.be.json;
@@ -42,7 +43,7 @@ describe('Users', () => {
 
       it('두번째 가입자는 일반회원이 된다', async () => {
         const secondUser = copyAndFreeze(USER_ARRAY[1]);
-        const res = await reqRegister(secondUser);
+        const res = await App.reqRegister(secondUser);
         res.should.have.status(201);
 
         const user2 = await User.findOne({ username: secondUser.username });
@@ -63,7 +64,7 @@ describe('Users', () => {
       it('response로 403 error와 WRONG_COMFIRM_PASSWORD message를 받는다', async () => {
         carelessUser.confirmPassword = 'DIFFERENT_PASSWORD@';
 
-        const res = await reqRegister(carelessUser);
+        const res = await App.reqRegister(carelessUser);
 
         res.should.have.status(403);
         res.should.be.json;
@@ -94,7 +95,7 @@ describe('Users', () => {
         carelessUser.password = 'plainText';
         carelessUser.confirmPassword = 'plainText';
 
-        const res = await reqRegister(carelessUser);
+        const res = await App.reqRegister(carelessUser);
 
         res.should.have.status(403);
         res.should.be.json;
@@ -121,7 +122,7 @@ describe('Users', () => {
 
       it('response로 403 error와 EMPTY_USERINFO message를 받는다', async () => {
         carelessUser.email = '';
-        const res = await reqRegister(carelessUser);
+        const res = await App.reqRegister(carelessUser);
 
         res.should.have.status(403);
         res.should.be.json;
@@ -148,7 +149,7 @@ describe('Users', () => {
 
       it('response로 403 error와 INVALID_EMAIL message를 받는다', async () => {
         carelessUser.email = 'wrong#gmail.com';
-        const res = await reqRegister(carelessUser);
+        const res = await App.reqRegister(carelessUser);
 
         res.should.have.status(403);
         res.should.be.json;
@@ -178,7 +179,7 @@ describe('Users', () => {
       });
 
       before(async () => {
-        const res = await reqRegister(oldUser);
+        const res = await App.reqRegister(oldUser);
         res.should.have.status(201);
       });
 
@@ -187,7 +188,7 @@ describe('Users', () => {
       });
 
       it('response로 403 error와 DUPLICATED_USERINFO message를 받는다', async () => {
-        const res = await reqRegister(newUser);
+        const res = await App.reqRegister(newUser);
 
         res.should.have.status(403);
         res.should.be.json;
@@ -215,7 +216,7 @@ describe('Users', () => {
 
       it('response로 403 error와 INVALID_USERNAME message를 받는다', async () => {
         carelessUser.username = '!@#$%^&';
-        const res = await reqRegister(carelessUser);
+        const res = await App.reqRegister(carelessUser);
 
         res.should.have.status(403);
         res.should.be.json;
@@ -246,7 +247,7 @@ describe('Users', () => {
 
       it('response로 403 error와 INVALID_PROFILENAME message를 받는다', async () => {
         carelessUser.profileName = '123456789012345678901';
-        const res = await reqRegister(carelessUser);
+        const res = await App.reqRegister(carelessUser);
 
         res.should.have.status(403);
         res.should.be.json;
@@ -270,11 +271,11 @@ describe('Users', () => {
 
     beforeEach(async () => {
       // 회원가입
-      const register = await reqRegister(testUser);
+      const register = await App.reqRegister(testUser);
       register.should.have.status(201);
 
       // 로그인
-      const login = await reqLogin(testUser.username, testUser.password);
+      const login = await App.reqLogin(testUser.username, testUser.password);
 
       login.should.have.status(201);
       login.body.should.have.property('accessToken');
@@ -285,7 +286,7 @@ describe('Users', () => {
     });
     context('성공하면', () => {
       it('204코드를 받고 DB에 회원정보가 없어야한다', async () => {
-        const res = await requestUnregister(validToken, testUser.password);
+        const res = await App.reqUnregister(validToken, testUser.password);
 
         res.should.have.status(204);
 
@@ -296,13 +297,13 @@ describe('Users', () => {
 
     context('탈퇴성공후 재요청하면', () => {
       it('404코드를 받고 DB에 회원정보가 없어야한다', async () => {
-        const firstResponse = await requestUnregister(
+        const firstResponse = await App.reqUnregister(
           validToken,
           testUser.password
         );
         firstResponse.should.have.status(204);
 
-        const SecondResponse = await requestUnregister(
+        const SecondResponse = await App.reqUnregister(
           validToken,
           testUser.password
         );
@@ -316,7 +317,7 @@ describe('Users', () => {
     context('토큰이 없으면', () => {
       it('401 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
         const emptyToken = '';
-        const res = await requestUnregister(emptyToken, testUser.password);
+        const res = await App.reqUnregister(emptyToken, testUser.password);
 
         res.should.have.status(401);
 
@@ -328,7 +329,7 @@ describe('Users', () => {
     context('비밀번호가 없으면', () => {
       it('400 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
         const emptyPassword = '';
-        const res = await requestUnregister(validToken, emptyPassword);
+        const res = await App.reqUnregister(validToken, emptyPassword);
 
         res.should.have.status(400);
 
@@ -340,7 +341,7 @@ describe('Users', () => {
     context('토큰이 불량이라면', () => {
       it('401 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
         const wrongToken = 'WRONG_TOKEN';
-        const res = await requestUnregister(wrongToken, testUser.password);
+        const res = await App.reqUnregister(wrongToken, testUser.password);
 
         res.should.have.status(401);
 
@@ -357,7 +358,7 @@ describe('Users', () => {
           decoded._id,
           decoded.email
         );
-        const res = await requestUnregister(expiredToken, testUser.password);
+        const res = await App.reqUnregister(expiredToken, testUser.password);
 
         res.should.have.status(401);
 
@@ -368,7 +369,7 @@ describe('Users', () => {
 
     context('비밀번호가 다르면', () => {
       it('403 코드를 받고, DB에 회원정보가 존재해야한다', async () => {
-        const res = await requestUnregister(validToken, 'WRONG_PASSWORD');
+        const res = await App.reqUnregister(validToken, 'WRONG_PASSWORD');
 
         res.should.have.status(403);
 
@@ -382,17 +383,13 @@ describe('Users', () => {
     const testUser = copyAndFreeze(USER_ARRAY[0]);
     let token;
 
-    const getMyInfo = userToken => requester
-      .get(`${API_URI}/users/me`)
-      .set('x-access-token', userToken);
-
     before(async () => {
       // 회원가입
-      const register = await reqRegister(testUser);
+      const register = await App.reqRegister(testUser);
       register.should.have.status(201);
 
       // 로그인
-      const login = await reqLogin(testUser.username, testUser.password);
+      const login = await App.reqLogin(testUser.username, testUser.password);
 
       login.should.have.status(201);
       login.body.should.have.property('accessToken');
@@ -400,7 +397,7 @@ describe('Users', () => {
     });
 
     it('성공하면 200코드, profileName을 받는다', async () => {
-      const res = await getMyInfo(token);
+      const res = await App.reqMyInfo(token);
       res.should.have.status(200);
       res.body.should.have.property('myInfo');
 
@@ -411,24 +408,8 @@ describe('Users', () => {
 
     it('토큰이 없다면 401코드를 받는다 ', async () => {
       const emptyToken = null;
-      const res = await getMyInfo(emptyToken);
+      const res = await App.reqMyInfo(emptyToken);
       res.should.have.status(401);
-    });
-  });
-
-  describe.skip('GET /users', () => {
-    it('it should GET all users', (done) => {
-      chai
-        .request(server)
-        .get(`${API_URI}/users`)
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.should.be.json;
-          res.body.should.be.a('array');
-          res.body.length.should.not.be.equal(0);
-
-          done();
-        });
     });
   });
 });
