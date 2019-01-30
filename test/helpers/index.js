@@ -3,6 +3,8 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
+const App = require('./App');
+
 const should = chai.should();
 chai.use(chaiHttp);
 
@@ -166,12 +168,12 @@ global.reqGetComments = reqGetComments;
 global.reqGetComment = reqGetComment;
 
 before(() => {
-  global.requester = chai.request(server).keepOpen();
+  App.open();
   // eslint-disable-next-line no-console
   console.log('<Server is kept open>');
 });
 after(() => {
-  requester.close();
+  App.close();
   // eslint-disable-next-line no-console
   console.log('<Server is closed>');
 });
