@@ -66,6 +66,10 @@ class TestPost {
     this.categoryId = post.categoryId || null;
     this._id = post._id || null;
   }
+
+  setId(id) {
+    this._id = id;
+  }
 }
 
 
