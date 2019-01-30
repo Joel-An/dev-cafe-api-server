@@ -1,9 +1,23 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
+const {
+  L, go, map,
+} = require('fxjs2');
+
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 
 const App = require('./helpers/App');
+const TestDataHelper = require('./helpers/TestDataHelper');
+
+const {
+  createPostInto,
+  postPost,
+  createCommentInto,
+  createChildCommentOf,
+  postComment,
+  deletePost,
+} = TestDataHelper;
 
 describe('Posts', () => {
   let token;
@@ -208,117 +222,400 @@ describe('Posts', () => {
       });
     });
 
-    context('성공하면', () => {
-      let posts;
+    context('글이 있을 때', () => {
+      let latestPost;
+
+      const TOTAL_POSTS_IN_PARENT_CATEGORY = 20;
+      const TOTAL_POSTS_IN_CHIILD_CATEGORY = 40;
+      const TOTAL_POSTS = TOTAL_POSTS_IN_PARENT_CATEGORY + TOTAL_POSTS_IN_CHIILD_CATEGORY;
+
+      const PARENT_COMMENTS = 2;
+      const CHILD_COMMENTS = 3;
+      const TOTAL_COMMENTS_IN_LATEST_POST = PARENT_COMMENTS + CHILD_COMMENTS;
+
+      const DEFAULT_LIMIT = 30;
+
       before(async () => {
-        const post1 = new TestPost({
-          title: 'first post',
-          contents: 'hello',
-          categoryId: childCategory._id,
+        /*  - parentCategory
+                    - post20
+                    - post19
+                    ...
+                    - post1
+
+            - childCategory
+                    - post40
+                        - comment1
+                            -childComment1
+                            -childComment2
+                            -childComment3
+                        - comment2
+                    - post39
+                    - post38
+                    ...
+                    - post2
+                    - post1
+        */
+
+        // 상위 카테고리에 글 20개 생성
+        await go(
+          L.range(TOTAL_POSTS_IN_PARENT_CATEGORY),
+          map(createPostInto(parentCategory)),
+          map(postPost(token)),
+        );
+
+        // 하위 카테고리에 글 40개 생성
+        const postsInChildCategory = await go(
+          L.range(TOTAL_POSTS_IN_CHIILD_CATEGORY),
+          map(createPostInto(childCategory)),
+          map(postPost(token)),
+        );
+
+        // 가장 최신 글에 댓글 2개 작성
+        const lastPostIndex = postsInChildCategory.length - 1;
+        latestPost = postsInChildCategory[lastPostIndex];
+
+        const commentsInlatestPost = await go(
+          L.range(PARENT_COMMENTS),
+          map(createCommentInto(latestPost)),
+          map(postComment(token)),
+        );
+
+        // 가장 최신 댓글에 답글(대댓글) 3개 작성
+        const lastCommentIndex = commentsInlatestPost.length - 1;
+        const latestCommnet = commentsInlatestPost[lastCommentIndex];
+
+        await go(
+          L.range(CHILD_COMMENTS),
+          map(createChildCommentOf(latestCommnet)),
+          map(postComment(token)),
+        );
+      });
+
+      context('기본 GET /posts 요청이 성공하면', () => {
+        let res;
+        let posts;
+
+        before(async () => {
+          res = await App.reqGetPosts();
+          posts = res.body;
         });
-        const post2 = new TestPost({
-          title: '2nd post',
-          contents: 'hihi',
-          categoryId: childCategory._id,
+
+        it('200코드를 반환한다', () => {
+          res.should.have.status(200);
+        });
+        it('헤더에 next-page-url이 포함되어 있다', () => {
+          res.header.should.have.property('next-page-url');
+        });
+        it('limit이 설정되지 않은 경우, 30개의 글을 반환한다', () => {
+          assert.notEqual(posts.length, TOTAL_POSTS);
+          assert.equal(posts.length, DEFAULT_LIMIT);
+        });
+        it('최신 글이 목록의 첫번째에 위치한다', () => {
+          assert.equal(posts[0]._id, latestPost._id);
+        });
+        it('post에는 작성자의 profileName이 있어야한다', () => {
+          posts[0].author.should.have.property('profileName');
+          assert(posts[0].author.profileName, user.profileName);
+        });
+        it('post에는 상위,하위 카테고리정보가 있어야한다', () => {
+          assert.equal(posts[0].category.name, childCategory.name);
+          assert.equal(posts[0].category.parent.name, parentCategory.name);
+        });
+        it('post에는 댓글 갯수가 있어야한다', () => {
+          assert.equal(posts[0]._id, latestPost._id);
+          assert.equal(posts[0].commentsCount, TOTAL_COMMENTS_IN_LATEST_POST);
+
+          assert.equal(posts[1].commentsCount, 0);
+        });
+      });
+
+      context('query parameter', () => {
+        context('category(id)를 지정했을 때', () => {
+          context('카테고리가 존재하면', () => {
+            let res;
+            let posts;
+
+            before(async () => {
+              const query = `category=${childCategory._id}&limit=${TOTAL_POSTS}`;
+              res = await App.reqGetPosts(query);
+              posts = res.body;
+            });
+
+            it('200코드를 반환한다', () => {
+              res.should.have.status(200);
+            });
+
+            it('카테고리가 같은 글 목록을 반환한다', () => {
+              posts.forEach((post) => {
+                assert.equal(post.category.name, childCategory.name);
+              });
+            });
+          });
+          context('카테고리가 존재하지 않으면', () => {
+            let res;
+
+            before(async () => {
+              const notExistCategory = new ObjectId();
+              const query = `category=${notExistCategory}`;
+              res = await App.reqGetPosts(query);
+            });
+
+            it('404코드를 반환한다', () => {
+              res.should.have.status(404);
+            });
+          });
         });
 
-        const post3 = new TestPost({
-          title: '3rd post',
-          contents: 'jojojo',
-          categoryId: parentCategory._id,
+        context('limit을 지정했을 때', () => {
+          it('limit으로 지정한 갯수 만큼의 글을 반환한다', async () => {
+            const limit = 15;
+            const query = `limit=${limit}`;
+            const res = await App.reqGetPosts(query);
+            const posts = res.body;
+
+            assert.equal(posts.length, limit);
+          });
+
+          it('limit보다 전체 글 갯수가 적다면 전체 글을 반환한다', async () => {
+            const limit = 1000;
+            const query = `limit=${limit}`;
+            const res = await App.reqGetPosts(query);
+            const posts = res.body;
+
+            assert.notEqual(posts.length, limit);
+            assert.equal(posts.length, TOTAL_POSTS);
+          });
         });
 
+        context('before/after을 지정했을 때', () => {
+          let allPosts;
+          before(async () => {
+            const query = 'limit=100';
+            const res = await App.reqGetPosts(query);
+            allPosts = res.body;
+          });
 
-        // 하위 카테고리에 글 2개, 상위에 1개 작성
-        const reqP1 = await App.reqPostPost(token, post1);
-        const reqP2 = await App.reqPostPost(token, post2);
-        const reqP3 = await App.reqPostPost(token, post3);
+          context('before="beforeId"', () => {
+            it('beforeId보다 오래된 글을 limit 혹은 최대 갯수 만큼 반환한다', async () => {
+              const limit = 3;
+              const beforeIndex = 10;
+              const beforeId = allPosts[beforeIndex]._id;
 
-        reqP1.should.have.status(201);
-        reqP2.should.have.status(201);
-        reqP3.should.have.status(201);
+              const query = `limit=${limit}&before=${beforeId}`;
+              const res = await App.reqGetPosts(query);
+              res.should.have.status(200);
 
-        const { postId } = reqP1.body;
+              const responsePosts = res.body;
 
-        const comment = new TestComment({
-          contents: 'test',
-          postId,
-          parent: null,
+              const expectedPosts = [
+                allPosts[11],
+                allPosts[12],
+                allPosts[13],
+              ];
+
+              responsePosts.forEach((responsePost, index) => {
+                assert.deepEqual(responsePost, expectedPosts[index]);
+              });
+            });
+          });
+          context('after="afterId"', () => {
+            let newPosts;
+            before(async () => {
+              // 새로운 글 3개 작성
+              newPosts = await go(
+                L.range(3),
+                map(createPostInto(childCategory)),
+                map(postPost(token)),
+              );
+            });
+
+            after(async () => {
+              // 추가한 글 3개 삭제
+              await go(
+                newPosts,
+                map(deletePost(token))
+              );
+            });
+
+            it('afterId보다 최신 글을 limit 만큼 반환한다', async () => {
+              const limit = 3;
+              const afterIndex = 10;
+              const afterId = allPosts[afterIndex]._id;
+
+              const query = `limit=${limit}&after=${afterId}`;
+              const res = await App.reqGetPosts(query);
+              res.should.have.status(200);
+
+              const responsePosts = res.body;
+
+              const expectedPosts = [
+                newPosts[2],
+                newPosts[1],
+                newPosts[0],
+              ];
+
+              assert.equal(responsePosts[0]._id, expectedPosts[0]._id);
+              assert.equal(responsePosts[1]._id, expectedPosts[1]._id);
+              assert.equal(responsePosts[2]._id, expectedPosts[2]._id);
+            });
+          });
+
+          context('after="afterId"&before="beforeId"', () => {
+            it('afterId, beforeId 사이의 글을 limit 만큼 반환한다 ', async () => {
+              const limit = 3;
+
+              const afterIdIndex = 10;
+              const beforeIdIndex = afterIdIndex - limit - 1;
+
+              const afterId = allPosts[afterIdIndex]._id;
+              const beforeId = allPosts[beforeIdIndex]._id;
+
+              const query = `limit=${limit}&before=${beforeId}&after=${afterId}`;
+              const res = await App.reqGetPosts(query);
+
+              res.should.have.status(200);
+              const responsePosts = res.body;
+
+              const expectedPosts = [
+                allPosts[7],
+                allPosts[8],
+                allPosts[9],
+              ];
+
+              responsePosts.forEach((responseComment, index) => {
+                assert.equal(responseComment._id, expectedPosts[index]._id);
+              });
+            });
+          });
         });
 
-        // 첫 번재 글에 댓글 작성
-        const res = await App.reqPostComment(token, comment);
-        res.should.have.status(201);
+        context('invalid query parameter', () => {
+          context('허용하지 않는 쿼리 파라메터를 사용하면', () => {
+            it('400코드를 반환한다', async () => {
+              const query = 'isAdmin=true&cOtegory=notCategory';
+              const res = await App.reqGetPosts(query);
+              res.should.have.status(400);
+            });
+          });
+
+          context('invalid limit', () => {
+            it('limit이 음수인 경우, default limit이 적용된다', async () => {
+              const minusLimit = '-10';
+              const query = `limit=${minusLimit}`;
+              const res = await App.reqGetPosts(query);
+
+              res.should.have.status(200);
+              assert.equal(res.body.length, DEFAULT_LIMIT);
+            });
+            it('limit이 0인 경우, default limit이 적용된다', async () => {
+              const invalidLimit = '0';
+              const query = `limit=${invalidLimit}`;
+              const res = await App.reqGetPosts(query);
+
+              res.should.have.status(200);
+              assert.equal(res.body.length, DEFAULT_LIMIT);
+            });
+
+            it('limit이 소수인 경우, 소숫점은 버림하여 적용된다', async () => {
+              const invalidLimit = '8.92345';
+              const query = `limit=${invalidLimit}`;
+              const res = await App.reqGetPosts(query);
+
+              res.should.have.status(200);
+              assert.equal(res.body.length, 8);
+            });
+
+            it('limit이 문자열인 경우, default limit이 적용된다', async () => {
+              const invalidLimit = 'ABCDE';
+              const query = `limit=${invalidLimit}`;
+              const res = await App.reqGetPosts(query);
+
+              res.should.have.status(200);
+              assert.equal(res.body.length, DEFAULT_LIMIT);
+            });
+          });
+        });
+
+        context('invalid before/after', () => {
+          it('before or after가 ObjectId가 아니라면, 400 에러를 반환한다', async () => {
+            const invalidId1 = 'ABCDE';
+            const invalidId2 = '1321';
+            const invalidId3 = '[@$@$';
+
+            const query1 = `before=${invalidId1}`;
+            const query2 = `after=${invalidId2}`;
+            const query3 = `before=${invalidId3}`;
+            const query4 = `before=${invalidId2}&after=${invalidId3}`;
+
+            const req1 = App.reqGetPosts(query1);
+            const req2 = App.reqGetPosts(query2);
+            const req3 = App.reqGetPosts(query3);
+            const req4 = App.reqGetPosts(query4);
+
+            const responses = await Promise.all([req1, req2, req3, req4]);
+
+            responses.forEach((response) => {
+              response.should.have.status(400);
+            });
+          });
+        });
       });
 
-      it('200코드, 전체 posts를 반환한다', async () => {
-        const res = await App.reqGetPosts();
-        res.should.have.status(200);
+      context('헤더 next-page-url', () => {
+        let allPosts;
 
-        posts = res.body;
-        assert.equal(posts.length, 3);
-      });
+        before(async () => {
+          const query = 'limit=100';
+          const res = await App.reqGetPosts(query);
+          allPosts = res.body;
+        });
 
-      it('post에는 profileName이 있어야한다.', () => {
-        assert.equal(posts[0].author.profileName, user.profileName);
-      });
-
-      it('post에는 상위,하위 카테고리정보가 있어야한다.', () => {
-        assert.equal(posts[0].category.name, childCategory.name);
-        assert.equal(posts[0].category.parent.name, parentCategory.name);
-      });
-
-      it('post에는 댓글 갯수가 있어야한다.', () => {
-        assert.equal(posts[0].commentsCount, 1);
-      });
-
-      context('쿼리스트링으로 category를 지정하면', () => {
-        it('200코드, 카테고리가 같은 글을 반환한다', async () => {
+        it('설정한 category(id)는 next-page-url에 반영된다', async () => {
           const query = `category=${childCategory._id}`;
           const res = await App.reqGetPosts(query);
 
-          res.should.have.status(200);
-
-          const filterdPosts = res.body;
-          assert.equal(filterdPosts.length, 2);
+          const nextPageUrl = res.header['next-page-url'];
+          nextPageUrl.should.include(query);
         });
 
-        context('카테고리가 존재하지 않으면', () => {
-          it('404코드를 반환한다', async () => {
-            const query = `category=${new ObjectId()}`;
-            const res = await App.reqGetPosts(query);
+        it('설정한 limit은 next-page-url에 반영된다', async () => {
+          const limit = 10;
+          const query = `limit=${limit}`;
+          const res = await App.reqGetPosts(query);
 
-            res.should.have.status(404);
-            res.body.should.not.have.property('posts');
-          });
+          const nextPageUrl = res.header['next-page-url'];
+          nextPageUrl.should.include(query);
         });
 
-        context('category(Id)가 invalid 하면', () => {
-          it('400코드를 반환한다', async () => {
-            const query = 'category=INVALID_ID';
-            const res = await App.reqGetPosts(query);
+        it('limit을 설정하지 않았다면 기본 limit이 next-page-url에 반영된다', async () => {
+          const res = await App.reqGetPosts();
 
-            res.should.have.status(400);
-            res.body.should.not.have.property('posts');
-          });
+          const expectedLimit = `limit=${DEFAULT_LIMIT}`;
+
+          const nextPageUrl = res.header['next-page-url'];
+          nextPageUrl.should.include(expectedLimit);
         });
+        it('next-page-url을 이용하여 다음 페이지를 받아올 수 있다', async () => {
+          const limit = 4;
 
-        context('허용하지 않는 쿼리 파라메터를 사용하면', () => {
-          it('400코드를 반환한다', async () => {
-            const query = 'isAdmin=true&&rmrf=true';
-            const res = await App.reqGetPosts(query);
+          const query = `limit=${limit}`;
+          const res = await App.reqGetPosts(query);
+          const nextPageUrl = res.header['next-page-url'];
 
-            res.should.have.status(400);
-            res.body.should.not.have.property('posts');
-          });
+          const nextRes = await App.get(nextPageUrl);
+          nextRes.should.have.status(200);
+
+          const responsePosts = nextRes.body;
+          const expectedPosts = [
+            allPosts[4],
+            allPosts[5],
+            allPosts[6],
+            allPosts[7],
+          ];
+
+          assert.equal(responsePosts.length, limit);
+          assert.deepEqual(responsePosts, expectedPosts);
         });
-      });
-
-      after(async () => {
-        await clearCollection(Post);
-      });
-      after(async () => {
-        await clearCollection(Comment);
       });
     });
   });
