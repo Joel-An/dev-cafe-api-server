@@ -1,11 +1,12 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
 const {
-  L, go, map, curry,
+  L, go, map,
 } = require('fxjs2');
 
 const Comment = require('../models/comment');
 const App = require('./helpers/App');
+const TestDataHelper = require('./helpers/TestDataHelper');
 
 describe('comments', () => {
   let token;
@@ -288,32 +289,11 @@ describe('comments', () => {
               -comment1
         */
 
-        const postComment = curry(async (userToken, comment) => {
-          const res = await App.reqPostComment(userToken, comment);
-          const id = res.body.commentId;
-          comment.setId(id);
-
-          return comment;
-        });
-
-        const createCommentInto = curry((post, num = 0) => {
-          const comment = new TestComment({
-            contents: `test comment${num} in post ${post.title}`,
-            postId: post._id,
-          });
-
-          return comment;
-        });
-
-        const createChildCommentOf = curry((comment, num = 0) => {
-          const childComment = new TestComment({
-            contents: `${comment.contents}'s child comment${num}`,
-            postId: comment.postId,
-            parent: comment._id,
-          });
-
-          return childComment;
-        });
+        const {
+          postComment,
+          createCommentInto,
+          createChildCommentOf,
+        } = TestDataHelper;
 
         // post1에 댓글 40개 작성
         commentsInPost1 = await go(
