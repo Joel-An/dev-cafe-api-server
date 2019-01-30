@@ -3,17 +3,14 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
+const mongoose = require('mongoose');
+
+const { ObjectId } = mongoose.Types;
+
 const App = require('./App');
 
 const should = chai.should();
 chai.use(chaiHttp);
-
-const mongoose = require('mongoose');
-
-const { ObjectId } = mongoose.Types;
-const server = require('../../bin/www');
-
-const API_URI = '/api/v1';
 
 const User = require('../../models/user');
 
@@ -54,29 +51,6 @@ const dropDatabase = (done) => {
 
 const copyAndFreeze = obj => Object.preventExtensions({ ...obj });
 
-const reqLogin = (username, password) => requester
-  .post(`${API_URI}/auth`)
-  .send({ username, password });
-
-const reqRegister = registerForm => requester
-  .post(`${API_URI}/users`)
-  .send(registerForm);
-
-const requestUnregister = (userToken, password) => requester
-  .delete(`${API_URI}/users/me`)
-  .set('x-access-token', userToken)
-  .send({ password });
-
-const reqPostCategories = (token, category) => requester
-  .post(`${API_URI}/categories`)
-  .set('x-access-token', token)
-  .send(category);
-
-global.reqPostPosts = (userToken, post) => requester
-  .post(`${API_URI}/posts`)
-  .set('x-access-token', userToken)
-  .send({ ...post });
-
 class TestPost {
   constructor(post) {
     this.title = post.title;
@@ -102,11 +76,6 @@ class TestComment {
 }
 global.TestComment = TestComment;
 
-global.reqPostComments = (userToken, comment) => requester
-  .post(`${API_URI}/comments`)
-  .set('x-access-token', userToken)
-  .send({ ...comment });
-
 const selectPostId = response => response.body.postId;
 const selectCommentId = response => response.body.commentId;
 
@@ -117,7 +86,7 @@ const postTestPost = async ({ token, categoryId, postfix = '' }) => {
     categoryId,
   });
 
-  const res = await reqPostPosts(token, testPost);
+  const res = await App.reqPostPost(token, testPost);
   const postId = selectPostId(res);
 
   return postId;
@@ -132,40 +101,24 @@ const postTestComment = async ({
     parent: parentCommentId,
   });
 
-  const res = await reqPostComments(token, testComment);
+  const res = await App.reqPostComment(token, testComment);
   const commentId = selectCommentId(res);
 
   return commentId;
 };
 
-const reqGetComments = (query) => {
-  const queryString = query || '';
-  return requester
-    .get(`${API_URI}/comments?${queryString}`);
-};
-
-const reqGetComment = commentId => requester.get(`${API_URI}/comments/${commentId}`);
-
 global.chai = chai;
 global.should = should;
 global.assert = chai.assert;
-global.server = server;
-global.API_URI = API_URI;
 global.clearCollection = clearCollection;
 global.dropDatabase = dropDatabase;
 global.copyAndFreeze = copyAndFreeze;
 global.User = User;
 global.USER_ARRAY = USER_ARRAY;
 global.TestCategory = TestCategory;
-global.reqLogin = reqLogin;
-global.reqRegister = reqRegister;
-global.requestUnregister = requestUnregister;
-global.reqPostCategories = reqPostCategories;
 global.ObjectId = ObjectId;
 global.postTestPost = postTestPost;
 global.postTestComment = postTestComment;
-global.reqGetComments = reqGetComments;
-global.reqGetComment = reqGetComment;
 
 before(() => {
   App.open();

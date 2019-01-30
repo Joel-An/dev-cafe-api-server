@@ -18,6 +18,8 @@ const close = () => {
   requester.close();
 };
 
+const get = url => requester.get(url);
+
 // 회원 기능
 const reqRegister = registerForm => requester
   .post(`${API_URI}/users`)
@@ -60,10 +62,52 @@ const reqPostPost = (userToken, post) => requester
   .set('x-access-token', userToken)
   .send({ ...post });
 
+const reqDeletePost = (token, postId) => requester
+  .delete(`${API_URI}/posts/${postId}`)
+  .set('x-access-token', token);
+
+const reqUpdatePost = (token, post) => requester
+  .put(`${API_URI}/posts/${post._id}`)
+  .set('x-access-token', token)
+  .send(post);
+
+const reqGetPosts = (query) => {
+  const queryString = query || '';
+  return requester
+    .get(`${API_URI}/posts?${queryString}`);
+};
+
+const reqGetPost = postId => requester
+  .get(`${API_URI}/posts/${postId}`);
+
+// 댓글 관리 기능
+const reqPostComment = (userToken, comment) => requester
+  .post(`${API_URI}/comments`)
+  .set('x-access-token', userToken)
+  .send({ ...comment });
+
+const reqDeleteComment = (token, commentId) => requester
+  .delete(`${API_URI}/comments/${commentId}`)
+  .set('x-access-token', token);
+
+const reqUpdateComment = (token, comment) => requester
+  .put(`${API_URI}/comments/${comment._id}`)
+  .set('x-access-token', token)
+  .send(comment);
+
+const reqGetComments = (query) => {
+  const queryString = query || '';
+  return requester
+    .get(`${API_URI}/comments?${queryString}`);
+};
+
+const reqGetComment = commentId => requester.get(`${API_URI}/comments/${commentId}`);
+
 
 const App = {
   open,
   close,
+  get,
   reqRegister,
   reqUnregister,
   reqMyInfo,
@@ -73,6 +117,16 @@ const App = {
   reqGetCategories,
   reqGetCategory,
   reqPostPost,
+  reqDeletePost,
+  reqUpdatePost,
+  reqGetPosts,
+  reqGetPost,
+  reqPostComment,
+  reqDeleteComment,
+  reqUpdateComment,
+  reqGetComments,
+  reqGetComment,
+
 };
 
 module.exports = App;
