@@ -1,16 +1,13 @@
 /* eslint-disable no-undef */
-process.env.NODE_ENV = 'test';
 const chai = require('chai');
-const chaiHttp = require('chai-http');
+
+const should = chai.should();
 
 const mongoose = require('mongoose');
 
 const { ObjectId } = mongoose.Types;
 
 const App = require('./App');
-
-const should = chai.should();
-chai.use(chaiHttp);
 
 const USER_ARRAY = [
   {

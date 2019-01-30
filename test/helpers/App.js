@@ -2,7 +2,6 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
-chai.use(chaiHttp);
 const server = require('../../bin/www');
 
 const API_URI = '/api/v1';
@@ -11,6 +10,7 @@ const API_URI = '/api/v1';
 let requester;
 
 const open = () => {
+  chai.use(chaiHttp);
   requester = chai.request(server).keepOpen();
 };
 
