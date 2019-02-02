@@ -27,10 +27,9 @@ module.exports = wrapAsync(async (req, res) => {
 
   if (comment.childComments.length > 0) {
     await Comment.findByIdAndUpdate(comment._id, { $set: { contents: '삭제된 댓글입니다.', isDeleted: true } });
-    return res.status(204).end();
+  } else {
+    await Comment.findByIdAndDelete(comment._id);
   }
-
-  await Comment.findByIdAndDelete(id);
 
   return res.status(204).end();
 });
