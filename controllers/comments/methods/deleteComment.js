@@ -16,7 +16,8 @@ module.exports = wrapAsync(async (req, res) => {
   const comment = await Comment.findById(id);
 
   if (!comment) {
-    return res.status(404).end();
+    res.status(404);
+    return res.json({ message: '댓글이 존재하지 않습니다.' });
   }
 
   if (comment.author.toString() !== req.user._id) {
