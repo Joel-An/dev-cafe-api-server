@@ -5,6 +5,8 @@ const { ObjectId } = mongoose.Types;
 const { wrapAsync } = require('../../../util/util');
 const Comment = require('../../../models/comment');
 
+const Socket = require('../../../util/Socket');
+
 module.exports = wrapAsync(async (req, res) => {
   const { id } = req.params;
 
@@ -25,11 +27,18 @@ module.exports = wrapAsync(async (req, res) => {
     return res.json({ message: '자신이 쓴 댓글만 삭제할 수 있습니다.' });
   }
 
+  if (comment.isDeleted) {
+    res.status(401);
+    return res.json({ message: '이미 삭제처리된 댓글입니다.' });
+  }
+
   if (comment.childComments.length > 0) {
     await Comment.findByIdAndUpdate(comment._id, { $set: { contents: '삭제된 댓글입니다.', isDeleted: true } });
+    Socket.emitUpdateComment(comment._id, comment.post);
   } else {
     await Comment.findByIdAndUpdate(comment.parent, { $pull: { childComments: comment._id } });
     await Comment.findByIdAndDelete(comment._id);
+    Socket.emitDeleteComment(comment._id, comment.post);
   }
 
   return res.status(204).end();

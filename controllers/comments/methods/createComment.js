@@ -5,6 +5,8 @@ const { wrapAsync, isEmptyInput } = require('../../../util/util');
 const Comment = require('../../../models/comment');
 const Post = require('../../../models/post');
 
+const Socket = require('../../../util/Socket');
+
 module.exports = wrapAsync(async (req, res) => {
   const { contents, postId, parent } = req.body;
   const userId = req.user._id;
@@ -51,6 +53,8 @@ module.exports = wrapAsync(async (req, res) => {
       { $push: { childComments: comment._id } }
     );
   }
+
+  Socket.emitNewComment(comment._id, comment.post);
 
   res.status(201);
   return res.json({ commentId: comment._id });

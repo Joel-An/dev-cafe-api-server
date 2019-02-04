@@ -5,6 +5,8 @@ const { ObjectId } = mongoose.Types;
 const { wrapAsync } = require('../../../util/util');
 const Comment = require('../../../models/comment');
 
+const Socket = require('../../../util/Socket');
+
 module.exports = wrapAsync(async (req, res) => {
   const { id } = req.params;
   const { contents: editedContents } = req.body;
@@ -25,6 +27,11 @@ module.exports = wrapAsync(async (req, res) => {
     return res.json({ message: '자신이 쓴 댓글만 수정할 수 있습니다.' });
   }
 
+  if (comment.isDeleted) {
+    res.status(401);
+    return res.json({ message: '삭제된 댓글은 수정할 수 없습니다.' });
+  }
+
   await Comment.findByIdAndUpdate(id,
     {
       $set: {
@@ -33,6 +40,8 @@ module.exports = wrapAsync(async (req, res) => {
         modifiedDate: Date.now(),
       },
     });
+
+  Socket.emitUpdateComment(comment._id, comment.post);
 
   return res.status(204).end();
 });

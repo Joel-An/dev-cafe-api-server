@@ -37,6 +37,21 @@ class Socket {
     const data = { postId, categoryId };
     io.emit('UPDATE_POST', data);
   }
+
+  static emitNewComment(commentId, postId) {
+    const data = { commentId, postId };
+    io.emit('NEW_COMMENT', data);
+  }
+
+  static emitDeleteComment(commentId, postId) {
+    const data = { commentId, postId };
+    io.emit('DELETE_COMMENT', data);
+  }
+
+  static emitUpdateComment(commentId, postId) {
+    const data = { commentId, postId };
+    io.emit('UPDATE_COMMENT', data);
+  }
 }
 
 module.exports = Socket;
