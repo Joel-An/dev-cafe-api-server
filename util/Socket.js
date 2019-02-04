@@ -22,6 +22,21 @@ class Socket {
   static emitDeleteCategory(id) {
     io.emit('DELETE_CATEGORY', id);
   }
+
+  static emitNewPost(postId, categoryId) {
+    const data = { postId, categoryId };
+    io.emit('NEW_POST', data);
+  }
+
+  static emitDeletePost(postId, categoryId) {
+    const data = { postId, categoryId };
+    io.emit('DELETE_POST', data);
+  }
+
+  static emitUpdatePost(postId, categoryId) {
+    const data = { postId, categoryId };
+    io.emit('UPDATE_POST', data);
+  }
 }
 
 module.exports = Socket;

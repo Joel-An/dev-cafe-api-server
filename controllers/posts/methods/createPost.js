@@ -4,7 +4,7 @@ const { ObjectId } = mongoose.Types;
 const { wrapAsync, isEmptyInput } = require('../../../util/util');
 const Post = require('../../../models/post');
 const Category = require('../../../models/category');
-
+const Socket = require('../../../util/Socket');
 
 module.exports = wrapAsync(async (req, res) => {
   const { title, contents, categoryId } = req.body;
@@ -32,6 +32,7 @@ module.exports = wrapAsync(async (req, res) => {
 
   await post.save();
 
+  Socket.emitNewPost(post._id, post.category);
   res.status(201);
   return res.json({ postId: post._id });
 });

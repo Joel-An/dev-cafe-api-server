@@ -5,6 +5,8 @@ const { ObjectId } = mongoose.Types;
 const { wrapAsync } = require('../../../util/util');
 const Post = require('../../../models/post');
 
+const Socket = require('../../../util/Socket');
+
 module.exports = wrapAsync(async (req, res) => {
   const { id } = req.params;
   const {
@@ -37,6 +39,8 @@ module.exports = wrapAsync(async (req, res) => {
         modifiedDate: Date.now(),
       },
     });
+
+  Socket.emitUpdatePost(post._id, post.category);
 
   return res.status(204).end();
 });

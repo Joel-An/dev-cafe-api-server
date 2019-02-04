@@ -6,6 +6,8 @@ const { wrapAsync } = require('../../../util/util');
 const Post = require('../../../models/post');
 const Comment = require('../../../models/comment');
 
+const Socket = require('../../../util/Socket');
+
 module.exports = wrapAsync(async (req, res) => {
   const { id } = req.params;
 
@@ -27,6 +29,7 @@ module.exports = wrapAsync(async (req, res) => {
 
   await Post.findByIdAndDelete(id);
   await Comment.deleteMany({ post: post._id });
+  Socket.emitDeletePost(post._id, post.category);
 
   return res.status(204).end();
 });
