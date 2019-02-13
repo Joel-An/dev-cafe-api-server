@@ -858,7 +858,7 @@ describe('Posts', () => {
             contents: 'will get 404 error',
             _id: new ObjectId(),
           });
-          const res = await App.reqUpdatePost(otherUserToken, editedPost);
+          const res = await App.reqUpdatePost(token, editedPost);
           res.should.have.status(404);
         });
       });
@@ -870,7 +870,7 @@ describe('Posts', () => {
             contents: 'will get 400 error',
             _id: 'INVALID_POST_ID',
           });
-          const res = await App.reqUpdatePost(otherUserToken, editedPost);
+          const res = await App.reqUpdatePost(token, editedPost);
           res.should.have.status(400);
         });
       });
