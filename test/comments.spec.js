@@ -1004,6 +1004,22 @@ describe('comments', () => {
         });
       });
 
+      context('댓글의 내용이 없는 경우', () => {
+        it('400코드를 반환한다', async () => {
+          const editedComment = new TestComment({
+            contents: '          ',
+            _id: testCommentId,
+          });
+          const res = await App.reqUpdateComment(token, editedComment);
+          res.should.have.status(400);
+
+          const resGetComment = await App.reqGetComment(testCommentId);
+          const comment = resGetComment.body;
+
+          assert.notEqual(comment.contents, editedComment.contents);
+        });
+      });
+
       context('commentId가 invalid한 경우', () => {
         it('400코드를 반환한다', async () => {
           const editedComment = new TestComment({

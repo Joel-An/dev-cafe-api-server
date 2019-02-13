@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { ObjectId } = mongoose.Types;
 
-const { wrapAsync } = require('../../../util/util');
+const { wrapAsync, isEmptyInput } = require('../../../util/util');
 const Post = require('../../../models/post');
 
 const Socket = require('../../../util/Socket');
@@ -17,6 +17,11 @@ module.exports = wrapAsync(async (req, res) => {
   if (!ObjectId.isValid(id)) {
     res.status(400);
     return res.json({ message: 'postId 형식이 잘못되었습니다.' });
+  }
+
+  if (isEmptyInput(editedTitle, editedContents)) {
+    res.status(400);
+    return res.json({ message: '제목/내용을 입력해주세요.' });
   }
 
   const post = await Post.findById(id);

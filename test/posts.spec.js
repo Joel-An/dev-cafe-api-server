@@ -825,6 +825,32 @@ describe('Posts', () => {
         });
       });
 
+      context('제목/내용이 없는 경우', () => {
+        it('400코드를 반환한다', async () => {
+          const emptyTitle = new TestPost({
+            title: '',
+            contents: 'where is the title',
+            _id: postId,
+          });
+          const emptyContents = new TestPost({
+            title: 'where is the contents',
+            contents: '',
+            _id: postId,
+          });
+          const resEmptyTitle = await App.reqUpdatePost(token, emptyTitle);
+          const resEmptyContents = await App.reqUpdatePost(token, emptyContents);
+
+          resEmptyTitle.should.have.status(400);
+          resEmptyContents.should.have.status(400);
+
+          const resGetPost = await App.reqGetPost(postId);
+          const post = resGetPost.body;
+
+          assert.notEqual(post.title, emptyTitle.title);
+          assert.notEqual(post.contents, emptyContents.contents);
+        });
+      });
+
       context('수정하려는 글이 없는 경우', () => {
         it('404코드를 반환한다', async () => {
           const editedPost = new TestPost({
