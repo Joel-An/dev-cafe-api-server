@@ -10,6 +10,11 @@ class Socket {
     io.on('connection', (socket) => {
       // eslint-disable-next-line no-console
       console.log('client connected :', socket.id);
+
+      socket.on('disconnect', (reason) => {
+        // eslint-disable-next-line no-console
+        console.log(`client ${socket.id} disconnected because '${reason}'`);
+      });
     });
 
     return io;
