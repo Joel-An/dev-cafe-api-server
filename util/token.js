@@ -25,6 +25,7 @@ class TokenManager {
     const payload = {
       ...this.payload,
       _id: user._id,
+      username: user.username,
       profileName: user.profileName,
       email: user.email,
       isAdmin: user.isAdmin,
