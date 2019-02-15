@@ -4,6 +4,7 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 
 const { wrapAsync } = require('../../../util/util');
+const { FILE_UPLOAD_LIMIT_MB } = require('../../../constants/fileUpload');
 
 AWS.config.loadFromPath(path.join(__dirname, '/../../../config/aws_config.json'));
 const s3 = new AWS.S3();
@@ -26,6 +27,7 @@ module.exports = wrapAsync(async (req, res, next) => {
       },
       acl: 'public-read',
     }),
+    limits: { fileSize: FILE_UPLOAD_LIMIT_MB * 1024 * 1024 },
   });
 
   upload.single('image')(req, res, (err) => {
