@@ -7,3 +7,4 @@
 */
 
 exports.login = require('./methods/login');
+exports.testerLogin = require('./methods/testerLogin');
