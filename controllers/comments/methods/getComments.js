@@ -53,13 +53,19 @@ const setRange = (before, after) => {
 };
 
 const buildNextPageUrl = (baseUrl, query, comments) => {
-  const limit = `?limit=${parseLimit(query.limit)}`;
+  const limit = parseLimit(query.limit);
+  const limitParam = `?limit=${limit}`;
+
+  if (comments.length < limit) {
+    return '';
+  }
+
   const post = query.post ? `&post=${query.post}` : '';
 
   const lastComment = comments[comments.length - 1];
   const after = `&after=${lastComment._id}`;
 
-  return baseUrl + limit + post + after;
+  return baseUrl + limitParam + post + after;
 };
 
 module.exports = wrapAsync(async (req, res) => {

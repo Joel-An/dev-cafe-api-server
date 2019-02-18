@@ -410,16 +410,26 @@ describe('comments', () => {
             });
           });
 
-          it('limit보다 부모 댓글 갯수가 적다면 전체 부모 댓글을 반환한다', async () => {
-            const query = `post=${post1._id}&limit=${TOTAL_COMMENTS_IN_POST1}`;
-            const res = await App.reqGetComments(query);
-            res.should.have.status(200);
+          context('limit보다 부모 댓글 갯수가 적다면', () => {
+            let response;
+            before(async () => {
+              const query = `post=${post1._id}&limit=${TOTAL_COMMENTS_IN_POST1}`;
+              response = await App.reqGetComments(query);
+              response.should.have.status(200);
+            });
 
-            const comments = res.body;
+            it('전체 부모 댓글을 반환한다', async () => {
+              const comments = response.body;
 
-            assert.equal(comments.length, TOTAL_PARENT_COMMENTS_IN_POST1);
-            comments.forEach((comment) => {
-              assert.equal(comment.isChild, false);
+              assert.equal(comments.length, TOTAL_PARENT_COMMENTS_IN_POST1);
+              comments.forEach((comment) => {
+                assert.equal(comment.isChild, false);
+              });
+            });
+
+            it('next-page-url은 빈문자열이다', () => {
+              response.header.should.have.property('next-page-url');
+              assert.equal(response.header['next-page-url'], '');
             });
           });
         });
