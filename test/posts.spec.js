@@ -376,14 +376,27 @@ describe('Posts', () => {
             assert.equal(posts.length, limit);
           });
 
-          it('limit보다 전체 글 갯수가 적다면 전체 글을 반환한다', async () => {
-            const limit = 1000;
-            const query = `limit=${limit}`;
-            const res = await App.reqGetPosts(query);
-            const posts = res.body;
+          context('limit보다 전체 글 갯수가 적다면', () => {
+            let response;
+            let limit;
+            before(async () => {
+              limit = 1000;
+              const query = `limit=${limit}`;
+              response = await App.reqGetPosts(query);
+              response.should.have.status(200);
+            });
 
-            assert.notEqual(posts.length, limit);
-            assert.equal(posts.length, TOTAL_POSTS);
+            it('전체 글을 반환한다', async () => {
+              const posts = response.body;
+
+              assert.notEqual(posts.length, limit);
+              assert.equal(posts.length, TOTAL_POSTS);
+            });
+
+            it('next-page-url은 빈문자열이다', () => {
+              response.header.should.have.property('next-page-url');
+              assert.equal(response.header['next-page-url'], '');
+            });
           });
         });
 

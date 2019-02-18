@@ -56,13 +56,19 @@ const removeEmptyOption = (options) => {
 };
 
 const buildNextPageUrl = (baseUrl, query, posts) => {
-  const limit = `?limit=${parseLimit(query.limit)}`;
+  const limit = parseLimit(query.limit);
+  const limitParam = `?limit=${limit}`;
+
+  if (posts.length < limit) {
+    return '';
+  }
+
   const category = query.category ? `&category=${query.category}` : '';
 
   const lastPost = posts[posts.length - 1];
   const before = `&before=${lastPost._id}`;
 
-  return baseUrl + limit + category + before;
+  return baseUrl + limitParam + category + before;
 };
 
 
