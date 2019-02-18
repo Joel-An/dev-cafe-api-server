@@ -43,8 +43,8 @@ class Socket {
     io.emit('UPDATE_POST', data);
   }
 
-  static emitNewComment(commentId, postId) {
-    const data = { commentId, postId };
+  static emitNewComment(commentId, parentId, postId) {
+    const data = { commentId, parentId, postId };
     io.emit('NEW_COMMENT', data);
   }
 

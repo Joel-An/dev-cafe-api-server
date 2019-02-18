@@ -54,7 +54,7 @@ module.exports = wrapAsync(async (req, res) => {
     );
   }
 
-  Socket.emitNewComment(comment._id, comment.post);
+  Socket.emitNewComment(comment._id, comment.parent, comment.post);
 
   res.status(201);
   return res.json({ commentId: comment._id });
