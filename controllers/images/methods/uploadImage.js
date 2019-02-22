@@ -15,7 +15,7 @@ module.exports = wrapAsync(async (req, res, next) => {
   */
   res.status(200);
   return res.json({
-    imageUrl: 'https://dcafe-bucket.s3.ap-northeast-2.amazonaws.com/post-images/1550263654347_%EC%A0%9C%EB%AA%A9%20%EC%97%86%EC%9D%8C.png',
+    imageUrl: 'https://s3.ap-northeast-2.amazonaws.com/dcafe-bucket/post-images/%EC%95%88%EB%82%B4.png',
   });
   /*
   const upload = multer({
