@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { ObjectId } = mongoose.Types;
 
-const { wrapAsync, isEmptyInput } = require('../../../util/util');
+const { wrapAsync, isEmptyInput, checkDate } = require('../../../util/util');
 const Post = require('../../../models/post');
 
 const Socket = require('../../../util/Socket');
@@ -33,6 +33,10 @@ module.exports = wrapAsync(async (req, res) => {
   if (post.author.toString() !== req.user._id) {
     res.status(401);
     return res.json({ message: '자신이 쓴 글만 수정할 수 있습니다.' });
+  }
+
+  if (req.user.isTester) {
+    await checkDate(post);
   }
 
   await Post.findByIdAndUpdate(id,

@@ -19,6 +19,19 @@ exports.isEmptyInput = (...args) => {
   return false;
 };
 
+exports.checkDate = async (document) => {
+  const minute = 5;
+  const now = Date.now();
+
+  const date = document.date.getTime();
+
+  if (now - date > minute * 60 * 1000) {
+    const error = new Error(`테스터 아이디로 작성한 게시물은 작성 후 ${minute}분 동안만 수정/삭제할 수 있습니다.`);
+    error.status = 401;
+    throw error;
+  }
+};
+
 exports.listToTree = (list) => {
   const map = {};
   const roots = [];

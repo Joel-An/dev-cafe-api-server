@@ -29,6 +29,7 @@ class TokenManager {
       profileName: user.profileName,
       email: user.email,
       isAdmin: user.isAdmin,
+      isTester: user.get('isTester') || false,
     };
     const signOptions = options || this.signOptions;
 
