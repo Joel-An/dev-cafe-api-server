@@ -14,14 +14,12 @@ const { handleFileUploadError } = require('./middleware/handleFileUploadError');
 
 const apiRouterV1 = require('./routes/api/v1');
 
-const clientApp = path.join(__dirname, './public/App');
 const app = express();
 
 if (process.env.NODE_ENV !== 'test') app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
 // set mongodb
 const mongooseOptions = {
@@ -50,7 +48,6 @@ app.use((req, res, next) => {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/v1', apiRouterV1);
-app.use('*', express.static(clientApp));
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
