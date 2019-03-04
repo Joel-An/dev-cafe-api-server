@@ -1,7 +1,7 @@
 const User = require('../../../models/user');
 
 module.exports = (req, res) => {
-  User.find({})
+  User.find({}, '-password -email')
     .lean()
     .then((users) => {
       res.setHeader('Content-Type', 'application/json');
