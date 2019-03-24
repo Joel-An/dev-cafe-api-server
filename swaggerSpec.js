@@ -6,7 +6,6 @@ const swaggerDefinition = {
     version: '1.0.0',
     description: 'API for Dev Cafe',
   },
-  host: 'localhost:3000',
   basePath: '/api/v1',
 };
 
