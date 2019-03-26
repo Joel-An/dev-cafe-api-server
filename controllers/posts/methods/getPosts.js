@@ -123,7 +123,7 @@ module.exports = wrapAsync(async (req, res) => {
         commentsCount: { $size: '$comments' },
         comments: '$$REMOVE',
         title: 1,
-        contents: '$$REMOVE',
+        contents: 1,
         author: 1,
         category: 1,
         viewed: 1,
