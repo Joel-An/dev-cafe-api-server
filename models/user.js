@@ -1,8 +1,10 @@
 /* eslint-disable func-names */
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt-nodejs');
+
+const { DEFAULT_PROFILE_PICTURE } = require('../config/config');
 
 const { Schema } = mongoose;
-const bcrypt = require('bcrypt-nodejs');
 
 const userSchema = new Schema({
   username: String,
@@ -10,6 +12,7 @@ const userSchema = new Schema({
   email: String,
   password: String,
   isAdmin: { type: Boolean, default: false },
+  profilePic: { type: String, default: DEFAULT_PROFILE_PICTURE },
 });
 
 // password를 암호화
