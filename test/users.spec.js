@@ -26,7 +26,7 @@ describe('Users', () => {
         res.body.should.have.property('email', testUser.email);
       });
 
-      it('DB에 회원정보가 저장되어 있어야한다', async () => {
+      it('DB에 회원정보, 기본 프로필사진 정보가 저장되어 있어야한다', async () => {
         const user = await User.findOne({ username: testUser.username });
 
         should.exist(user);
@@ -34,6 +34,8 @@ describe('Users', () => {
         assert.equal(user.username, testUser.username);
         assert.equal(user.profileName, testUser.profileName);
         assert.equal(user.email, testUser.email);
+
+        user.should.have.property('profilePic');
       });
 
       it('첫 가입자는 admin이 된다', async () => {
