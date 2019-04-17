@@ -26,15 +26,14 @@ describe('Users', () => {
         res.body.should.have.property('email', testUser.email);
       });
 
-      it('DB에 회원정보가 저장되어 있어야한다', (done) => {
-        User.findOne({ username: testUser.username }, (err, user) => {
-          should.exist(user);
-          should.not.exist(err);
-          user.should.have.property('username', user.username);
-          user.should.have.property('profileName', user.profileName);
-          user.should.have.property('email', user.email);
-          done();
-        });
+      it('DB에 회원정보가 저장되어 있어야한다', async () => {
+        const user = await User.findOne({ username: testUser.username });
+
+        should.exist(user);
+
+        assert.equal(user.username, testUser.username);
+        assert.equal(user.profileName, testUser.profileName);
+        assert.equal(user.email, testUser.email);
       });
 
       it('첫 가입자는 admin이 된다', async () => {
