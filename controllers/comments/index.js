@@ -11,3 +11,5 @@ exports.getCommentById = require('./methods/getCommentById');
 exports.createComment = require('./methods/createComment');
 exports.deleteComment = require('./methods/deleteComment');
 exports.updateComment = require('./methods/updateComment');
+exports.giveHeart = require('./methods/giveHeart');
+exports.takeHeartBack = require('./methods/takeHeartBack');

@@ -21,6 +21,8 @@ const commentSchema = new Schema({
   upVotes: { type: Number, default: 0 },
   downVotes: { type: Number, default: 0 },
 
+  authorHeart: { type: ObjectId, ref: 'User', default: null },
+
   isDeleted: { type: Boolean, default: false },
 });
 
