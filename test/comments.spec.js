@@ -13,6 +13,8 @@ describe('comments', () => {
   let post1;
   let post2;
   const user = copyAndFreeze(USER_ARRAY[0]);
+  const otherUser = copyAndFreeze(USER_ARRAY[1]);
+  let tokenForOtherUser;
 
   before((done) => {
     dropDatabase(done);
@@ -23,10 +25,17 @@ describe('comments', () => {
     const register = await App.reqRegister(user);
     register.should.have.status(201);
 
+    const registerOhterUser = await App.reqRegister(otherUser);
+    registerOhterUser.should.have.status(201);
+
     // 로그인
     const login = await App.reqLogin(user.username, user.password);
     login.should.have.status(201);
     token = login.body.accessToken;
+
+    const loginOhterUser = await App.reqLogin(otherUser.username, otherUser.password);
+    loginOhterUser.should.have.status(201);
+    tokenForOtherUser = loginOhterUser.body.accessToken;
 
     // 상위 카테고리 생성
     const parentCategory = new TestCategory('parent');
@@ -866,26 +875,6 @@ describe('comments', () => {
       });
 
       context('자신의 댓글이 아닌 경우', () => {
-        let otherUser;
-        let tokenForOtherUser;
-        before(async () => {
-          // 회원가입
-          otherUser = copyAndFreeze(USER_ARRAY[1]);
-          const register = await App.reqRegister(otherUser);
-          register.should.have.status(201);
-
-          // 로그인
-          const login = await App.reqLogin(otherUser.username, otherUser.password);
-          login.should.have.status(201);
-          tokenForOtherUser = login.body.accessToken;
-        });
-
-        after(async () => {
-          // 회원 탈퇴
-          const res = await App.reqUnregister(tokenForOtherUser, otherUser.password);
-          res.should.have.status(204);
-        });
-
         it('401코드를 반환한다', async () => {
           const res = await App.reqDeleteComment(tokenForOtherUser, commentId);
           res.should.have.status(401);
@@ -963,26 +952,6 @@ describe('comments', () => {
 
     context('invalid request', () => {
       context('자신의 댓글이 아닌 경우', () => {
-        let otherUser;
-        let tokenForOtherUser;
-        before(async () => {
-          // 회원가입
-          otherUser = copyAndFreeze(USER_ARRAY[1]);
-          const register = await App.reqRegister(otherUser);
-          register.should.have.status(201);
-
-          // 로그인
-          const login = await App.reqLogin(otherUser.username, otherUser.password);
-          login.should.have.status(201);
-          tokenForOtherUser = login.body.accessToken;
-        });
-
-        after(async () => {
-          // 회원 탈퇴
-          const res = await App.reqUnregister(tokenForOtherUser, otherUser.password);
-          res.should.have.status(204);
-        });
-
         it('401코드를 반환한다', async () => {
           const editedComment = new TestComment({
             contents: 'edited contents again',
