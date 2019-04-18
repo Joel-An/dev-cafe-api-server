@@ -103,6 +103,14 @@ const reqGetComments = (query) => {
 
 const reqGetComment = commentId => requester.get(`${API_URI}/comments/${commentId}`);
 
+const reqPostAuthorHeart = (token, commentId) => requester
+  .post(`${API_URI}/comments/${commentId}/heart`)
+  .set('x-access-token', token);
+
+const reqDeleteAuthorHeart = (token, commentId) => requester
+  .delete(`${API_URI}/comments/${commentId}/heart`)
+  .set('x-access-token', token);
+
 
 const App = {
   open,
@@ -126,7 +134,8 @@ const App = {
   reqUpdateComment,
   reqGetComments,
   reqGetComment,
-
+  reqPostAuthorHeart,
+  reqDeleteAuthorHeart,
 };
 
 module.exports = App;

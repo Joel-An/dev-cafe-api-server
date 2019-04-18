@@ -900,6 +900,7 @@ describe('comments', () => {
       });
     });
   });
+
   describe('UPDATE /comments/:id', () => {
     let testComment;
     let testCommentId;
@@ -1013,6 +1014,193 @@ describe('comments', () => {
 
           assert.notEqual(comment.contents, editedComment.contents);
         });
+      });
+    });
+  });
+
+  describe('POST /comments/:id/heart', () => {
+    let testComment;
+    let testCommentId;
+
+    before(() => {
+      testComment = new TestComment({
+        contents: 'comment for author heart test',
+        postId: post1._id,
+        parent: null,
+      });
+    });
+
+    beforeEach(async () => {
+      // 테스트용 댓글 1개 등록
+      const resPostComment = await App.reqPostComment(token, testComment);
+      testCommentId = resPostComment.body.commentId;
+    });
+
+    afterEach(async () => {
+      await clearCollection(Comment);
+    });
+
+    context('성공하면', () => {
+      it('댓글에 author heart♥가 추가된다.', async () => {
+        // 하트 주기
+        const resPostHeart = await App.reqPostAuthorHeart(token, testCommentId);
+        resPostHeart.should.have.status(204);
+
+        // 결과 확인용 댓글 가져오기
+        const resGetComment = await App.reqGetComment(testCommentId);
+        const comment = resGetComment.body;
+
+        comment.authorHeart.should.have.property('_id');
+        comment.authorHeart.should.have.property('profileName');
+
+        assert.equal(comment.authorHeart.profileName, user.profileName);
+      });
+    });
+
+    context('이미 하트를 준 댓글에는', () => {
+      it('하트를 줄 수 없다 (409 코드)', async () => {
+        const resPostHeart = await App.reqPostAuthorHeart(token, testCommentId);
+        resPostHeart.should.have.status(204);
+
+        const resPostHeart2 = await App.reqPostAuthorHeart(token, testCommentId);
+        resPostHeart2.should.have.status(409);
+      });
+    });
+
+    context('로그인 하지않았다면', () => {
+      it('댓글에 하트를 줄 수 없다 (401 코드)', async () => {
+        const emptyToken = '';
+        const resPostHeart = await App.reqPostAuthorHeart(emptyToken, testCommentId);
+        resPostHeart.should.have.status(401);
+      });
+    });
+
+    context('글 작성자가 아니라면', () => {
+      it('댓글에 하트를 줄 수 없다 (401 코드)', async () => {
+        const resPostHeart = await App.reqPostAuthorHeart(tokenForOtherUser, testCommentId);
+        resPostHeart.should.have.status(401);
+      });
+    });
+
+    context('존재하지 않는 댓글이라면', () => {
+      it('하트를 줄 수 없다 (404 코드)', async () => {
+        const resPostHeart = await App.reqPostAuthorHeart(tokenForOtherUser, new ObjectId());
+        resPostHeart.should.have.status(404);
+      });
+    });
+
+    context('삭제된 댓글에는', () => {
+      it('하트를 줄 수 없다 (404 코드)', async () => {
+        // 테스트 댓글에 답글 추가
+        const reply = new TestComment({
+          contents: 'test',
+          postId: post1._id,
+          parent: testCommentId,
+        });
+
+        const resPostComment = await App.reqPostComment(token, reply);
+        resPostComment.should.have.status(201);
+
+        // 테스트 댓글 삭제
+        const resDeleteComment = await App.reqDeleteComment(token, testCommentId);
+        resDeleteComment.should.have.status(204);
+
+        // 댓글에 하트 주기
+        const resPostHeart = await App.reqPostAuthorHeart(token, testCommentId);
+        resPostHeart.should.have.status(404);
+      });
+    });
+  });
+
+  describe('DELETE /comments/:id/heart', () => {
+    let testComment;
+    let testCommentId;
+
+    before(() => {
+      testComment = new TestComment({
+        contents: 'comment for delete author heart test',
+        postId: post1._id,
+        parent: null,
+      });
+    });
+
+    beforeEach(async () => {
+      // 테스트용 댓글 1개 등록
+      const resPostComment = await App.reqPostComment(token, testComment);
+      testCommentId = resPostComment.body.commentId;
+
+      // 하트 주기
+      const resPostHeart = await App.reqPostAuthorHeart(token, testCommentId);
+      resPostHeart.should.have.status(204);
+    });
+
+    afterEach(async () => {
+      await clearCollection(Comment);
+    });
+
+    context('성공하면', () => {
+      it('하트♥가 제거된다.', async () => {
+        // 하트 뺏기
+        const resDeleteHeart = await App.reqDeleteAuthorHeart(token, testCommentId);
+        resDeleteHeart.should.have.status(204);
+
+        const resGetComment = await App.reqGetComment(testCommentId);
+        const comment = resGetComment.body;
+
+        assert.strictEqual(comment.authorHeart, null);
+      });
+    });
+
+    context('하트가 없는 댓글에는', () => {
+      it('하트를 회수할 수 없다 (409 코드)', async () => {
+        const resDeleteHeart = await App.reqDeleteAuthorHeart(token, testCommentId);
+        resDeleteHeart.should.have.status(204);
+
+        const resDeleteHeart2 = await App.reqDeleteAuthorHeart(token, testCommentId);
+        resDeleteHeart2.should.have.status(409);
+      });
+    });
+
+    context('로그인 하지않았다면', () => {
+      it('하트를 회수할 수 없다 (401 코드)', async () => {
+        const emptyToken = '';
+        const resDeleteHeart = await App.reqDeleteAuthorHeart(emptyToken, testCommentId);
+        resDeleteHeart.should.have.status(401);
+      });
+    });
+
+    context('글 작성자가 아니라면', () => {
+      it('하트를 회수할 수 없다 (401 코드)', async () => {
+        const resDeleteHeart = await App.reqDeleteAuthorHeart(tokenForOtherUser, testCommentId);
+        resDeleteHeart.should.have.status(401);
+      });
+    });
+
+    context('존재하지 않는 댓글이라면', () => {
+      it('하트를 회수할 수 없다 (404 코드)', async () => {
+        const resDeleteHeart = await App.reqDeleteAuthorHeart(tokenForOtherUser, new ObjectId());
+        resDeleteHeart.should.have.status(404);
+      });
+    });
+
+    context('삭제된 댓글이라면', () => {
+      it('하트를 회수할 수 없다 (404 코드)', async () => {
+        // 테스트 댓글에 답글 추가
+        const reply = new TestComment({
+          contents: 'test',
+          postId: post1._id,
+          parent: testCommentId,
+        });
+
+        const resPostComment = await App.reqPostComment(token, reply);
+        resPostComment.should.have.status(201);
+
+        // 테스트 댓글 삭제
+        const resDeleteComment = await App.reqDeleteComment(token, testCommentId);
+        resDeleteComment.should.have.status(204);
+
+        const resDeleteHeart = await App.reqDeleteAuthorHeart(token, testCommentId);
+        resDeleteHeart.should.have.status(404);
       });
     });
   });
