@@ -13,14 +13,22 @@ module.exports = wrapAsync(async (req, res) => {
   }
 
   const comment = await Comment.findById(commentId)
-    .populate('author', 'profileName')
+    .populate('author', 'profileName profilePic')
+    .populate('authorHeart', 'profileName profilePic')
     .populate({
       path: 'childComments',
-      populate: {
-        path: 'author',
-        model: 'User',
-        select: 'profileName',
-      },
+      populate: [
+        {
+          path: 'author',
+          model: 'User',
+          select: 'profileName profilePic',
+        },
+        {
+          path: 'authorHeart',
+          model: 'User',
+          select: 'profileName profilePic',
+        },
+      ],
     });
 
   if (!comment) {
