@@ -15,6 +15,8 @@ module.exports = wrapAsync(async (req, res) => {
   const comment = await Comment.findById(commentId)
     .populate('author', 'profileName profilePic')
     .populate('authorHeart', 'profileName profilePic')
+    .populate('likes', 'profileName profilePic')
+    .populate('dislikes', 'profileName profilePic')
     .populate({
       path: 'childComments',
       populate: [

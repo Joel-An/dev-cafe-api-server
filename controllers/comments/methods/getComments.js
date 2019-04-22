@@ -103,6 +103,8 @@ module.exports = wrapAsync(async (req, res) => {
     .find(cleanedOptions, null)
     .populate('author', 'profileName profilePic')
     .populate('authorHeart', 'profileName profilePic')
+    .populate('likes', 'profileName profilePic')
+    .populate('dislikes', 'profileName profilePic')
     .populate({
       path: 'childComments',
       populate: [
