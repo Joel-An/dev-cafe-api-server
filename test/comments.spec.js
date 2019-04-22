@@ -1339,4 +1339,140 @@ describe('comments', () => {
       });
     });
   });
+
+  describe('POST /comments/:id/dislikes', () => {
+    let testComment;
+    let testCommentId;
+
+    before(() => {
+      testComment = new TestComment({
+        contents: 'comment for dislikes test',
+        postId: post1._id,
+        parent: null,
+      });
+    });
+
+    beforeEach(async () => {
+      // 테스트용 댓글 1개 등록
+      const resPostComment = await App.reqPostComment(token, testComment);
+      testCommentId = resPostComment.body.commentId;
+    });
+
+    afterEach(async () => {
+      await clearCollection(Comment);
+    });
+
+    context('성공하면', () => {
+      it('댓글의 싫어요 목록에 유저 정보가 저장된다', async () => {
+        const resMyDislikes = await App.reqPostCommentDislikes(token, testCommentId);
+        resMyDislikes.should.have.status(204);
+
+        // eslint-disable-next-line max-len
+        const resOtherUsersDislikes = await App.reqPostCommentDislikes(tokenForOtherUser, testCommentId);
+        resOtherUsersDislikes.should.have.status(204);
+
+        const resComment = await App.reqGetComment(testCommentId);
+        const comment = resComment.body;
+
+        assert.strictEqual(comment.dislikes[0].profileName, user.profileName);
+        assert.strictEqual(comment.dislikes[1].profileName, otherUser.profileName);
+      });
+    });
+
+    context('이미 싫어요를 한 댓글에는', () => {
+      it('다시 싫어요를 할 수 없다', async () => {
+        const resDislikes1 = await App.reqPostCommentDislikes(token, testCommentId);
+        resDislikes1.should.have.status(204);
+
+        const resDislikes2 = await App.reqPostCommentDislikes(token, testCommentId);
+        resDislikes2.should.have.status(409);
+      });
+    });
+
+    context('싫어요를 단시간에 많이 요청해도', () => {
+      it('댓글에는 오직 하나의 싫어요만 저장된다', async () => {
+        const reqDislikes10Times = new Array(10).fill(true)
+          .map(() => App.reqPostCommentDislikes(token, testCommentId));
+
+        await Promise.all(reqDislikes10Times);
+
+        const resComment = await App.reqGetComment(testCommentId);
+        const comment = resComment.body;
+
+        assert.strictEqual(comment.dislikes.length, 1);
+      });
+    });
+
+    context('로그인하지 않으면', () => {
+      it('좋아요를 할 수 없다', async () => {
+        const emptyToken = '';
+        const res = await App.reqPostCommentDislikes(emptyToken, testCommentId);
+        res.should.have.status(401);
+      });
+    });
+
+    context('좋아요를 누른 댓글에는', () => {
+      it('싫어요를 할 수 없다', async () => {
+        const resDislikes = await App.reqPostCommentLikes(token, testCommentId);
+        resDislikes.should.have.status(204);
+
+        const resLikes = await App.reqPostCommentDislikes(token, testCommentId);
+        resLikes.should.have.status(409);
+      });
+    });
+  });
+
+  describe.only('DELETE /comments/:id/dislikes', () => {
+    let testComment;
+    let testCommentId;
+
+    before(() => {
+      testComment = new TestComment({
+        contents: 'comment for dislikes test',
+        postId: post1._id,
+        parent: null,
+      });
+    });
+
+    beforeEach(async () => {
+      // 테스트용 댓글 1개 등록
+      const resPostComment = await App.reqPostComment(token, testComment);
+      testCommentId = resPostComment.body.commentId;
+
+      // 싫어요!
+      const resDislikes = await App.reqPostCommentDislikes(token, testCommentId);
+      resDislikes.should.have.status(204);
+    });
+
+    afterEach(async () => {
+      await clearCollection(Comment);
+    });
+
+    context('성공하면', () => {
+      it('댓글의 싫어요 목록에서 유저 정보가 제거된다', async () => {
+        const resDeleteDislikes = await App.reqDeleteCommentDislikes(token, testCommentId);
+        resDeleteDislikes.should.have.status(204);
+
+        const resComment = await App.reqGetComment(testCommentId);
+        const comment = resComment.body;
+
+        assert.strictEqual(comment.dislikes.length, 0);
+      });
+    });
+
+    context('싫어요를 누르지 않은 댓글에는', () => {
+      it('싫어요를 취소할 수 없다', async () => {
+        const res = await App.reqDeleteCommentDislikes(tokenForOtherUser, testCommentId);
+        res.should.have.status(409);
+      });
+    });
+
+    context('로그인하지 않으면', () => {
+      it('싫어요를 취소할 수 없다', async () => {
+        const emptyToken = '';
+        const res = await App.reqDeleteCommentDislikes(emptyToken, testCommentId);
+        res.should.have.status(401);
+      });
+    });
+  });
 });
