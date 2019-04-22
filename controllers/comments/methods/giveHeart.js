@@ -4,6 +4,8 @@ const { ObjectId } = mongoose.Types;
 const { wrapAsync } = require('../../../util/util');
 const Comment = require('../../../models/comment');
 
+const Socket = require('../../../util/Socket');
+
 module.exports = wrapAsync(async (req, res) => {
   const commentId = req.params.id;
   const authorId = req.user._id;
@@ -37,5 +39,6 @@ module.exports = wrapAsync(async (req, res) => {
 
   await Comment.findOneAndUpdate({ _id: commentId }, { authorHeart: authorId });
 
+  Socket.emitPostHeart(commentId, authorId);
   return res.status(204).end();
 });
