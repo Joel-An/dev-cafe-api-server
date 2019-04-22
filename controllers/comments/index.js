@@ -13,3 +13,6 @@ exports.deleteComment = require('./methods/deleteComment');
 exports.updateComment = require('./methods/updateComment');
 exports.giveHeart = require('./methods/giveHeart');
 exports.takeHeartBack = require('./methods/takeHeartBack');
+
+exports.likeComment = require('./methods/likeComment');
+exports.deleteCommentLikes = require('./methods/deleteCommentLikes');

@@ -11,6 +11,9 @@ commentRouter.get('/:id', comments.getCommentById);
 commentRouter.post('/:id/heart', isAuthenticated, comments.giveHeart);
 commentRouter.delete('/:id/heart', isAuthenticated, comments.takeHeartBack);
 
+commentRouter.post('/:id/likes', isAuthenticated, comments.likeComment);
+commentRouter.delete('/:id/likes', isAuthenticated, comments.deleteCommentLikes);
+
 commentRouter.post('/', isAuthenticated, comments.createComment);
 commentRouter.delete('/:id', isAuthenticated, comments.deleteComment);
 commentRouter.put('/:id', isAuthenticated, comments.updateComment);
