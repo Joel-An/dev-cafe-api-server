@@ -18,8 +18,8 @@ const commentSchema = new Schema({
   isThisModified: { type: Boolean, default: false },
   modifiedDate: { type: Date },
 
-  upVotes: { type: Number, default: 0 },
-  downVotes: { type: Number, default: 0 },
+  likes: [{ type: ObjectId, ref: 'User' }],
+  dislikes: [{ type: ObjectId, ref: 'User' }],
 
   authorHeart: { type: ObjectId, ref: 'User', default: null },
 
