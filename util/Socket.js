@@ -68,6 +68,16 @@ class Socket {
     io.emit('DELETE_HEART', data);
   }
 
+  static emitPostCommentLikes(userId, commentId) {
+    const data = { userId, commentId };
+    io.emit('POST_COMMENT_LIKES', data);
+  }
+
+  static emitDeleteCommentLikes(userId, commentId) {
+    const data = { userId, commentId };
+    io.emit('DELETE_COMMENT_LIKES', data);
+  }
+
 }
 
 module.exports = Socket;
