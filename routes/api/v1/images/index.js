@@ -7,5 +7,5 @@ const images = require('../../../../controllers/images');
  */
 
 imageRouter.post('/', isAuthenticated, images.postImage);
-
+imageRouter.post('/profilePic', isAuthenticated, images.postProfilePic);
 module.exports = imageRouter;
