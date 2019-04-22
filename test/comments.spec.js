@@ -1204,4 +1204,139 @@ describe('comments', () => {
       });
     });
   });
+
+  describe('POST /comments/:id/likes', () => {
+    let testComment;
+    let testCommentId;
+
+    before(() => {
+      testComment = new TestComment({
+        contents: 'comment for likes test',
+        postId: post1._id,
+        parent: null,
+      });
+    });
+
+    beforeEach(async () => {
+      // 테스트용 댓글 1개 등록
+      const resPostComment = await App.reqPostComment(token, testComment);
+      testCommentId = resPostComment.body.commentId;
+    });
+
+    afterEach(async () => {
+      await clearCollection(Comment);
+    });
+
+    context('성공하면', () => {
+      it('댓글의 좋아요 목록에 유저 정보가 저장된다', async () => {
+        const resMyLikes = await App.reqPostCommentLikes(token, testCommentId);
+        resMyLikes.should.have.status(204);
+
+        const resOtherUsersLikes = await App.reqPostCommentLikes(tokenForOtherUser, testCommentId);
+        resOtherUsersLikes.should.have.status(204);
+
+        const resComment = await App.reqGetComment(testCommentId);
+        const comment = resComment.body;
+
+        assert.strictEqual(comment.likes[0].profileName, user.profileName);
+        assert.strictEqual(comment.likes[1].profileName, otherUser.profileName);
+      });
+    });
+
+    context('이미 좋아요를 한 댓글에는', () => {
+      it('다시 좋아요를 할 수 없다', async () => {
+        const resLikes1 = await App.reqPostCommentLikes(token, testCommentId);
+        resLikes1.should.have.status(204);
+
+        const resLikes2 = await App.reqPostCommentLikes(token, testCommentId);
+        resLikes2.should.have.status(409);
+      });
+    });
+
+    context('좋아요를 단시간에 많이 요청해도', () => {
+      it('댓글에는 오직 하나의 좋아요만 저장된다', async () => {
+        const reqLikes10Times = new Array(10).fill(true)
+          .map(() => App.reqPostCommentLikes(token, testCommentId));
+
+        await Promise.all(reqLikes10Times);
+
+        const resComment = await App.reqGetComment(testCommentId);
+        const comment = resComment.body;
+
+        assert.strictEqual(comment.likes.length, 1);
+      });
+    });
+
+    context('로그인하지 않으면', () => {
+      it('좋아요를 할 수 없다', async () => {
+        const emptyToken = '';
+        const res = await App.reqPostCommentLikes(emptyToken, testCommentId);
+        res.should.have.status(401);
+      });
+    });
+
+    context('싫어요를 누른 댓글에는', () => {
+      it('좋아요를 할 수 없다', async () => {
+        const resDislikes = await App.reqPostCommentDislikes(token, testCommentId);
+        resDislikes.should.have.status(204);
+
+        const resLikes = await App.reqPostCommentLikes(token, testCommentId);
+        resLikes.should.have.status(409);
+      });
+    });
+  });
+
+  describe('DELETE /comments/:id/likes', () => {
+    let testComment;
+    let testCommentId;
+
+    before(() => {
+      testComment = new TestComment({
+        contents: 'comment for likes test',
+        postId: post1._id,
+        parent: null,
+      });
+    });
+
+    beforeEach(async () => {
+      // 테스트용 댓글 1개 등록
+      const resPostComment = await App.reqPostComment(token, testComment);
+      testCommentId = resPostComment.body.commentId;
+
+      // 좋아요!
+      const resLikes = await App.reqPostCommentLikes(token, testCommentId);
+      resLikes.should.have.status(204);
+    });
+
+    afterEach(async () => {
+      await clearCollection(Comment);
+    });
+
+    context('성공하면', () => {
+      it('댓글의 좋아요 목록에서 유저 정보가 제거된다', async () => {
+        const resDislikes = await App.reqDeleteCommentLikes(token, testCommentId);
+        resDislikes.should.have.status(204);
+
+        const resComment = await App.reqGetComment(testCommentId);
+        const comment = resComment.body;
+
+        assert.strictEqual(comment.likes.length, 0);
+      });
+    });
+
+    context('좋아요를 누르지 않은 댓글에는', () => {
+      it('좋아요를 취소할 수 없다', async () => {
+        const res = await App.reqDeleteCommentLikes(tokenForOtherUser, testCommentId);
+        res.should.have.status(409);
+      });
+    });
+
+    context('로그인하지 않으면', () => {
+      it('좋아요를 취소할 수 없다', async () => {
+        const emptyToken = '';
+        const res = await App.reqDeleteCommentLikes(emptyToken, testCommentId);
+        res.should.have.status(401);
+      });
+    });
+  });
 });
