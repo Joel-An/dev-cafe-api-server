@@ -13,7 +13,7 @@ module.exports = wrapAsync(async (req, res) => {
   }
 
   const post = await Post.findById(postId)
-    .populate('author', 'profileName')
+    .populate('author', 'profileName profilePic')
     .populate({
       path: 'category',
       populate: { path: 'parent' },

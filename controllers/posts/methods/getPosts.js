@@ -138,7 +138,7 @@ module.exports = wrapAsync(async (req, res) => {
     return res.json({ message: '글이 존재하지않습니다.' });
   }
 
-  const populatedPosts = await User.populate(posts, { path: 'author', select: 'profileName' });
+  const populatedPosts = await User.populate(posts, { path: 'author', select: 'profileName profilePic' });
 
   const results = await Category.populate(populatedPosts, { path: 'category', populate: { path: 'parent' } });
 
