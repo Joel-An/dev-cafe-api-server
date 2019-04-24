@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types;
 const { wrapAsync } = require('../../../util/util');
 const Comment = require('../../../models/comment');
+const { userProjection } = require('../../../models/projectionFilters');
 
 module.exports = wrapAsync(async (req, res) => {
   const commentId = req.params.id;
@@ -13,22 +14,22 @@ module.exports = wrapAsync(async (req, res) => {
   }
 
   const comment = await Comment.findById(commentId)
-    .populate('author', 'profileName profilePic')
-    .populate('authorHeart', 'profileName profilePic')
-    .populate('likes', 'profileName profilePic')
-    .populate('dislikes', 'profileName profilePic')
+    .populate('author', userProjection)
+    .populate('authorHeart', userProjection)
+    .populate('likes', userProjection)
+    .populate('dislikes', userProjection)
     .populate({
       path: 'childComments',
       populate: [
         {
           path: 'author',
           model: 'User',
-          select: 'profileName profilePic',
+          select: userProjection,
         },
         {
           path: 'authorHeart',
           model: 'User',
-          select: 'profileName profilePic',
+          select: userProjection,
         },
       ],
     });

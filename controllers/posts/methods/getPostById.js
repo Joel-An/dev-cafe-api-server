@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types;
 const { wrapAsync } = require('../../../util/util');
 const Post = require('../../../models/post');
+const { userProjection } = require('../../../models/projectionFilters');
 
 module.exports = wrapAsync(async (req, res) => {
   const postId = req.params.id;
@@ -13,7 +14,7 @@ module.exports = wrapAsync(async (req, res) => {
   }
 
   const post = await Post.findById(postId)
-    .populate('author', 'profileName profilePic')
+    .populate('author', userProjection)
     .populate({
       path: 'category',
       populate: { path: 'parent' },

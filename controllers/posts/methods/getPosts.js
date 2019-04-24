@@ -6,6 +6,7 @@ const { wrapAsync } = require('../../../util/util');
 const Post = require('../../../models/post');
 const User = require('../../../models/user');
 const Category = require('../../../models/category');
+const { userProjection } = require('../../../models/projectionFilters');
 
 const DEFAULT_LIMIT = 30;
 
@@ -138,7 +139,7 @@ module.exports = wrapAsync(async (req, res) => {
     return res.json({ message: '글이 존재하지않습니다.' });
   }
 
-  const populatedPosts = await User.populate(posts, { path: 'author', select: 'profileName profilePic' });
+  const populatedPosts = await User.populate(posts, { path: 'author', select: userProjection });
 
   const results = await Category.populate(populatedPosts, { path: 'category', populate: { path: 'parent' } });
 
