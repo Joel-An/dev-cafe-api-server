@@ -1,9 +1,12 @@
+const DESELECT_PROPS = {
+  iat: undefined,
+  exp: undefined,
+};
 
 module.exports = (req, res) => {
   const myInfo = {
-    profileName: req.user.profileName,
-    _id: req.user._id,
-    isAdmin: req.user.isAdmin,
+    ...req.user,
+    ...DESELECT_PROPS,
   };
   res.status(200).json({ myInfo });
 };
