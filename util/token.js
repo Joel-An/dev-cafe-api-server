@@ -2,16 +2,17 @@ const jwt = require('jsonwebtoken');
 const { JwtSecretKey } = require('../config/config');
 const TokenError = require('./TokenError');
 
+const DESELECT_PROPS = {
+  email: undefined,
+  password: undefined,
+  __v: undefined,
+};
+
 let instance;
 
 class TokenManager {
   constructor() {
     if (instance) return instance;
-
-    this.payload = {
-      _id: '',
-      email: '',
-    };
 
     this.jwt = jwt;
     this.JwtSecretKey = JwtSecretKey;
@@ -23,14 +24,10 @@ class TokenManager {
 
   signToken(user, options) {
     const payload = {
-      ...this.payload,
-      _id: user._id,
-      username: user.username,
-      profileName: user.profileName,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      isTester: user.isTester || false,
+      ...user,
+      ...DESELECT_PROPS,
     };
+
     const signOptions = options || this.signOptions;
 
     return new Promise((resolve, reject) => {
