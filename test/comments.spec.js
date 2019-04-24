@@ -1422,7 +1422,7 @@ describe('comments', () => {
     });
   });
 
-  describe.only('DELETE /comments/:id/dislikes', () => {
+  describe('DELETE /comments/:id/dislikes', () => {
     let testComment;
     let testCommentId;
 
