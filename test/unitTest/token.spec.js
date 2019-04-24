@@ -4,7 +4,8 @@ const TokenManager = require('../../util/token');
 
 const user = {
   _id: '12345',
-  email: 'abc@gmail.com',
+  username: 'testUser',
+  profileName: 'testProfileName',
 };
 
 describe('TokenManager', () => {
@@ -65,7 +66,8 @@ describe('TokenManager', () => {
       const decodeToken = tm.decodeToken(token);
       decodeToken.then((decoded) => {
         decoded._id.should.be.equal(user._id);
-        decoded.email.should.be.equal(user.email);
+        decoded.username.should.be.equal(user.username);
+        decoded.profileName.should.be.equal(user.profileName);
         done();
       });
     });
