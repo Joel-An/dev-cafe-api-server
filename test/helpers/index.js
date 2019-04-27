@@ -52,37 +52,40 @@ const USER_ARRAY = [
   },
 ];
 
-class TestCategory {
-  constructor(name, parentId) {
+class TestData {
+  constructor(id) {
+    this._id = id || null;
+  }
+
+  setId(id) {
+    this._id = id;
+  }
+}
+
+class TestCategory extends TestData {
+  constructor(name, parentId, id) {
+    super(id);
     this.name = name;
     this.parent = parentId || null;
   }
 }
 
-class TestPost {
+class TestPost extends TestData {
   constructor(post) {
+    super(post._id);
     this.title = post.title;
     this.contents = post.contents;
     this.categoryId = post.categoryId || null;
-    this._id = post._id || null;
-  }
-
-  setId(id) {
-    this._id = id;
   }
 }
 
 
-class TestComment {
+class TestComment extends TestData {
   constructor(comment) {
+    super(comment._id);
     this.contents = comment.contents;
     this.postId = comment.postId || null;
     this.parent = comment.parent || null;
-    this._id = comment._id || null;
-  }
-
-  setId(id) {
-    this._id = id;
   }
 }
 
