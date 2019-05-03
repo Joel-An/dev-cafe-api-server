@@ -6,7 +6,15 @@ const User = require('../models/user');
 
 const App = require('./helpers/App');
 
+const {
+  registerAndLogin,
+} = require('./helpers/TestDataHelper');
+
 describe('Users', () => {
+  before((done) => {
+    dropDatabase(done);
+  });
+
   describe('POST /users (회원가입)', () => {
     context('회원가입에 성공하면', () => {
       before(async () => {
@@ -386,6 +394,10 @@ describe('Users', () => {
     let token;
 
     before(async () => {
+      await clearCollection(User);
+    });
+
+    before(async () => {
       // 회원가입
       const register = await App.reqRegister(testUser);
       register.should.have.status(201);
@@ -396,6 +408,10 @@ describe('Users', () => {
       login.should.have.status(201);
       login.body.should.have.property('accessToken');
       token = login.body.accessToken;
+    });
+
+    after(async () => {
+      await clearCollection(User);
     });
 
     it('성공하면 200코드, profileName을 받는다', async () => {
@@ -412,6 +428,74 @@ describe('Users', () => {
       const emptyToken = null;
       const res = await App.reqMyInfo(emptyToken);
       res.should.have.status(401);
+    });
+  });
+
+  describe('PUT /users/me/notification-check-date', () => {
+    const testUser = copyAndFreeze(USER_ARRAY[0]);
+    let token;
+
+    before(async () => {
+      await clearCollection(User);
+    });
+
+    before(async () => {
+      token = await registerAndLogin(testUser);
+    });
+
+    after(async () => {
+      await clearCollection(User);
+    });
+
+    it('요청하면 "마지막으로 알림을 확인한 시간"을 갱신하고 반환한다', async () => {
+      // given
+      const user = await User.findOne({ username: testUser.username });
+
+      const beforeTime = new Date(user.notificationCheckDate);
+
+      // when
+      const res = await App.reqPutNotificationCheckDate(token);
+      res.should.have.status(201);
+
+      // then
+      const { notificationCheckDate } = res.body;
+      const updatedTime = new Date(notificationCheckDate);
+
+      updatedTime.should.above(beforeTime);
+    });
+  });
+
+  describe('GET /users/me/notification-check-date', () => {
+    const testUser = copyAndFreeze(USER_ARRAY[0]);
+    let token;
+
+    before(async () => {
+      await clearCollection(User);
+    });
+
+    before(async () => {
+      token = await registerAndLogin(testUser);
+    });
+
+    after(async () => {
+      await clearCollection(User);
+    });
+
+    it('요청하면 "마지막으로 알림을 확인한 시간" 반환한다', async () => {
+      // given
+      const user = await User.findOne({ username: testUser.username });
+
+      const timeFromDB = new Date(user.notificationCheckDate).valueOf();
+
+      // when
+      const res = await App.reqGetNotificationCheckDate(token);
+      res.should.have.status(201);
+
+      // then
+      const { notificationCheckDate } = res.body;
+      const timeFromResponse = new Date(notificationCheckDate).valueOf();
+
+      timeFromResponse.should.equal(timeFromDB);
     });
   });
 });

@@ -34,6 +34,14 @@ const reqMyInfo = userToken => requester
   .get(`${API_URI}/users/me`)
   .set('x-access-token', userToken);
 
+const reqPutNotificationCheckDate = token => requester
+  .put(`${API_URI}/users/me/notification-check-date`)
+  .set('x-access-token', token);
+
+const reqGetNotificationCheckDate = token => requester
+  .get(`${API_URI}/users/me/notification-check-date`)
+  .set('x-access-token', token);
+
 // 인증(로그인) 기능
 const reqLogin = (username, password) => requester
   .post(`${API_URI}/auth`)
@@ -156,6 +164,8 @@ const App = {
   reqDeleteCommentLikes,
   reqPostCommentDislikes,
   reqDeleteCommentDislikes,
+  reqPutNotificationCheckDate,
+  reqGetNotificationCheckDate,
 };
 
 module.exports = App;
