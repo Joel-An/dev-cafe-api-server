@@ -4,7 +4,7 @@ const { ObjectId } = mongoose.Types;
 
 const { wrapAsync, checkDate } = require('../../../util/util');
 const Comment = require('../../../models/comment');
-
+const Notification = require('../../../models/notification');
 const Socket = require('../../../util/Socket');
 
 module.exports = wrapAsync(async (req, res) => {
@@ -44,6 +44,11 @@ module.exports = wrapAsync(async (req, res) => {
     await Comment.findByIdAndDelete(comment._id);
     Socket.emitDeleteComment(comment._id, comment.post);
   }
+
+  await Notification.deleteMany({
+    userId: comment.author,
+    comment: comment._id,
+  });
 
   return res.status(204).end();
 });
