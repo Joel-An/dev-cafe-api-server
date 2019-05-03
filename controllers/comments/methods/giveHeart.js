@@ -3,12 +3,13 @@ const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types;
 const { wrapAsync } = require('../../../util/util');
 const Comment = require('../../../models/comment');
+const { sendAuthorHeartNotification } = require('../../../util/notifier');
 
 const Socket = require('../../../util/Socket');
 
 module.exports = wrapAsync(async (req, res) => {
   const commentId = req.params.id;
-  const authorId = req.user._id;
+  const userId = req.user._id;
 
   if (!ObjectId.isValid(commentId)) {
     res.status(400);
@@ -27,7 +28,7 @@ module.exports = wrapAsync(async (req, res) => {
     return res.json({ message: '삭제된 댓글에는 하트를 줄 수 없습니다.' });
   }
 
-  if (!comment.post.author.equals(authorId)) {
+  if (!comment.post.author.equals(userId)) {
     res.status(401);
     return res.json({ message: '하트를 줄 권한이 없습니다.' });
   }
@@ -37,8 +38,10 @@ module.exports = wrapAsync(async (req, res) => {
     return res.json({ message: '이미 하트를 준 댓글입니다.' });
   }
 
-  await Comment.findOneAndUpdate({ _id: commentId }, { authorHeart: authorId });
+  await Comment.findOneAndUpdate({ _id: commentId }, { authorHeart: userId });
 
-  Socket.emitPostHeart(commentId, authorId);
+  sendAuthorHeartNotification(comment.post.author, comment.author, commentId, comment.post);
+
+  Socket.emitPostHeart(commentId, userId);
   return res.status(204).end();
 });
