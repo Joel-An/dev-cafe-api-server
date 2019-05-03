@@ -34,6 +34,14 @@ const reqMyInfo = userToken => requester
   .get(`${API_URI}/users/me`)
   .set('x-access-token', userToken);
 
+const reqGetNewNotifications = token => requester
+  .get(`${API_URI}/users/me/new-notifications`)
+  .set('x-access-token', token);
+
+const reqGetOldNotifications = token => requester
+  .get(`${API_URI}/users/me/old-notifications`)
+  .set('x-access-token', token);
+
 const reqPutNotificationCheckDate = token => requester
   .put(`${API_URI}/users/me/notification-check-date`)
   .set('x-access-token', token);
@@ -135,7 +143,6 @@ const reqDeleteCommentDislikes = (token, commentId) => requester
   .delete(`${API_URI}/comments/${commentId}/dislikes`)
   .set('x-access-token', token);
 
-
 const App = {
   open,
   close,
@@ -164,6 +171,8 @@ const App = {
   reqDeleteCommentLikes,
   reqPostCommentDislikes,
   reqDeleteCommentDislikes,
+  reqGetNewNotifications,
+  reqGetOldNotifications,
   reqPutNotificationCheckDate,
   reqGetNotificationCheckDate,
 };
