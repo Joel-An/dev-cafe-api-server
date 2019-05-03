@@ -120,6 +120,10 @@ class Socket {
     const data = { userId, commentId };
     io.emit('DELETE_COMMENT_DISLIKES', data);
   }
+
+  static emitUpdatedNotificationCheckTime(userId, time) {
+    io.to(userId).emit('NOTIFICATION_CHECKED', time);
+  }
 }
 
 module.exports = Socket;

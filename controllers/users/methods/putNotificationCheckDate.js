@@ -12,7 +12,7 @@ module.exports = wrapAsync(async (req, res) => {
     },
   }, { new: true }).lean();
 
-  Socket.emitPostNotifCheckTime(userId, user.notificationCheckDate);
+  Socket.emitUpdatedNotificationCheckTime(userId, user.notificationCheckDate);
 
   res.status(201);
   return res.json({ notificationCheckDate: user.notificationCheckDate });
