@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const { ObjectId } = mongoose.Types;
 const { wrapAsync } = require('../../../util/util');
+const { sendCommentLikesNotification } = require('../../../util/notifier');
 const Comment = require('../../../models/comment');
 
 const Socket = require('../../../util/Socket');
@@ -40,6 +41,8 @@ module.exports = wrapAsync(async (req, res) => {
 
   await Comment.findByIdAndUpdate(commentId, { $addToSet: { likes: userId } });
   // 아이디 중복 저장을 막기위해 $push 대신 $addToSet 사용
+
+  sendCommentLikesNotification(userId, comment.author, commentId, comment.post);
 
   Socket.emitPostCommentLikes(userId, commentId);
 

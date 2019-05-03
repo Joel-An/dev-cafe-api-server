@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types;
 const { wrapAsync } = require('../../../util/util');
 const Comment = require('../../../models/comment');
+const Notification = require('../../../models/notification');
 
 const Socket = require('../../../util/Socket');
 
@@ -34,6 +35,14 @@ module.exports = wrapAsync(async (req, res) => {
   }
 
   await Comment.findByIdAndUpdate(commentId, { $pull: { likes: userId } });
+
+  await Notification.findOneAndDelete({
+    userId: comment.author,
+    post: comment.post,
+    fromWhom: userId,
+    comment: commentId,
+    type: Notification.getTypes().COMMENT_LIKES,
+  });
 
   Socket.emitDeleteCommentLikes(userId, commentId);
 
