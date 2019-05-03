@@ -12,3 +12,5 @@ exports.unRegister = require('./methods/unRegister');
 exports.getUsers = require('./methods/getUsers');
 exports.getUserById = require('./methods/getUserById');
 exports.getMyInfo = require('./methods/getMyInfo');
+exports.getNotificationCheckDate = require('./methods/getNotificationCheckDate');
+exports.putNotificationCheckDate = require('./methods/putNotificationCheckDate');

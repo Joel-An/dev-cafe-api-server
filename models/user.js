@@ -13,6 +13,7 @@ const userSchema = new Schema({
   password: String,
   isAdmin: { type: Boolean, default: false },
   profilePic: { type: String, default: DEFAULT_PROFILE_PICTURE },
+  notificationCheckDate: { type: Date, default: Date.now },
 });
 
 // password를 암호화

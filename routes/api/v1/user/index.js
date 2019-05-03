@@ -8,6 +8,8 @@ userRouter.get('/', users.getUsers);
 userRouter.post('/', users.register);
 
 userRouter.get('/me', isAuthenticated, users.getMyInfo);
+userRouter.put('/me/notification-check-date', isAuthenticated, users.putNotificationCheckDate);
+userRouter.get('/me/notification-check-date', isAuthenticated, users.getNotificationCheckDate);
 userRouter.get('/:id', users.getUserById);
 
 userRouter.delete('/me', isAuthenticated, users.unRegister);
