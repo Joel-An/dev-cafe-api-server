@@ -68,6 +68,10 @@ class TestCategory extends TestData {
     this.name = name;
     this.parent = parentId || null;
   }
+
+  setParent(parentId) {
+    this.parent = parentId;
+  }
 }
 
 class TestPost extends TestData {

@@ -1,7 +1,41 @@
 /* eslint-disable no-undef */
-const { curry } = require('fxjs2');
+const { curry, pipe } = require('fxjs2');
 
 const App = require('./App');
+
+const register = async (user) => {
+  await App.reqRegister(user);
+  return user;
+};
+
+const login = async (user) => {
+  const res = await App.reqLogin(user.username, user.password);
+  token = res.body.accessToken;
+
+  return token;
+};
+
+const registerAndLogin = pipe(register, login);
+
+const createCategory = (name) => {
+  const category = new TestCategory(name);
+  return category;
+};
+
+const createChildCategory = (name, parentCategory) => {
+  const childCategory = createCategory(name);
+
+  childCategory.setParent(parentCategory._id);
+  return childCategory;
+};
+
+const postCategory = async (userToken, category) => {
+  const res = await App.reqPostCategory(userToken, category);
+  const id = res.body.categoryId;
+  category.setId(id);
+
+  return category;
+};
 
 const postPost = async (userToken, post) => {
   const res = await App.reqPostPost(userToken, post);
@@ -54,6 +88,10 @@ const deletePost = async (userToken, post) => {
 
 
 const TestDataHelper = {
+  registerAndLogin,
+  createCategory,
+  createChildCategory: curry(createChildCategory),
+  postCategory: curry(postCategory),
   postPost: curry(postPost),
   createPostInto: curry(createPostInto),
   postComment: curry(postComment),
