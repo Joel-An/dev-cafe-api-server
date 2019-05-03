@@ -1,4 +1,29 @@
+/* eslint-disable no-console */
 const createSocket = require('socket.io');
+const TokenManager = require('./token');
+
+const tokenManager = new TokenManager();
+
+const mapUserToSocket = (user, socket) => {
+  socket.join(user._id, (err) => {
+    if (err) console.error(err);
+
+    console.log(
+      `${user.profileName}(@${user._id}) logged-in by socket [${socket.id}]`
+    );
+  });
+};
+
+const clearSocket = (socket) => {
+  const loggedInUsersOnThisSocket = Object.keys(socket.rooms)
+    .filter(roomId => roomId !== socket.id);
+    // socket은 default room은 자신의 id임
+
+  loggedInUsersOnThisSocket.forEach(roomId => socket.leave(roomId));
+  // default room 제외하고 모두 비움
+
+  console.log(`@${loggedInUsersOnThisSocket.join(',')} logged-out from socket [${socket.id}]`);
+};
 
 let io;
 
@@ -8,11 +33,19 @@ class Socket {
 
     io = createSocket(server);
     io.on('connection', (socket) => {
-      // eslint-disable-next-line no-console
       console.log('client connected :', socket.id);
 
+      socket.on('LOGIN', (token) => {
+        tokenManager.decodeToken(token)
+          .then(user => mapUserToSocket(user, socket))
+          .catch(err => console.error(err));
+      });
+
+      socket.on('LOGOUT', () => {
+        clearSocket(socket);
+      });
+
       socket.on('disconnect', (reason) => {
-        // eslint-disable-next-line no-console
         console.log(`client ${socket.id} disconnected because '${reason}'`);
       });
     });
