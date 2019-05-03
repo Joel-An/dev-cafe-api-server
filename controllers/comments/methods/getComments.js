@@ -119,6 +119,16 @@ module.exports = wrapAsync(async (req, res) => {
           model: 'User',
           select: userProjection,
         },
+        {
+          path: 'likes',
+          model: 'User',
+          select: userProjection,
+        },
+        {
+          path: 'dislikes',
+          model: 'User',
+          select: userProjection,
+        },
       ],
     })
     .limit(limit)
