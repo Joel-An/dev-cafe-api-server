@@ -124,6 +124,10 @@ class Socket {
   static emitUpdatedNotificationCheckTime(userId, time) {
     io.to(userId).emit('NOTIFICATION_CHECKED', time);
   }
+
+  static emitNewNotification(userId, notification) {
+    io.to(userId).emit('NEW_NOTIFICATION', notification);
+  }
 }
 
 module.exports = Socket;
