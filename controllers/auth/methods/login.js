@@ -55,7 +55,6 @@
 const TokenManager = require('../../../util/token');
 const User = require('../../../models/user');
 const { AUTH_ERR } = require('../../../constants/message');
-
 const { wrapAsync, isEmptyInput } = require('../../../util/util');
 
 module.exports = wrapAsync(async (req, res) => {
