@@ -1,3 +1,3 @@
-const userProjection = '-password -email -__v';
+const userProjection = '-password -email -__v -notificationCheckDate';
 
 module.exports = { userProjection };
