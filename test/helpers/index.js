@@ -50,6 +50,13 @@ const USER_ARRAY = [
     password: '1q2w3e4r5t@',
     confirmPassword: '1q2w3e4r5t@',
   },
+  {
+    username: 'tUser3',
+    profileName: 'user3pname',
+    email: 'user3@gmail.com',
+    password: '1q2w3e4r5t@',
+    confirmPassword: '1q2w3e4r5t@',
+  },
 ];
 
 class TestData {
