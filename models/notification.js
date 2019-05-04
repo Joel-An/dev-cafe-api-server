@@ -37,4 +37,24 @@ notificationSchema.methods.authorHeart = function setType() {
   return this;
 };
 
+notificationSchema.methods.newCommentOnMyPost = function setType() {
+  this.type = TYPES.NEW_COMMENT_ON_MY_POST;
+  return this;
+};
+
+notificationSchema.methods.newFellowComment = function setType() {
+  this.type = TYPES.NEW_FELLOW_COMMENT;
+  return this;
+};
+
+notificationSchema.methods.newReplyOnMyComment = function setType() {
+  this.type = TYPES.NEW_REPLY_ON_MY_COMMENT;
+  return this;
+};
+
+notificationSchema.methods.newFellowReply = function setType() {
+  this.type = TYPES.NEW_FELLOW_REPLY;
+  return this;
+};
+
 module.exports = mongoose.model('Notification', notificationSchema);

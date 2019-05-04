@@ -2,6 +2,13 @@ const mongoose = require('mongoose');
 
 const { ObjectId } = mongoose.Types;
 const { wrapAsync, isEmptyInput } = require('../../../util/util');
+const {
+  sendNewCommentOnMyPostNotificaion,
+  sendNewFellowCommentNotificaion,
+  sendNewReplyOnMyCommentNotificaion,
+  sendNewFellowReplyNotificaion,
+} = require('../../../util/notifier');
+
 const Comment = require('../../../models/comment');
 const Post = require('../../../models/post');
 
@@ -28,13 +35,15 @@ module.exports = wrapAsync(async (req, res) => {
     return res.json('존재하지 않는 글입니다.');
   }
 
+  let parentComment = null;
+
   if (parent) {
     if (!ObjectId.isValid(parent)) {
       res.status(400);
       return res.json('parentId 형식이 잘못되었습니다.');
     }
 
-    const parentComment = await Comment.findById(parent);
+    parentComment = await Comment.findById(parent);
 
     if (!parentComment) {
       res.status(404);
@@ -52,6 +61,11 @@ module.exports = wrapAsync(async (req, res) => {
       comment.parent,
       { $push: { childComments: comment._id } }
     );
+    sendNewReplyOnMyCommentNotificaion(parentComment, comment);
+    sendNewFellowReplyNotificaion(parentComment, comment);
+  } else {
+    sendNewCommentOnMyPostNotificaion(comment.author, post.author, comment._id, post._id);
+    sendNewFellowCommentNotificaion(comment.author, post.author, comment._id, post._id);
   }
 
   Socket.emitNewComment(comment._id, comment.parent, comment.post);

@@ -15,7 +15,7 @@ module.exports = wrapAsync(async (req, res) => {
     return res.json({ message: 'commentId 형식이 잘못되었습니다.' });
   }
 
-  const comment = await Comment.findById(id);
+  const comment = await Comment.findById(id).populate('post');
 
   if (!comment) {
     res.status(404);
@@ -42,11 +42,13 @@ module.exports = wrapAsync(async (req, res) => {
   } else {
     await Comment.findByIdAndUpdate(comment.parent, { $pull: { childComments: comment._id } });
     await Comment.findByIdAndDelete(comment._id);
-    Socket.emitDeleteComment(comment._id, comment.post);
+    Socket.emitDeleteComment(comment._id, comment.post._id);
   }
 
+  const { post } = comment;
+
   await Notification.deleteMany({
-    userId: comment.author,
+    //   userId: { $in: [comment.author, post.author] },
     comment: comment._id,
   });
 

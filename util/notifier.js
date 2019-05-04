@@ -1,8 +1,13 @@
 const mongoose = require('mongoose');
+const {
+  go, C, L,
+} = require('fxjs2');
 
 const { ObjectId } = mongoose.Types;
 
 const Notification = require('../models/notification');
+const Comment = require('../models/comment');
+
 const { userProjection } = require('../models/projectionFilters');
 
 const Socket = require('./Socket');
@@ -72,5 +77,128 @@ exports.sendAuthorHeartNotification = asyncExceptionCatcher(
     }).authorHeart();
 
     await notify(await notification.save());
+  }
+);
+
+
+exports.sendNewCommentOnMyPostNotificaion = asyncExceptionCatcher(
+  async (commentAuthorId, postAuthorId, commentId, postId) => {
+    if (areEqualObjectIds(commentAuthorId, postAuthorId)) {
+      return;
+    }
+
+    const notification = new Notification({
+      fromWhom: commentAuthorId,
+      userId: postAuthorId,
+      comment: commentId,
+      post: postId,
+    }).newCommentOnMyPost();
+
+    await notify(await notification.save());
+  }
+);
+
+const saveNotification = notification => notification.save();
+
+
+exports.sendNewFellowCommentNotificaion = asyncExceptionCatcher(
+  async (commentAuthorId, postAuthorId, commentId, postId) => {
+    const fellowComments = await Comment.aggregate([
+      {
+        $match: {
+          post: postId,
+          isChild: false,
+          isDeleted: false,
+          author: { $nin: [commentAuthorId, postAuthorId] },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          authorId: {
+            $addToSet: '$author',
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: '$authorId',
+        },
+      },
+    ]);
+
+    await go(
+      fellowComments,
+      L.map(fellowComment => new Notification({
+        fromWhom: commentAuthorId,
+        userId: fellowComment.authorId,
+        comment: commentId,
+        post: postId,
+      }).newFellowComment()),
+      L.map(saveNotification),
+      C.map(notify),
+    );
+  }
+);
+
+exports.sendNewReplyOnMyCommentNotificaion = asyncExceptionCatcher(
+  async (comment, reply) => {
+    if (comment.isDeleted) {
+      return;
+    }
+
+    if (areEqualObjectIds(comment.author, reply.author)) {
+      return;
+    }
+
+    const notification = new Notification({
+      fromWhom: reply.author,
+      userId: comment.author,
+      parentComment: comment._id,
+      comment: reply._id,
+      post: comment.post,
+    }).newReplyOnMyComment();
+
+    await notify(await notification.save());
+  }
+);
+
+exports.sendNewFellowReplyNotificaion = asyncExceptionCatcher(
+  async (comment, reply) => {
+    const fellowReplies = await Comment.aggregate([
+      {
+        $match: {
+          parent: comment._id,
+          isChild: true,
+          author: { $nin: [comment.author, reply.author] },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          authorId: {
+            $addToSet: '$author',
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: '$authorId',
+        },
+      },
+    ]);
+
+    await go(
+      fellowReplies,
+      L.map(fellowReply => new Notification({
+        fromWhom: reply.author,
+        userId: fellowReply.authorId,
+        parentComment: comment._id,
+        comment: reply._id,
+        post: comment.post,
+      }).newFellowReply()),
+      L.map(saveNotification),
+      C.map(notify),
+    );
   }
 );
