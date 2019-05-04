@@ -18,14 +18,25 @@ const areEqualObjectIds = (oid1, oid2) => {
   return objectId1.equals(objectId2);
 };
 
-const populateNotification = notif => notif.populate('post', 'title')
+const populateNotification = notif => notif
+  .populate('post', 'title')
   .populate('comment', 'contents')
-  .populate('childComment')
-  .populate('fromWhom', userProjection)
-  .execPopulate();
+  .populate({
+    path: 'parentComment',
+    select: 'contents author',
+    populate: [
+      {
+        path: 'author',
+        model: 'User',
+        select: 'profileName',
+      },
+    ],
+  })
+  .populate('fromWhom', userProjection);
+exports.populateNotification = populateNotification;
 
 const notify = async (notification) => {
-  const populatedNotif = await populateNotification(notification);
+  const populatedNotif = await populateNotification(notification).execPopulate();
 
   Socket.emitNewNotification(populatedNotif.userId, populatedNotif);
 };

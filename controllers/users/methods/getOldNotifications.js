@@ -2,7 +2,7 @@ const { pipe, curry } = require('fxjs2');
 
 
 const { wrapAsync } = require('../../../util/util');
-const { userProjection } = require('../../../models/projectionFilters');
+const { populateNotification } = require('../../../util/notifier');
 
 const User = require('../../../models/user');
 const Notifications = require('../../../models/notification');
@@ -10,18 +10,13 @@ const Notifications = require('../../../models/notification');
 const findNotifications = (userId, notificationCheckDate) => Notifications
   .find({ userId, date: { $lte: notificationCheckDate } });
 
-const populate = query => query.populate('post', 'title')
-  .populate('comment', 'contents')
-  .populate('childComment')
-  .populate('fromWhom', userProjection);
-
 const limit = curry((count, query) => query.limit(count));
 
 const sortByDate = curry((order, query) => query.sort({ date: order }));
 
 const findOldNotifications = pipe(
   findNotifications,
-  populate,
+  populateNotification,
   sortByDate('desc'),
   limit(20),
 );
