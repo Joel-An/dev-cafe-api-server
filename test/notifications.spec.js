@@ -12,6 +12,7 @@ const {
   createPostInto,
   postPost,
   createCommentInto,
+  createChildCommentOf,
   postComment,
 } = require('./helpers/TestDataHelper');
 
@@ -199,6 +200,428 @@ describe('Notifications', () => {
 
         // when
         await App.reqPostAuthorHeart(token, myComment._id);
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(404);
+      });
+    });
+  });
+
+  describe('NEW COMMENT ON MY POST', () => {
+    before(async () => {
+      await clearCollection(Comment);
+      await clearCollection(Notification);
+    });
+
+    afterEach(async () => {
+      await clearCollection(Comment);
+      await clearCollection(Notification);
+    });
+
+    context('다른 유저가 내 글에 댓글을 달면', () => {
+      it('댓글 알림이 등록된다', async () => {
+        // when
+        await go(
+          createCommentInto(myPost, 'new comment on my post'),
+          postComment(tokenForUser2),
+        );
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(200);
+
+        const [notification] = res.body;
+
+        assert.strictEqual(notification.type, Notification.getTypes().NEW_COMMENT_ON_MY_POST);
+      });
+    });
+
+    context('다른 유저가 내 글에 남긴 댓글을 삭제하면', () => {
+      it('댓글 알림이 제거된다', async () => {
+        // given
+        const comment = await go(
+          createCommentInto(myPost, 'new comment on my post'),
+          postComment(tokenForUser2),
+        );
+
+        // when
+        await App.reqDeleteComment(tokenForUser2, comment._id);
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(404);
+      });
+    });
+
+    context('내가 내 글에 댓글을 달면', () => {
+      it('댓글 알림이 등록되지 않는다', async () => {
+        // when
+        await go(
+          createCommentInto(myPost, 'my comment on my post'),
+          postComment(token),
+        );
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(404);
+      });
+    });
+  });
+
+  describe('NEW FELLOW COMMENT', () => {
+    before(async () => {
+      await clearCollection(Comment);
+      await clearCollection(Notification);
+    });
+
+    afterEach(async () => {
+      await clearCollection(Comment);
+      await clearCollection(Notification);
+    });
+
+    context('내가 댓글을 단 글에 누군가 댓글을 달면', () => {
+      it('NEW FELLOW COMMENT 알림이 등록된다', async () => {
+        // when
+        await go(
+          createCommentInto(user2sPost, "my comment on user2's post"),
+          postComment(token),
+        );
+
+        await go(
+          createCommentInto(user2sPost, "user3's comment on user2's post"),
+          postComment(tokenForUser3),
+        );
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(200);
+
+        const [notification] = res.body;
+
+        assert.strictEqual(notification.type, Notification.getTypes().NEW_FELLOW_COMMENT);
+      });
+    });
+
+    context('내 글에 내가 댓글을 달았다면, 다른 사람이 댓글을 달아도', () => {
+      it('NEW FELLOW COMMENT 알림은 등록되지 않는다', async () => {
+        // given
+        await go(
+          createCommentInto(myPost, 'my comment on my post'),
+          postComment(token),
+        );
+
+        // when
+        await go(
+          createCommentInto(myPost, "user2's comment on my post"),
+          postComment(tokenForUser2),
+        );
+
+        await go(
+          createCommentInto(myPost, "user3's comment on my post"),
+          postComment(tokenForUser3),
+        );
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(200);
+
+        const notifications = res.body;
+
+        notifications.forEach((notif) => {
+          assert.notEqual(notif.type, Notification.getTypes().NEW_FELLOW_COMMENT);
+        });
+      });
+    });
+
+    context('다른 사람이 작성한 댓글을 삭제하면', () => {
+      it('NEW FELLOW COMMENT 알림이 제거된다', async () => {
+        // given
+        await go(
+          createCommentInto(user2sPost, "my comment on user2's post"),
+          postComment(token),
+        );
+
+        const user3sComment = await go(
+          createCommentInto(user2sPost, "user3's comment on user2's post"),
+          postComment(tokenForUser3),
+        );
+
+        // when
+        await App.reqDeleteComment(tokenForUser3, user3sComment._id);
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(404);
+      });
+    });
+
+    context('내 댓글이 "삭제처리"되면', () => {
+      it('NEW FELLOW COMMENT 알림은 등록되지 않는다', async () => {
+        // given
+        const myComment = await go(
+          createCommentInto(user2sPost, "my comment on user2's post"),
+          postComment(token),
+        );
+
+        await go(
+          createChildCommentOf(myComment, 'user3s reply on my comment'),
+          postComment(tokenForUser3),
+        );
+
+        // 답글이 달린 댓글을 삭제해서 댓글을 '삭제처리' 상태로 만듦
+        await App.reqDeleteComment(token, myComment._id);
+
+        await App.reqPutNotificationCheckDate(token);
+
+        // when
+        await go(
+          createCommentInto(user2sPost, "user3's comment on user2's post"),
+          postComment(tokenForUser3),
+        );
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(404);
+      });
+    });
+  });
+
+  describe('NEW REPLY ON MY COMMENT', () => {
+    before(async () => {
+      await clearCollection(Comment);
+      await clearCollection(Notification);
+    });
+
+    afterEach(async () => {
+      await clearCollection(Comment);
+      await clearCollection(Notification);
+    });
+
+    context('다른 유저가 내 댓글에 답글을 달면', () => {
+      it('NEW REPLY ON MY COMMENT 알림이 등록된다', async () => {
+        // given
+        const myComment = await go(
+          createCommentInto(user2sPost, 'my comment on user2s post'),
+          postComment(token),
+        );
+
+        // when
+        await go(
+          createChildCommentOf(myComment, 'user3s reply on my comment'),
+          postComment(tokenForUser3),
+        );
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(200);
+
+        const [notification] = res.body;
+
+        assert.strictEqual(notification.type, Notification.getTypes().NEW_REPLY_ON_MY_COMMENT);
+      });
+    });
+
+    context('내 댓글에 달린 답글이 삭제되면', () => {
+      it('NEW REPLY ON MY COMMENT 알림이 제거된다', async () => {
+        // given
+        const myComment = await go(
+          createCommentInto(user2sPost, 'my comment on user2s post'),
+          postComment(token),
+        );
+
+        const reply = await go(
+          createChildCommentOf(myComment, 'user3s reply on my comment'),
+          postComment(tokenForUser3),
+        );
+
+        // when
+        await App.reqDeleteComment(tokenForUser3, reply._id);
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(404);
+      });
+    });
+
+    context('내가 내 댓글에 답글을 달면', () => {
+      it('NEW REPLY ON MY COMMENT 알림이 등록되지 않는다', async () => {
+        // given
+        const myComment = await go(
+          createCommentInto(user2sPost, 'my comment on user2s post'),
+          postComment(token),
+        );
+        // when
+        await go(
+          createChildCommentOf(myComment, 'my reply on my comment'),
+          postComment(token),
+        );
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(404);
+      });
+    });
+
+    context('삭제 처리된 댓글에 답글을 달면', () => {
+      it('NEW REPLY ON MY COMMENT 알림은 등록되지 않는다', async () => {
+        // given
+        const myComment = await go(
+          createCommentInto(user2sPost, 'my comment on user2s post'),
+          postComment(token),
+        );
+
+        await go(
+          createChildCommentOf(myComment, 'user2s reply on my comment'),
+          postComment(tokenForUser2),
+        );
+
+        // 답글이 있는 상태에서 댓글을 삭제하면 '삭제된 상태'로 변경됨
+        await App.reqDeleteComment(token, myComment._id);
+
+        // 알림 확인해서 기존의 답글 알림을 제거
+        await App.reqPutNotificationCheckDate(token);
+
+        // when
+        await go(
+          createChildCommentOf(myComment, 'user3s reply on deleted comment'),
+          postComment(tokenForUser3),
+        );
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(404);
+      });
+    });
+  });
+
+  describe('NEW FELLOW REPLY', () => {
+    before(async () => {
+      await clearCollection(Comment);
+      await clearCollection(Notification);
+    });
+
+    afterEach(async () => {
+      await clearCollection(Comment);
+      await clearCollection(Notification);
+    });
+
+    context('내가 답글을 단 댓글에 누군가 답글을 달면', () => {
+      it('NEW FELLOW REPLY 알림이 등록된다', async () => {
+        // given
+        const user2sComment = await go(
+          createCommentInto(user2sPost, "user2's comment on user2's post"),
+          postComment(tokenForUser2),
+        );
+
+        await go(
+          createChildCommentOf(user2sComment, "my reply on user2's comment"),
+          postComment(token),
+        );
+
+        // when
+        await go(
+          createChildCommentOf(user2sComment, "user3's reply on user2's comment"),
+          postComment(tokenForUser3),
+        );
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(200);
+
+        const [notification] = res.body;
+
+        assert.strictEqual(notification.type, Notification.getTypes().NEW_FELLOW_REPLY);
+
+        // population test
+        assert.strictEqual(notification.parentComment.author.profileName, user2.profileName);
+      });
+    });
+
+    context('내 댓글에 내가 답글을 달았다면, 다른 사람이 답글을 달아도', () => {
+      it('NEW FELLOW REPLY 알림은 등록되지 않는다', async () => {
+        // given
+        const myComment = await go(
+          createCommentInto(user2sPost, "my comment on user2's post"),
+          postComment(token),
+        );
+
+        await go(
+          createChildCommentOf(myComment, 'my reply on my comment'),
+          postComment(token),
+        );
+
+        // when
+        await go(
+          createChildCommentOf(myComment, "user3's reply on my comment"),
+          postComment(tokenForUser3),
+        );
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(200);
+
+        const notifications = res.body;
+
+        notifications.forEach((notif) => {
+          assert.notEqual(notif.type, Notification.getTypes().NEW_FELLOW_REPLY);
+        });
+      });
+    });
+
+    context('댓글이 "삭제처리"되어도, 새 답글이 달리면', () => {
+      it('NEW FELLOW REPLY 알림은 등록된다', async () => {
+        // given
+        const user2sComment = await go(
+          createCommentInto(user2sPost, "user2's comment on user2's post"),
+          postComment(tokenForUser2),
+        );
+
+        await go(
+          createChildCommentOf(user2sComment, "my reply on user2's comment"),
+          postComment(token),
+        );
+
+        // 답글이 달린 댓글을 삭제해서 댓글을 '삭제처리' 상태로 만듦
+        await App.reqDeleteComment(tokenForUser2, user2sComment._id);
+
+        // when
+        await go(
+          createChildCommentOf(user2sComment, "user3's reply on deleted comment"),
+          postComment(tokenForUser3),
+        );
+
+        // then
+        const res = await App.reqGetNewNotifications(token);
+        res.should.have.status(200);
+        assert.equal(res.body.length, 1);
+
+        const [notification] = res.body;
+
+        assert.strictEqual(notification.type, Notification.getTypes().NEW_FELLOW_REPLY);
+      });
+    });
+
+    context('다른 사람이 자신의 답글을 삭제하면', () => {
+      it('NEW FELLOW REPLY 알림이 제거된다', async () => {
+        // given
+        const user2sComment = await go(
+          createCommentInto(user2sPost, "user2's comment on user2's post"),
+          postComment(tokenForUser2),
+        );
+
+        await go(
+          createChildCommentOf(user2sComment, "my reply on user2's comment"),
+          postComment(token),
+        );
+
+        const user3sReply = await go(
+          createChildCommentOf(user2sComment, "user3's reply on ser2's comment"),
+          postComment(tokenForUser3),
+        );
+
+        // when
+        await App.reqDeleteComment(tokenForUser3, user3sReply._id);
 
         // then
         const res = await App.reqGetNewNotifications(token);
