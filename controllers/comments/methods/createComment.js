@@ -64,8 +64,8 @@ module.exports = wrapAsync(async (req, res) => {
     sendNewReplyOnMyCommentNotificaion(parentComment, comment);
     sendNewFellowReplyNotificaion(parentComment, comment);
   } else {
-    sendNewCommentOnMyPostNotificaion(comment.author, post.author, comment._id, post._id);
-    sendNewFellowCommentNotificaion(comment.author, post.author, comment._id, post._id);
+    sendNewCommentOnMyPostNotificaion(comment, post);
+    sendNewFellowCommentNotificaion(comment, post);
   }
 
   Socket.emitNewComment(comment._id, comment.parent, comment.post);

@@ -82,16 +82,16 @@ exports.sendAuthorHeartNotification = asyncExceptionCatcher(
 
 
 exports.sendNewCommentOnMyPostNotificaion = asyncExceptionCatcher(
-  async (commentAuthorId, postAuthorId, commentId, postId) => {
-    if (areEqualObjectIds(commentAuthorId, postAuthorId)) {
+  async (comment, post) => {
+    if (areEqualObjectIds(comment.author, post.author)) {
       return;
     }
 
     const notification = new Notification({
-      fromWhom: commentAuthorId,
-      userId: postAuthorId,
-      comment: commentId,
-      post: postId,
+      fromWhom: comment.author,
+      userId: post.author,
+      comment: comment._id,
+      post: post._id,
     }).newCommentOnMyPost();
 
     await notify(await notification.save());
@@ -102,14 +102,14 @@ const saveNotification = notification => notification.save();
 
 
 exports.sendNewFellowCommentNotificaion = asyncExceptionCatcher(
-  async (commentAuthorId, postAuthorId, commentId, postId) => {
+  async (comment, post) => {
     const fellowComments = await Comment.aggregate([
       {
         $match: {
-          post: postId,
+          post: post._id,
           isChild: false,
           isDeleted: false,
-          author: { $nin: [commentAuthorId, postAuthorId] },
+          author: { $nin: [comment.author, post.author] },
         },
       },
       {
@@ -130,10 +130,10 @@ exports.sendNewFellowCommentNotificaion = asyncExceptionCatcher(
     await go(
       fellowComments,
       L.map(fellowComment => new Notification({
-        fromWhom: commentAuthorId,
+        fromWhom: comment.author,
         userId: fellowComment.authorId,
-        comment: commentId,
-        post: postId,
+        comment: comment._id,
+        post: post._id,
       }).newFellowComment()),
       L.map(saveNotification),
       C.map(notify),
