@@ -4,15 +4,6 @@ const TokenManager = require('./token');
 
 const tokenManager = new TokenManager();
 
-const mapUserToSocket = (user, socket) => {
-  socket.join(user._id, (err) => {
-    if (err) console.error(err);
-
-    console.log(
-      `${user.profileName}(@${user._id}) logged-in by socket [${socket.id}]`
-    );
-  });
-};
 
 const clearSocket = (socket) => {
   const loggedInUsersOnThisSocket = Object.keys(socket.rooms)
@@ -22,7 +13,21 @@ const clearSocket = (socket) => {
   loggedInUsersOnThisSocket.forEach(roomId => socket.leave(roomId));
   // default room 제외하고 모두 비움
 
-  console.log(`@${loggedInUsersOnThisSocket.join(',')} logged-out from socket [${socket.id}]`);
+  if (loggedInUsersOnThisSocket.length > 0) {
+    console.log(`@${loggedInUsersOnThisSocket.join(',')} logged-out from socket [${socket.id}]`);
+  }
+};
+
+const mapUserToSocket = (user, socket) => {
+  clearSocket(socket);
+
+  socket.join(user._id, (err) => {
+    if (err) console.error(err);
+
+    console.log(
+      `${user.profileName}(@${user._id}) logged-in by socket [${socket.id}]`
+    );
+  });
 };
 
 let io;
