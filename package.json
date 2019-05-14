@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "start": "cross-env NODE_ENV=development nodemon ./bin/www",
+    "serve": "cross-env NODE_ENV=production forever start ./bin/www",
+    "forever": "forever",
     "test": "mocha --file ./test/helpers/index.js ./test/**/*.spec.js --timeout 10000 --exit"
   },
   "dependencies": {
@@ -14,6 +16,7 @@
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "express": "~4.16.0",
+    "forever": "^1.0.0",
     "fxjs2": "^0.2.1",
     "http-errors": "~1.6.2",
     "jsonwebtoken": "^8.4.0",
