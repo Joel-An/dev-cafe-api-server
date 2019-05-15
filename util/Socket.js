@@ -133,6 +133,21 @@ class Socket {
   static emitNewNotification(userId, notification) {
     io.to(userId).emit('NEW_NOTIFICATION', notification);
   }
+
+  static emitOauthLoginInProgress(socketId, type) {
+    const data = { type };
+    io.to(socketId).emit('OAUTH_LOGIN_IN_PROGRESS', data);
+  }
+
+  static emitOauthLoginSuccess(token, socketId, type) {
+    const data = { token, type };
+    io.to(socketId).emit('OAUTH_LOGIN_SUCCESS', data);
+  }
+
+  static emitOauthLoginFailure(message, socketId, type) {
+    const data = { message, type };
+    io.to(socketId).emit('OAUTH_LOGIN_FAILURE', data);
+  }
 }
 
 module.exports = Socket;
