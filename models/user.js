@@ -6,6 +6,8 @@ const { DEFAULT_PROFILE_PICTURE } = require('../config/config');
 
 const { Schema } = mongoose;
 
+const { OauthProviderSchema } = require('./oauthProvider');
+
 const userSchema = new Schema({
   username: String,
   profileName: String,
@@ -14,6 +16,7 @@ const userSchema = new Schema({
   isAdmin: { type: Boolean, default: false },
   profilePic: { type: String, default: DEFAULT_PROFILE_PICTURE },
   notificationCheckDate: { type: Date, default: Date.now },
+  oauthProvider: OauthProviderSchema,
 });
 
 // password를 암호화
